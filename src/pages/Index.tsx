@@ -10,12 +10,23 @@ import { SpecOutput } from "@/components/SpecOutput";
 import { StageIndicator } from "@/components/StageIndicator";
 import { AgentOutputCard } from "@/components/AgentOutputCard";
 import { ExpandableAgentCard } from "@/components/ExpandableAgentCard";
+import { ProcessViewer } from "@/components/ProcessViewer";
 import { AgentConfig, SessionState, Round, SpecQuestion, AgentAnswer } from "@/types/spec";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+
+interface Task {
+  id: string;
+  type: 'question' | 'research' | 'answer' | 'vote';
+  agent?: string;
+  description: string;
+  status: 'pending' | 'running' | 'complete';
+  duration?: number;
+  result?: any;
+}
 
 const defaultConfigs: AgentConfig[] = [
   { agent: 'elon', systemPrompt: 'You are Elon Musk. Focus on: 1) Scale to 100M+ users? 2) Bold innovation 3) First principles. Think 10x.', temperature: 0.8, enabled: true },
@@ -37,7 +48,19 @@ const Index = () => {
   });
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentStage, setCurrentStage] = useState<string>("");
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [generatedSpec, setGeneratedSpec] = useState<string>("");
   const { toast } = useToast();
+
+  const addTask = (task: Omit<Task, 'id'>) => {
+    const id = `${task.type}-${Date.now()}-${Math.random()}`;
+    setTasks(prev => [...prev, { ...task, id }]);
+    return id;
+  };
+
+  const updateTask = (id: string, updates: Partial<Task>) => {
+    setTasks(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
+  };
 
   const addHistoryEntry = (type: 'vote' | 'output' | 'spec' | 'user-comment', data: any) => {
     setSessionState(prev => ({
@@ -67,36 +90,55 @@ const Index = () => {
     try {
       // Stage 1: Questions
       round.stage = 'questions';
-      setCurrentStage(`Round ${roundNumber}: Generating clarifying questions...`);
+      setCurrentStage(`Round ${roundNumber}: Generating Questions`);
       toast({ 
         title: "Questions Phase", 
         description: "Panel members generating clarifying questions..."
       });
+      
+      const activeAgents = agentConfigs.filter(c => c.enabled);
+      const questionTaskIds = activeAgents.map(agent => 
+        addTask({ type: 'question', agent: agent.agent, description: `Generating questions`, status: 'running' })
+      );
+
+      const questionsStartTime = Date.now();
       const { data: questionsData, error: questionsError } = await supabase.functions.invoke(
         'multi-agent-spec',
         { body: { userInput: input, stage: 'questions', agentConfigs, userComment } }
       );
       if (questionsError) throw questionsError;
       
+      const questionsDuration = Date.now() - questionsStartTime;
+      questionTaskIds.forEach(id => updateTask(id, { status: 'complete', duration: questionsDuration }));
+      
       round.questions = questionsData.questions;
       addHistoryEntry('output', { stage: 'questions', questions: round.questions });
       toast({ 
         title: "Questions Complete", 
-        description: `${round.questions.length} questions generated`
+        description: `${round.questions.length} questions generated in ${questionsDuration}ms`
       });
 
       // Stage 2: Research
       round.stage = 'research';
-      setCurrentStage(`Round ${roundNumber}: Researching with Exa...`);
+      setCurrentStage(`Round ${roundNumber}: Research with Exa`);
       toast({ 
         title: "Research Phase", 
         description: "Conducting deep research on key topics..."
       });
+
+      const researchTaskIds = round.questions.slice(0, 5).map((q, i) => 
+        addTask({ type: 'research', description: `Searching: ${q.question.slice(0, 50)}...`, status: 'running' })
+      );
+
+      const researchStartTime = Date.now();
       const { data: researchData, error: researchError } = await supabase.functions.invoke(
         'multi-agent-spec',
         { body: { stage: 'research', roundData: round } }
       );
       if (researchError) throw researchError;
+      
+      const researchDuration = Date.now() - researchStartTime;
+      researchTaskIds.forEach(id => updateTask(id, { status: 'complete', duration: researchDuration / researchTaskIds.length }));
       
       round.research = researchData.research.map((r: any) => ({
         title: r.title || 'Research',
@@ -107,41 +149,59 @@ const Index = () => {
       addHistoryEntry('output', { stage: 'research', count: round.research.length });
       toast({ 
         title: "Research Complete", 
-        description: `${round.research.length} sources analyzed`
+        description: `${round.research.length} sources analyzed in ${researchDuration}ms`
       });
 
       // Stage 3: Answers
       round.stage = 'answers';
-      setCurrentStage(`Round ${roundNumber}: Agents analyzing...`);
+      setCurrentStage(`Round ${roundNumber}: Agent Analysis`);
       toast({ 
         title: "Analysis Phase", 
         description: "Panel members providing expert perspectives..."
       });
+
+      const answerTaskIds = activeAgents.map(agent => 
+        addTask({ type: 'answer', agent: agent.agent, description: `Analyzing perspectives`, status: 'running' })
+      );
+
+      const answersStartTime = Date.now();
       const { data: answersData, error: answersError } = await supabase.functions.invoke(
         'multi-agent-spec',
         { body: { stage: 'answers', agentConfigs, roundData: round, userComment } }
       );
       if (answersError) throw answersError;
       
+      const answersDuration = Date.now() - answersStartTime;
+      answerTaskIds.forEach(id => updateTask(id, { status: 'complete', duration: answersDuration / answerTaskIds.length }));
+      
       round.answers = answersData.answers;
       addHistoryEntry('output', { stage: 'answers', answers: round.answers });
       toast({ 
         title: "Analysis Complete", 
-        description: `${round.answers.length} expert analyses ready`
+        description: `${round.answers.length} expert analyses in ${answersDuration}ms`
       });
 
       // Stage 4: Voting
       round.stage = 'voting';
-      setCurrentStage(`Round ${roundNumber}: Voting...`);
+      setCurrentStage(`Round ${roundNumber}: Consensus Vote`);
       toast({ 
         title: "Consensus Vote", 
         description: "Panel voting on proceeding to specification..."
       });
+
+      const voteTaskIds = activeAgents.map(agent => 
+        addTask({ type: 'vote', agent: agent.agent, description: `Casting vote`, status: 'running' })
+      );
+
+      const votingStartTime = Date.now();
       const { data: votesData, error: votesError } = await supabase.functions.invoke(
         'multi-agent-spec',
         { body: { stage: 'voting', agentConfigs, roundData: round } }
       );
       if (votesError) throw votesError;
+      
+      const votingDuration = Date.now() - votingStartTime;
+      voteTaskIds.forEach(id => updateTask(id, { status: 'complete', duration: votingDuration / voteTaskIds.length }));
       
       round.votes = votesData.votes;
       round.votes.forEach(vote => addHistoryEntry('vote', vote));
@@ -149,7 +209,7 @@ const Index = () => {
       const approvedCount = round.votes.filter(v => v.approved).length;
       toast({ 
         title: "Vote Complete", 
-        description: `${approvedCount}/${round.votes.length} panel members approved`
+        description: `${approvedCount}/${round.votes.length} approved in ${votingDuration}ms`
       });
 
       round.status = 'complete';
@@ -164,17 +224,25 @@ const Index = () => {
       if (approvalRate >= 0.6 || roundNumber >= 3) {
         // Generate final spec
         round.stage = 'spec';
-        setCurrentStage("Generating final specification...");
+        setCurrentStage("Generating Final Specification");
         toast({ 
           title: "Specification Phase", 
           description: "Generating comprehensive specification..."
         });
+
+        const specTaskId = addTask({ type: 'answer', description: 'Synthesizing specification', status: 'running' });
+
+        const specStartTime = Date.now();
         const { data: specData, error: specError } = await supabase.functions.invoke(
           'multi-agent-spec',
           { body: { stage: 'spec', roundData: round } }
         );
         if (specError) throw specError;
         
+        const specDuration = Date.now() - specStartTime;
+        updateTask(specTaskId, { status: 'complete', duration: specDuration });
+        
+        setGeneratedSpec(specData.spec);
         setSessionState(prev => ({
           ...prev,
           finalSpec: {
@@ -190,7 +258,7 @@ const Index = () => {
         }));
         addHistoryEntry('spec', { spec: specData.spec });
         
-        toast({ title: "Spec Complete", description: `Completed after ${roundNumber} rounds` });
+        toast({ title: "Spec Complete", description: `Completed after ${roundNumber} rounds in ${specDuration}ms` });
       } else {
         toast({ 
           title: `Round ${roundNumber} Complete`, 
@@ -208,6 +276,8 @@ const Index = () => {
 
   const handleSubmit = async (input: string) => {
     setIsProcessing(true);
+    setTasks([]);
+    setGeneratedSpec("");
     setSessionState({
       rounds: [],
       currentRound: 0,
@@ -321,9 +391,15 @@ const Index = () => {
               </div>
             )}
 
-            {sessionState.finalSpec && (
+            {tasks.length > 0 && (
+              <div className="animate-slide-up">
+                <ProcessViewer tasks={tasks} currentStage={currentStage} />
+              </div>
+            )}
+
+            {generatedSpec && (
               <div className="space-y-4 animate-slide-up">
-                <SpecOutput spec={sessionState.finalSpec.summary} />
+                <SpecOutput spec={generatedSpec} />
                 <div className="flex justify-center">
                   <Button variant="default" size="lg">
                     Refine Specification

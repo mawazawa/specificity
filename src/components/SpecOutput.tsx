@@ -1,6 +1,8 @@
 import { Card } from "@/components/ui/card";
-import { FileText, CheckCircle2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { FileText, CheckCircle2, Download } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import { toast } from "@/hooks/use-toast";
 
 interface SpecOutputProps {
   spec: string;
@@ -8,6 +10,19 @@ interface SpecOutputProps {
 
 export const SpecOutput = ({ spec }: SpecOutputProps) => {
   if (!spec) return null;
+
+  const downloadSpec = () => {
+    const blob = new Blob([spec], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `specification-${new Date().toISOString().split('T')[0]}.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast({ title: "Downloaded", description: "Specification saved as markdown" });
+  };
 
   return (
     <Card className="p-10 bg-gradient-card backdrop-blur-xl border-border/20 rounded-fluid">
@@ -18,6 +33,15 @@ export const SpecOutput = ({ spec }: SpecOutputProps) => {
             Specification
           </h2>
           <CheckCircle2 className="w-4 h-4 text-primary/60 ml-auto" />
+          <Button 
+            onClick={downloadSpec}
+            variant="outline"
+            size="sm"
+            className="gap-2"
+          >
+            <Download className="w-3 h-3" />
+            Download
+          </Button>
         </div>
 
         <div className="prose prose-invert prose-sm max-w-none">

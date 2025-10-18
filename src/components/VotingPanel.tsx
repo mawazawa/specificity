@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Vote, AgentType } from "@/types/spec";
 import { CheckCircle2, XCircle, MessageSquare } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import { motion } from "framer-motion";
 
 interface VotingPanelProps {
   votes: Vote[];
@@ -41,22 +42,29 @@ export const VotingPanel = ({ votes, roundNumber }: VotingPanelProps) => {
               <CheckCircle2 className="w-4 h-4 text-primary/40" />
               Approved
             </h3>
-            {approved.map((vote) => (
-              <Card key={vote.agent} className="p-5 bg-background/20 border-border/10 rounded-fluid">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-light text-foreground/80">
-                      {agentNames[vote.agent]}
-                    </span>
-                    <span className="text-xs text-muted-foreground/50">
-                      {new Date(vote.timestamp).toLocaleTimeString()}
-                    </span>
+            {approved.map((vote, index) => (
+              <motion.div
+                key={vote.agent}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <Card className="p-5 bg-background/20 border-border/10 rounded-fluid">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-light text-foreground/80">
+                        {agentNames[vote.agent]}
+                      </span>
+                      <span className="text-xs text-muted-foreground/50">
+                        {new Date(vote.timestamp).toLocaleTimeString()}
+                      </span>
+                    </div>
+                    <div className="prose prose-sm prose-invert max-w-none prose-p:text-xs prose-p:text-foreground/70">
+                      <ReactMarkdown>{vote.reasoning}</ReactMarkdown>
+                    </div>
                   </div>
-                  <div className="prose prose-sm prose-invert max-w-none prose-p:text-xs prose-p:text-foreground/70">
-                    <ReactMarkdown>{vote.reasoning}</ReactMarkdown>
-                  </div>
-                </div>
-              </Card>
+                </Card>
+              </motion.div>
             ))}
           </div>
 
@@ -65,22 +73,29 @@ export const VotingPanel = ({ votes, roundNumber }: VotingPanelProps) => {
               <XCircle className="w-4 h-4 text-destructive/40" />
               Dissented
             </h3>
-            {dissented.map((vote) => (
-              <Card key={vote.agent} className="p-5 bg-destructive/5 border-destructive/20 rounded-fluid">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-light text-foreground/80">
-                      {agentNames[vote.agent]}
-                    </span>
-                    <span className="text-xs text-muted-foreground/50">
-                      {new Date(vote.timestamp).toLocaleTimeString()}
-                    </span>
+            {dissented.map((vote, index) => (
+              <motion.div
+                key={vote.agent}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <Card className="p-5 bg-destructive/5 border-destructive/20 rounded-fluid">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-light text-foreground/80">
+                        {agentNames[vote.agent]}
+                      </span>
+                      <span className="text-xs text-muted-foreground/50">
+                        {new Date(vote.timestamp).toLocaleTimeString()}
+                      </span>
+                    </div>
+                    <div className="prose prose-sm prose-invert max-w-none prose-p:text-xs prose-p:text-destructive/70">
+                      <ReactMarkdown>{vote.reasoning}</ReactMarkdown>
+                    </div>
                   </div>
-                  <div className="prose prose-sm prose-invert max-w-none prose-p:text-xs prose-p:text-destructive/70">
-                    <ReactMarkdown>{vote.reasoning}</ReactMarkdown>
-                  </div>
-                </div>
-              </Card>
+                </Card>
+              </motion.div>
             ))}
           </div>
         </div>
