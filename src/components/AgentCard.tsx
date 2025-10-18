@@ -4,15 +4,16 @@ import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { AgentConfig } from "@/types/spec";
+import agentPlaceholder from "@/assets/agent-placeholder.png";
 
 const agentInfo = {
-  elon: { name: "Elon Musk", role: "Visionary", avatar: "🚀", color: "from-purple-500 to-pink-500" },
-  steve: { name: "Steve Jobs", role: "Designer", avatar: "🎨", color: "from-blue-500 to-cyan-500" },
-  oprah: { name: "Oprah Winfrey", role: "Humanitarian", avatar: "💫", color: "from-amber-500 to-orange-500" },
-  zaha: { name: "Zaha Hadid", role: "Architect", avatar: "🏛️", color: "from-emerald-500 to-teal-500" },
-  jony: { name: "Jony Ive", role: "Craftsman", avatar: "✨", color: "from-slate-500 to-zinc-500" },
-  bartlett: { name: "Steven Bartlett", role: "Entrepreneur", avatar: "💼", color: "from-red-500 to-rose-500" },
-  amal: { name: "Amal Clooney", role: "Legal Expert", avatar: "⚖️", color: "from-indigo-500 to-violet-500" },
+  elon: { name: "Elon Musk", role: "Visionary", color: "from-purple-500 to-pink-500" },
+  steve: { name: "Steve Jobs", role: "Designer", color: "from-blue-500 to-cyan-500" },
+  oprah: { name: "Oprah Winfrey", role: "Humanitarian", color: "from-amber-500 to-orange-500" },
+  zaha: { name: "Zaha Hadid", role: "Architect", color: "from-emerald-500 to-teal-500" },
+  jony: { name: "Jony Ive", role: "Craftsman", color: "from-slate-500 to-zinc-500" },
+  bartlett: { name: "Steven Bartlett", role: "Entrepreneur", color: "from-red-500 to-rose-500" },
+  amal: { name: "Amal Clooney", role: "Legal Expert", color: "from-indigo-500 to-violet-500" },
 };
 
 interface AgentCardProps {
@@ -29,8 +30,8 @@ export const AgentCard = ({ config, onChange }: AgentCardProps) => {
         {/* Header */}
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-4">
-            <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${agent.color} flex items-center justify-center text-3xl shadow-[0_4px_12px_rgba(0,0,0,0.3)] transform group-hover:scale-110 transition-transform duration-300`}>
-              {agent.avatar}
+            <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${agent.color} flex items-center justify-center overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.3)] transform group-hover:scale-110 transition-transform duration-300 p-1`}>
+              <img src={agentPlaceholder} alt={agent.name} className="w-full h-full object-cover rounded-xl" />
             </div>
             <div>
               <h3 className="text-lg font-light text-foreground">{agent.name}</h3>

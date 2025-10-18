@@ -164,27 +164,6 @@ export const SpecInput = ({ onSubmit, isLoading }: SpecInputProps) => {
             </Button>
           </div>
         </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs">
-          {[
-            { name: "Gary Tan", role: "YC President", avatar: "🎯" },
-            { name: "Sam Altman", role: "OpenAI CEO", avatar: "🤖" },
-            { name: "Brian Chesky", role: "Airbnb CEO", avatar: "🏠" },
-            { name: "Patrick Collison", role: "Stripe CEO", avatar: "💳" },
-            { name: "Paul Graham", role: "YC Founder", avatar: "📚" },
-            { name: "Jessica Livingston", role: "YC Partner", avatar: "✨" },
-          ].map((advisor, i) => (
-            <div key={i} className="group p-4 bg-secondary/10 rounded-fluid border border-border/10 backdrop-blur-sm transition-all duration-300 hover:bg-secondary/20 hover:border-accent/30 hover:scale-105 cursor-pointer">
-              <div className="flex items-center gap-2">
-                <span className="text-lg">{advisor.avatar}</span>
-                <div className="flex-1 min-w-0">
-                  <div className="text-foreground/80 font-light truncate">{advisor.name}</div>
-                  <div className="text-muted-foreground uppercase tracking-widest text-[10px]">{advisor.role}</div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
     </Card>
   );
