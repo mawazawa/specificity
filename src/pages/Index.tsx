@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { SpecInput } from "@/components/SpecInput";
-import { AgentConfigPanel } from "@/components/AgentConfigPanel";
+import { AgentCard } from "@/components/AgentCard";
 import { VotingPanel } from "@/components/VotingPanel";
 import { RoundTracker } from "@/components/RoundTracker";
 import { PauseControls } from "@/components/PauseControls";
@@ -245,7 +245,24 @@ const Index = () => {
 
         <div className="grid gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-8">
-            <AgentConfigPanel configs={agentConfigs} onChange={setAgentConfigs} />
+            <div className="space-y-4">
+              <h2 className="text-sm font-extralight uppercase tracking-widest text-foreground/80">
+                Advisory Panel
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {agentConfigs.map((config, index) => (
+                  <AgentCard
+                    key={config.agent}
+                    config={config}
+                    onChange={(updatedConfig) => {
+                      const newConfigs = [...agentConfigs];
+                      newConfigs[index] = updatedConfig;
+                      setAgentConfigs(newConfigs);
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
 
             {isProcessing && currentRound && (
               <div className="animate-slide-up">

@@ -1,8 +1,7 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { Mic, MicOff, Sparkles } from "lucide-react";
+import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
@@ -79,6 +78,25 @@ export const SpecInput = ({ onSubmit, isLoading }: SpecInputProps) => {
     }
   };
 
+  const placeholders = [
+    "Design a next-gen mobile app for social commerce...",
+    "Build a platform for decentralized finance...",
+    "Create an AI-powered customer service system...",
+    "Develop a real-time collaboration workspace...",
+    "Launch a sustainable supply chain tracker...",
+  ];
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInput(e.target.value);
+  };
+
+  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (input.trim()) {
+      onSubmit(input);
+    }
+  };
+
   return (
     <Card className="p-12 bg-gradient-card backdrop-blur-xl border-border/30 rounded-fluid overflow-hidden relative">
       <div className="absolute inset-0 bg-gradient-fluid opacity-50 animate-morph" />
@@ -95,39 +113,56 @@ export const SpecInput = ({ onSubmit, isLoading }: SpecInputProps) => {
         </div>
 
         <div className="space-y-6">
-          <div className="relative">
-            <Textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Articulate your vision..."
-              className="min-h-[180px] bg-background/30 border-border/20 focus:border-primary/30 resize-none text-base rounded-fluid backdrop-blur-sm transition-all duration-300 focus:bg-background/40 pr-16"
-              disabled={isLoading || isRecording}
-            />
+          <PlaceholdersAndVanishInput
+            placeholders={placeholders}
+            onChange={handleInputChange}
+            onSubmit={handleFormSubmit}
+          />
+
+          <div className="flex gap-3 justify-center">
             <Button
               onClick={isRecording ? stopRecording : startRecording}
               disabled={isLoading}
-              variant="ghost"
-              size="icon"
-              className={`absolute top-4 right-4 rounded-full transition-all duration-300 ${
-                isRecording ? 'bg-destructive/20 text-destructive animate-pulse' : 'hover:bg-accent/10'
+              variant="outline"
+              size="lg"
+              className={`group relative overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.3)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.4)] transform hover:translate-y-[-2px] active:translate-y-[0px] transition-all duration-200 ${
+                isRecording ? 'bg-destructive/20 text-destructive animate-pulse border-destructive' : ''
               }`}
             >
-              {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+              <span className="relative flex items-center justify-center gap-2">
+                {isRecording ? (
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="6" y="4" width="4" height="16" rx="2" fill="currentColor" opacity="0.8">
+                      <animate attributeName="height" values="16;8;16" dur="0.8s" repeatCount="indefinite" />
+                      <animate attributeName="y" values="4;8;4" dur="0.8s" repeatCount="indefinite" />
+                    </rect>
+                    <rect x="14" y="4" width="4" height="16" rx="2" fill="currentColor" opacity="0.6">
+                      <animate attributeName="height" values="16;4;16" dur="0.6s" repeatCount="indefinite" />
+                      <animate attributeName="y" values="4;10;4" dur="0.6s" repeatCount="indefinite" />
+                    </rect>
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="6" y="8" width="4" height="8" rx="2" fill="currentColor" opacity="0.4" />
+                    <rect x="14" y="6" width="4" height="12" rx="2" fill="currentColor" opacity="0.6" />
+                  </svg>
+                )}
+                {isRecording ? 'Stop Recording' : 'Voice Input'}
+              </span>
+            </Button>
+
+            <Button
+              onClick={handleSubmit}
+              disabled={!input.trim() || isLoading}
+              className="group relative overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.3)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.4)] transform hover:translate-y-[-2px] active:translate-y-[0px] transition-all duration-200"
+              size="lg"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_100%] animate-shimmer opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <span className="relative flex items-center justify-center gap-3 uppercase tracking-widest text-sm font-light">
+                {isLoading ? 'Processing' : 'Generate Specification'}
+              </span>
             </Button>
           </div>
-
-          <Button
-            onClick={handleSubmit}
-            disabled={!input.trim() || isLoading}
-            className="w-full group relative overflow-hidden"
-            size="lg"
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_100%] animate-shimmer opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <span className="relative flex items-center justify-center gap-3 uppercase tracking-widest text-sm font-light">
-              <Sparkles className="w-4 h-4" />
-              {isLoading ? 'Processing' : 'Generate Specification'}
-            </span>
-          </Button>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs">
