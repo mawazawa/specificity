@@ -1,83 +1,126 @@
 import { Card } from "@/components/ui/card";
 import { Round } from "@/types/spec";
-import { Circle, CheckCircle2, Loader2, PauseCircle } from "lucide-react";
+import { CheckCircle2, Loader2, XCircle, MessageSquare, Search, Users, Vote, FileText } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface RoundTrackerProps {
   rounds: Round[];
   currentRound: number;
 }
 
+const stageIcons = {
+  questions: MessageSquare,
+  research: Search,
+  answers: Users,
+  voting: Vote,
+  spec: FileText
+};
+
 const stageNames = {
-  questions: "Clarifying Questions",
-  research: "Exa Research",
-  answers: "Agent Analysis",
-  voting: "Consensus Vote",
-  spec: "Spec Generation"
+  questions: "Questions",
+  research: "Research",
+  answers: "Analysis",
+  voting: "Voting",
+  spec: "Spec"
 };
 
 export const RoundTracker = ({ rounds, currentRound }: RoundTrackerProps) => {
   return (
     <Card className="p-8 bg-gradient-card backdrop-blur-xl border-border/20 rounded-fluid">
       <div className="space-y-6">
-        <h2 className="text-sm font-extralight uppercase tracking-widest text-foreground/80">
-          Round Progress
+        <h2 className="text-sm font-extralight uppercase tracking-widest text-foreground/80 flex items-center gap-2">
+          <div className="w-1 h-4 bg-accent rounded-full" />
+          Timeline
         </h2>
 
-        <div className="space-y-4">
+        <div className="relative space-y-6">
+          {/* Timeline line */}
+          <div className="absolute left-6 top-0 bottom-0 w-px bg-gradient-to-b from-accent/50 via-accent/20 to-transparent" />
+
           {rounds.map((round, index) => {
             const isCurrent = index === currentRound;
             const isComplete = round.status === 'complete';
             const isPaused = round.status === 'paused';
+            const StageIcon = stageIcons[round.stage];
 
             return (
-              <div key={index} className="space-y-3">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-3">
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="relative"
+              >
+                <div className="flex items-start gap-4">
+                  {/* Timeline node */}
+                  <div className="relative z-10">
                     {isComplete ? (
-                      <CheckCircle2 className="w-5 h-5 text-primary/60" />
-                    ) : isPaused ? (
-                      <PauseCircle className="w-5 h-5 text-accent/60" />
+                      <div className="w-12 h-12 rounded-full bg-primary/10 border-2 border-primary/30 flex items-center justify-center backdrop-blur-sm">
+                        <CheckCircle2 className="w-6 h-6 text-primary/70" />
+                      </div>
                     ) : isCurrent ? (
-                      <Loader2 className="w-5 h-5 animate-spin text-primary/60" />
+                      <div className="relative">
+                        <div className="absolute inset-0 bg-accent/20 blur-lg animate-pulse-glow rounded-full" />
+                        <div className="relative w-12 h-12 rounded-full bg-accent/20 border-2 border-accent flex items-center justify-center backdrop-blur-sm">
+                          <Loader2 className="w-6 h-6 text-accent animate-spin" />
+                        </div>
+                      </div>
                     ) : (
-                      <Circle className="w-5 h-5 text-muted-foreground/30" />
+                      <div className="w-12 h-12 rounded-full bg-background/50 border-2 border-border/30 flex items-center justify-center backdrop-blur-sm">
+                        <div className="w-2 h-2 rounded-full bg-muted-foreground/30" />
+                      </div>
                     )}
-                    <span className={`text-sm font-light uppercase tracking-wider ${
-                      isCurrent ? 'text-foreground/90' : 'text-foreground/50'
-                    }`}>
-                      Round {round.roundNumber}
-                    </span>
                   </div>
-                  <div className="flex-1 h-px bg-border/20" />
-                </div>
 
-                {isCurrent && (
-                  <div className="ml-8 space-y-2">
-                    <div className="text-xs text-foreground/60 uppercase tracking-wider">
-                      {stageNames[round.stage]}
+                  {/* Content */}
+                  <div className="flex-1 pt-2">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className={`text-base font-light uppercase tracking-wider ${
+                        isCurrent ? 'text-accent' : isComplete ? 'text-foreground/70' : 'text-foreground/40'
+                      }`}>
+                        Round {round.roundNumber}
+                      </h3>
+                      {isCurrent && (
+                        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 border border-accent/20">
+                          <StageIcon className="w-3 h-3 text-accent" />
+                          <span className="text-xs text-accent uppercase tracking-widest">
+                            {stageNames[round.stage]}
+                          </span>
+                        </div>
+                      )}
                     </div>
+
                     {round.userComment && (
-                      <Card className="p-4 bg-accent/10 border-accent/20 rounded-fluid">
+                      <Card className="p-4 mb-3 bg-accent/5 border-accent/20 rounded-fluid">
                         <div className="flex items-start gap-2">
-                          <span className="text-xs text-accent/60">User Comment:</span>
-                          <span className="text-xs text-foreground/70">{round.userComment}</span>
+                          <MessageSquare className="w-4 h-4 text-accent/60 mt-0.5" />
+                          <div>
+                            <div className="text-xs text-accent/60 uppercase tracking-wider mb-1">User Input</div>
+                            <p className="text-sm text-foreground/70">{round.userComment}</p>
+                          </div>
                         </div>
                       </Card>
                     )}
-                  </div>
-                )}
 
-                {isComplete && round.votes.length > 0 && (
-                  <div className="ml-8 flex items-center gap-4 text-xs">
-                    <span className="text-primary/50">
-                      {round.votes.filter(v => v.approved).length} approved
-                    </span>
-                    <span className="text-destructive/50">
-                      {round.votes.filter(v => !v.approved).length} dissented
-                    </span>
+                    {isComplete && round.votes.length > 0 && (
+                      <div className="flex items-center gap-6 text-xs">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-primary/50" />
+                          <span className="text-primary/70 uppercase tracking-wider">
+                            {round.votes.filter(v => v.approved).length} Approved
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <XCircle className="w-4 h-4 text-destructive/50" />
+                          <span className="text-destructive/70 uppercase tracking-wider">
+                            {round.votes.filter(v => !v.approved).length} Dissented
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
+                </div>
+              </motion.div>
             );
           })}
         </div>

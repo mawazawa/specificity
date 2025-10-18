@@ -7,6 +7,7 @@ import { PauseControls } from "@/components/PauseControls";
 import { HistoryPanel } from "@/components/HistoryPanel";
 import { ResearchPanel } from "@/components/ResearchPanel";
 import { SpecOutput } from "@/components/SpecOutput";
+import { StageIndicator } from "@/components/StageIndicator";
 import { AgentOutputCard } from "@/components/AgentOutputCard";
 import { ExpandableAgentCard } from "@/components/ExpandableAgentCard";
 import { AgentConfig, SessionState, Round, SpecQuestion, AgentAnswer } from "@/types/spec";
@@ -65,7 +66,12 @@ const Index = () => {
 
     try {
       // Stage 1: Questions
+      round.stage = 'questions';
       setCurrentStage(`Round ${roundNumber}: Generating clarifying questions...`);
+      toast({ 
+        title: "Questions Phase", 
+        description: "Panel members generating clarifying questions..."
+      });
       const { data: questionsData, error: questionsError } = await supabase.functions.invoke(
         'multi-agent-spec',
         { body: { userInput: input, stage: 'questions', agentConfigs, userComment } }
@@ -74,10 +80,18 @@ const Index = () => {
       
       round.questions = questionsData.questions;
       addHistoryEntry('output', { stage: 'questions', questions: round.questions });
+      toast({ 
+        title: "Questions Complete", 
+        description: `${round.questions.length} questions generated`
+      });
 
       // Stage 2: Research
       round.stage = 'research';
       setCurrentStage(`Round ${roundNumber}: Researching with Exa...`);
+      toast({ 
+        title: "Research Phase", 
+        description: "Conducting deep research on key topics..."
+      });
       const { data: researchData, error: researchError } = await supabase.functions.invoke(
         'multi-agent-spec',
         { body: { stage: 'research', roundData: round } }
@@ -91,10 +105,18 @@ const Index = () => {
         relevance: r.score || 0.8
       }));
       addHistoryEntry('output', { stage: 'research', count: round.research.length });
+      toast({ 
+        title: "Research Complete", 
+        description: `${round.research.length} sources analyzed`
+      });
 
       // Stage 3: Answers
       round.stage = 'answers';
       setCurrentStage(`Round ${roundNumber}: Agents analyzing...`);
+      toast({ 
+        title: "Analysis Phase", 
+        description: "Panel members providing expert perspectives..."
+      });
       const { data: answersData, error: answersError } = await supabase.functions.invoke(
         'multi-agent-spec',
         { body: { stage: 'answers', agentConfigs, roundData: round, userComment } }
@@ -103,10 +125,18 @@ const Index = () => {
       
       round.answers = answersData.answers;
       addHistoryEntry('output', { stage: 'answers', answers: round.answers });
+      toast({ 
+        title: "Analysis Complete", 
+        description: `${round.answers.length} expert analyses ready`
+      });
 
       // Stage 4: Voting
       round.stage = 'voting';
       setCurrentStage(`Round ${roundNumber}: Voting...`);
+      toast({ 
+        title: "Consensus Vote", 
+        description: "Panel voting on proceeding to specification..."
+      });
       const { data: votesData, error: votesError } = await supabase.functions.invoke(
         'multi-agent-spec',
         { body: { stage: 'voting', agentConfigs, roundData: round } }
@@ -115,6 +145,12 @@ const Index = () => {
       
       round.votes = votesData.votes;
       round.votes.forEach(vote => addHistoryEntry('vote', vote));
+      
+      const approvedCount = round.votes.filter(v => v.approved).length;
+      toast({ 
+        title: "Vote Complete", 
+        description: `${approvedCount}/${round.votes.length} panel members approved`
+      });
 
       round.status = 'complete';
       setSessionState(prev => {
@@ -127,8 +163,12 @@ const Index = () => {
       
       if (approvalRate >= 0.6 || roundNumber >= 3) {
         // Generate final spec
-        setCurrentStage("Generating final specification...");
         round.stage = 'spec';
+        setCurrentStage("Generating final specification...");
+        toast({ 
+          title: "Specification Phase", 
+          description: "Generating comprehensive specification..."
+        });
         const { data: specData, error: specError } = await supabase.functions.invoke(
           'multi-agent-spec',
           { body: { stage: 'spec', roundData: round } }
@@ -207,15 +247,13 @@ const Index = () => {
           <div className="lg:col-span-2 space-y-8">
             <AgentConfigPanel configs={agentConfigs} onChange={setAgentConfigs} />
 
-            {currentStage && (
-              <Card className="p-8 bg-gradient-card backdrop-blur-xl border-border/10 rounded-fluid">
-                <div className="flex items-center justify-center gap-4">
-                  <Loader2 className="w-5 h-5 animate-spin text-primary/60" />
-                  <span className="text-sm font-light uppercase tracking-widest text-foreground/80">
-                    {currentStage}
-                  </span>
-                </div>
-              </Card>
+            {isProcessing && currentRound && (
+              <div className="animate-slide-up">
+                <StageIndicator 
+                  stage={currentRound.stage} 
+                  roundNumber={currentRound.roundNumber} 
+                />
+              </div>
             )}
 
             {isProcessing && sessionState.rounds.length > 0 && (
