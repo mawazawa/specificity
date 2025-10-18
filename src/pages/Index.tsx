@@ -108,7 +108,11 @@ const Index = () => {
         'multi-agent-spec',
         { body: { userInput: input, stage: 'questions', agentConfigs, userComment } }
       );
-      if (questionsError) throw questionsError;
+      
+      if (questionsError) {
+        console.error('Questions error:', questionsError);
+        throw new Error(questionsError.message || 'Failed to generate questions');
+      }
       
       const questionsDuration = Date.now() - questionsStartTime;
       questionTaskIds.forEach(id => updateTask(id, { status: 'complete', duration: questionsDuration }));
@@ -272,7 +276,11 @@ const Index = () => {
       }
     } catch (error: any) {
       console.error('Round error:', error);
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      const errorMsg = error.message?.includes('429') || error.message?.includes('rate limit') || error.message?.includes('Rate limit')
+        ? "⚠️ Rate limit exceeded. Groq API has limits on requests per minute and tokens per day. Please wait a few minutes and try again."
+        : error.message || "An error occurred during processing";
+      toast({ title: "Error", description: errorMsg, variant: "destructive" });
+      setIsProcessing(false);
     }
   };
 
