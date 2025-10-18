@@ -74,18 +74,32 @@ export const SpecInput = ({ onSubmit, isLoading }: SpecInputProps) => {
       reader.onloadend = async () => {
         const base64Audio = (reader.result as string).split(',')[1];
         
+        console.log('Transcribing audio, size:', audioBlob.size);
+        
         const { data, error } = await supabase.functions.invoke('voice-to-text', {
           body: { audio: base64Audio }
         });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Voice-to-text error:', error);
+          throw error;
+        }
         
-        setInput(prev => prev + (prev ? ' ' : '') + data.text);
-        toast({ title: "Transcription complete" });
+        if (data?.text) {
+          console.log('Transcription result:', data.text);
+          setInput(prev => prev + (prev ? ' ' : '') + data.text);
+          toast({ title: "Transcription complete", description: data.text.substring(0, 50) + '...' });
+        } else {
+          throw new Error('No transcription returned');
+        }
       };
     } catch (error) {
       console.error('Error transcribing audio:', error);
-      toast({ title: "Failed to transcribe audio", variant: "destructive" });
+      toast({ 
+        title: "Failed to transcribe audio", 
+        description: error instanceof Error ? error.message : 'Unknown error',
+        variant: "destructive" 
+      });
     }
   };
 
@@ -128,6 +142,7 @@ export const SpecInput = ({ onSubmit, isLoading }: SpecInputProps) => {
             placeholders={placeholders}
             onChange={handleInputChange}
             onSubmit={handleFormSubmit}
+            value={input}
           />
 
           <div className="flex gap-3 justify-center">

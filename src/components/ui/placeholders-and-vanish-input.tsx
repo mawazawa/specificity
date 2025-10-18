@@ -8,10 +8,12 @@ export function PlaceholdersAndVanishInput({
   placeholders,
   onChange,
   onSubmit,
+  value: externalValue,
 }: {
   placeholders: string[];
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  value?: string;
 }) {
   const [currentPlaceholder, setCurrentPlaceholder] = useState(0);
 
@@ -47,6 +49,13 @@ export function PlaceholdersAndVanishInput({
   const inputRef = useRef<HTMLInputElement>(null);
   const [value, setValue] = useState("");
   const [animating, setAnimating] = useState(false);
+
+  // Sync external value with internal state
+  useEffect(() => {
+    if (externalValue !== undefined && externalValue !== value && !animating) {
+      setValue(externalValue);
+    }
+  }, [externalValue, animating]);
 
   const draw = useCallback(() => {
     if (!inputRef.current) return;
@@ -209,7 +218,7 @@ export function PlaceholdersAndVanishInput({
       <button
         disabled={!value}
         type="submit"
-        className="absolute right-2 top-1/2 z-50 -translate-y-1/2 h-8 w-8 rounded-full disabled:bg-muted bg-primary transition duration-200 flex items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.3)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.4)] transform hover:translate-y-[-1px] active:translate-y-[0px]"
+        className="absolute right-2 top-1/2 z-50 -translate-y-1/2 h-8 w-8 rounded-full disabled:bg-muted bg-primary transition duration-200 flex items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.3)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.4)] hover:scale-105 active:scale-95"
       >
         <motion.svg
           xmlns="http://www.w3.org/2000/svg"
