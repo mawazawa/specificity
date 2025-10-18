@@ -70,6 +70,7 @@ export default {
         'gradient-primary': 'var(--gradient-primary)',
         'gradient-hero': 'var(--gradient-hero)',
         'gradient-card': 'var(--gradient-card)',
+        'gradient-fluid': 'var(--gradient-fluid)',
       },
       boxShadow: {
         'glow-primary': 'var(--glow-primary)',
@@ -79,6 +80,7 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        fluid: "3rem",
       },
       keyframes: {
         "accordion-down": {
@@ -90,24 +92,29 @@ export default {
           to: { height: "0" },
         },
         "pulse-glow": {
-          "0%, 100%": { opacity: "1", transform: "scale(1)" },
-          "50%": { opacity: "0.8", transform: "scale(1.05)" },
+          "0%, 100%": { opacity: "0.3", transform: "scale(1)" },
+          "50%": { opacity: "0.6", transform: "scale(1.05)" },
         },
         "slide-up": {
-          from: { opacity: "0", transform: "translateY(20px)" },
+          from: { opacity: "0", transform: "translateY(30px)" },
           to: { opacity: "1", transform: "translateY(0)" },
         },
         "fade-in": {
           from: { opacity: "0" },
           to: { opacity: "1" },
         },
+        "morph": {
+          "0%, 100%": { borderRadius: "60% 40% 30% 70% / 60% 30% 70% 40%" },
+          "50%": { borderRadius: "30% 60% 70% 40% / 50% 60% 30% 60%" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "pulse-glow": "pulse-glow 2s ease-in-out infinite",
-        "slide-up": "slide-up 0.4s ease-out",
-        "fade-in": "fade-in 0.3s ease-out",
+        "pulse-glow": "pulse-glow 3s ease-in-out infinite",
+        "slide-up": "slide-up 0.6s cubic-bezier(0.16, 1, 0.3, 1)",
+        "fade-in": "fade-in 0.4s ease-out",
+        "morph": "morph 8s ease-in-out infinite",
       },
     },
   },

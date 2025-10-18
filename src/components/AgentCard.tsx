@@ -1,14 +1,19 @@
-import { Brain, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { AgentPerspective, AgentType } from "@/types/spec";
+import ReactMarkdown from "react-markdown";
 
-const agentConfig: Record<AgentType, { name: string; icon: string; color: string }> = {
-  elon: { name: "Elon Musk", icon: "🚀", color: "agent-elon" },
-  cuban: { name: "Mark Cuban", icon: "💰", color: "agent-cuban" },
-  dev: { name: "Senior Dev", icon: "⚡", color: "agent-dev" },
-  designer: { name: "UX Designer", icon: "🎨", color: "agent-designer" },
-  entrepreneur: { name: "Entrepreneur", icon: "🔥", color: "agent-entrepreneur" },
-  legal: { name: "Legal Expert", icon: "⚖️", color: "agent-legal" },
+const agentConfig: Record<AgentType, { name: string; color: string }> = {
+  elon: { name: "Scale", color: "agent-elon" },
+  cuban: { name: "Business", color: "agent-cuban" },
+  dev: { name: "Technical", color: "agent-dev" },
+  designer: { name: "Design", color: "agent-designer" },
+  entrepreneur: { name: "Strategy", color: "agent-entrepreneur" },
+  legal: { name: "Legal", color: "agent-legal" },
+};
+
+const getAgentColor = (agent: AgentType) => {
+  return `border-l-${agentConfig[agent].color}`;
 };
 
 interface AgentCardProps {
@@ -16,56 +21,34 @@ interface AgentCardProps {
 }
 
 export const AgentCard = ({ perspective }: AgentCardProps) => {
-  const config = agentConfig[perspective.agent];
-  const isActive = perspective.status === 'thinking';
-  const isComplete = perspective.status === 'complete';
+  const { agent, thinking, response, status } = perspective;
+  const config = agentConfig[agent];
 
   return (
-    <Card 
-      className={`p-6 bg-gradient-card backdrop-blur-sm border-${config.color}/30 transition-all duration-300 ${
-        isActive ? 'shadow-glow-primary ring-2 ring-primary/50' : ''
-      }`}
-    >
-      <div className="flex items-start gap-4">
-        <div className={`text-4xl ${isActive ? 'animate-pulse-glow' : ''}`}>
-          {config.icon}
-        </div>
-        
-        <div className="flex-1 space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className={`font-bold text-lg text-${config.color}`}>
-              {config.name}
-            </h3>
-            {isActive && (
-              <div className="flex items-center gap-2 text-primary text-sm">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Thinking...</span>
-              </div>
-            )}
-            {isComplete && (
-              <div className="flex items-center gap-2 text-agent-dev text-sm">
-                <Brain className="w-4 h-4" />
-                <span>Complete</span>
-              </div>
-            )}
+    <Card className={`p-8 border border-border/20 transition-all duration-500 rounded-fluid backdrop-blur-sm ${getAgentColor(agent)} hover:border-border/40`}>
+      <div className="space-y-5">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-4">
+            <div className={`w-2 h-2 rounded-full ${status === 'thinking' ? 'animate-pulse-glow' : ''} ${
+              status === 'thinking' ? 'bg-primary/60' : 
+              status === 'complete' ? 'bg-primary' : 'bg-muted'
+            }`} />
+            <h3 className="text-sm font-extralight uppercase tracking-widest text-foreground/80">{config.name}</h3>
           </div>
-
-          {perspective.thinking && (
-            <div className="p-3 bg-secondary/50 rounded-lg border border-border/50">
-              <p className="text-sm text-muted-foreground italic">
-                {perspective.thinking}
-              </p>
-            </div>
-          )}
-
-          {perspective.response && (
-            <div className="prose prose-invert prose-sm max-w-none">
-              <p className="text-foreground leading-relaxed">
-                {perspective.response}
-              </p>
-            </div>
+          {status === 'thinking' && (
+            <Loader2 className="w-4 h-4 animate-spin text-muted-foreground/50" />
           )}
         </div>
+
+        {thinking && status === 'thinking' && (
+          <p className="text-xs text-muted-foreground/70 italic font-light">{thinking}</p>
+        )}
+
+        {response && (
+          <div className="prose prose-sm prose-invert max-w-none prose-headings:font-light prose-headings:tracking-wide prose-p:text-foreground/80 prose-p:text-sm prose-p:leading-relaxed">
+            <ReactMarkdown>{response}</ReactMarkdown>
+          </div>
+        )}
       </div>
     </Card>
   );

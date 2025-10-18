@@ -19,61 +19,59 @@ export const SpecInput = ({ onSubmit, isLoading }: SpecInputProps) => {
   };
 
   return (
-    <Card className="p-8 bg-gradient-card backdrop-blur-sm border-primary/20">
-      <div className="space-y-6">
-        <div className="text-center space-y-3">
-          <div className="flex items-center justify-center gap-3">
-            <Zap className="w-8 h-8 text-primary animate-pulse-glow" />
-            <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              Multi-Agent Spec Generator
+    <Card className="p-12 bg-gradient-card backdrop-blur-xl border-border/30 rounded-fluid overflow-hidden relative">
+      <div className="absolute inset-0 bg-gradient-fluid opacity-50 animate-morph" />
+      <div className="relative z-10 space-y-8">
+        <div className="text-center space-y-4">
+          <div className="inline-block">
+            <h1 className="text-6xl font-extralight tracking-tight text-primary">
+              Specificity AI
             </h1>
-            <Sparkles className="w-8 h-8 text-accent animate-pulse-glow" />
           </div>
-          <p className="text-muted-foreground text-lg">
-            Groq-speed collaborative reasoning with Exa research integration
+          <p className="text-muted-foreground text-sm tracking-wider uppercase">
+            Precision Intelligence
           </p>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-6">
           <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Describe your project, feature, or idea... Be as detailed or as brief as you want. The agents will ask clarifying questions and research to fill in the gaps."
-            className="min-h-[200px] bg-background/50 border-border/50 focus:border-primary/50 resize-none text-lg"
+            placeholder="Articulate your vision..."
+            className="min-h-[180px] bg-background/30 border-border/20 focus:border-primary/30 resize-none text-base rounded-fluid backdrop-blur-sm transition-all duration-300 focus:bg-background/40"
             disabled={isLoading}
           />
 
           <Button
             onClick={handleSubmit}
             disabled={!input.trim() || isLoading}
-            className="w-full bg-gradient-primary hover:shadow-glow-primary transition-all duration-300 text-lg py-6"
+            className="w-full bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-500 text-sm py-7 rounded-fluid font-light tracking-wide uppercase"
           >
             {isLoading ? (
               <>
-                <Zap className="w-5 h-5 mr-2 animate-spin" />
-                Agents Collaborating...
+                <Zap className="w-4 h-4 mr-3 animate-spin" />
+                Processing
               </>
             ) : (
               <>
-                <Sparkles className="w-5 h-5 mr-2" />
-                Generate Spec
+                <Sparkles className="w-4 h-4 mr-3" />
+                Generate
               </>
             )}
           </Button>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm text-muted-foreground">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-xs">
           {[
-            { icon: "🚀", text: "Elon: Scale & Architecture" },
-            { icon: "💰", text: "Cuban: Business Model" },
-            { icon: "⚡", text: "Dev: Technical Excellence" },
-            { icon: "🎨", text: "Designer: UX & Visual" },
-            { icon: "🔥", text: "Entrepreneur: Ship Fast" },
-            { icon: "⚖️", text: "Legal: Evidence-Based" },
+            { text: "Scale" },
+            { text: "Business" },
+            { text: "Technical" },
+            { text: "Design" },
+            { text: "Strategy" },
+            { text: "Legal" },
           ].map((agent, i) => (
-            <div key={i} className="flex items-center gap-2 p-3 bg-secondary/30 rounded-lg border border-border/30">
-              <span className="text-xl">{agent.icon}</span>
-              <span className="text-xs">{agent.text}</span>
+            <div key={i} className="p-4 bg-secondary/20 rounded-fluid border border-border/10 backdrop-blur-sm transition-all duration-300 hover:bg-secondary/30">
+              <span className="text-muted-foreground uppercase tracking-widest">{agent.text}</span>
             </div>
           ))}
         </div>

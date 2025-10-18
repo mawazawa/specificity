@@ -117,9 +117,9 @@ const Index = () => {
         <SpecInput onSubmit={handleSubmit} isLoading={isProcessing} />
 
         {currentStage && (
-          <div className="flex items-center justify-center gap-3 p-6 bg-gradient-card rounded-lg border border-primary/30">
-            <Loader2 className="w-5 h-5 animate-spin text-primary" />
-            <span className="text-lg font-medium text-primary">{currentStage}</span>
+          <div className="flex items-center justify-center gap-4 p-8 bg-gradient-card rounded-fluid border border-border/10 backdrop-blur-xl">
+            <Loader2 className="w-4 h-4 animate-spin text-primary/60" />
+            <span className="text-xs font-light uppercase tracking-widest text-foreground/70">{currentStage}</span>
           </div>
         )}
 
@@ -130,9 +130,9 @@ const Index = () => {
         )}
 
         {perspectives.length > 0 && (
-          <div className="space-y-6 animate-slide-up">
-            <h2 className="text-3xl font-bold text-center bg-gradient-primary bg-clip-text text-transparent">
-              Multi-Agent Perspectives
+          <div className="space-y-10 animate-slide-up">
+            <h2 className="text-sm font-extralight text-center uppercase tracking-[0.3em] text-foreground/60">
+              Perspectives
             </h2>
             <div className="grid gap-6 md:grid-cols-2">
               {perspectives.map((perspective, index) => (
