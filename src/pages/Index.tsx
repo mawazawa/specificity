@@ -8,6 +8,7 @@ import { HistoryPanel } from "@/components/HistoryPanel";
 import { ResearchPanel } from "@/components/ResearchPanel";
 import { SpecOutput } from "@/components/SpecOutput";
 import { AgentOutputCard } from "@/components/AgentOutputCard";
+import { ExpandableAgentCard } from "@/components/ExpandableAgentCard";
 import { AgentConfig, SessionState, Round, SpecQuestion, AgentAnswer } from "@/types/spec";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -253,20 +254,15 @@ const Index = () => {
                     Refine Further
                   </Button>
                 </div>
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  {currentRound.answers.map((answer) => (
-                    <AgentOutputCard 
-                      key={answer.agent} 
-                      perspective={{
-                        agent: answer.agent,
-                        response: answer.answer,
-                        reasoning: answer.reasoning,
-                        status: 'complete',
-                        thinking: ''
-                      }} 
-                    />
-                  ))}
-                </div>
+                 <ExpandableAgentCard 
+                  perspectives={currentRound.answers.map((answer) => ({
+                    agent: answer.agent,
+                    response: answer.answer,
+                    reasoning: answer.reasoning,
+                    status: 'complete' as const,
+                    thinking: ''
+                  }))} 
+                />
               </div>
             )}
 

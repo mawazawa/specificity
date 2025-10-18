@@ -107,6 +107,10 @@ export default {
           "0%, 100%": { borderRadius: "60% 40% 30% 70% / 60% 30% 70% 40%" },
           "50%": { borderRadius: "30% 60% 70% 40% / 50% 60% 30% 60%" },
         },
+        "shimmer": {
+          "0%": { backgroundPosition: "200% 0" },
+          "100%": { backgroundPosition: "-200% 0" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -115,6 +119,7 @@ export default {
         "slide-up": "slide-up 0.6s cubic-bezier(0.16, 1, 0.3, 1)",
         "fade-in": "fade-in 0.4s ease-out",
         "morph": "morph 8s ease-in-out infinite",
+        "shimmer": "shimmer 3s linear infinite",
       },
     },
   },
