@@ -163,6 +163,7 @@ export const SpecOutput = ({ spec, onApprove, onRefine }: SpecOutputProps) => {
             <textarea
               value={customRefinement}
               onChange={(e) => setCustomRefinement(e.target.value)}
+              maxLength={1000}
               placeholder="Specify what you'd like to refine..."
               className="w-full min-h-[60px] px-3 py-2 bg-background/50 border border-border/30 rounded-lg text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50"
             />

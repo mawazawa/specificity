@@ -17,9 +17,20 @@ export const SpecInput = ({ onSubmit, isLoading }: SpecInputProps) => {
   const audioChunksRef = useRef<Blob[]>([]);
 
   const handleSubmit = () => {
-    if (input.trim()) {
-      onSubmit(input);
+    const trimmed = input.trim();
+    if (!trimmed) {
+      toast({ title: "Please enter a specification request", variant: "destructive" });
+      return;
     }
+    if (trimmed.length < 10) {
+      toast({ title: "Input too short (minimum 10 characters)", variant: "destructive" });
+      return;
+    }
+    if (trimmed.length > 5000) {
+      toast({ title: "Input too long (maximum 5000 characters)", variant: "destructive" });
+      return;
+    }
+    onSubmit(trimmed);
   };
 
   const startRecording = async () => {

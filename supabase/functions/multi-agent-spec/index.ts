@@ -77,8 +77,40 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Check authentication
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader) {
+    return new Response(
+      JSON.stringify({ error: 'Unauthorized' }),
+      { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
   try {
     const { userInput, stage, agentConfigs, roundData, userComment } = await req.json();
+    
+    // Validate input lengths
+    if (userInput && userInput.length > 5000) {
+      return new Response(
+        JSON.stringify({ error: 'Input too long (max 5000 characters)' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    if (userComment && userComment.length > 1000) {
+      return new Response(
+        JSON.stringify({ error: 'Comment too long (max 1000 characters)' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    if (!['questions', 'research', 'answers', 'voting', 'spec'].includes(stage)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid stage' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
     console.log('Processing:', { stage, hasConfigs: !!agentConfigs });
 
     if (stage === 'questions') {
