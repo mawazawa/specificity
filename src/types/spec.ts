@@ -1,10 +1,43 @@
 export type AgentType = 'elon' | 'cuban' | 'dev' | 'designer' | 'entrepreneur' | 'legal';
 
+export interface AgentConfig {
+  agent: AgentType;
+  systemPrompt: string;
+  temperature: number;
+  enabled: boolean;
+}
+
 export interface AgentPerspective {
   agent: AgentType;
   thinking: string;
   response: string;
+  reasoning: string;
   status: 'thinking' | 'complete' | 'idle';
+}
+
+export interface Vote {
+  agent: AgentType;
+  approved: boolean;
+  reasoning: string;
+  timestamp: string;
+}
+
+export interface Round {
+  roundNumber: number;
+  stage: 'questions' | 'research' | 'answers' | 'voting' | 'spec';
+  questions: SpecQuestion[];
+  research: ResearchResult[];
+  answers: AgentAnswer[];
+  votes: Vote[];
+  status: 'in-progress' | 'complete' | 'paused';
+  userComment?: string;
+}
+
+export interface AgentAnswer {
+  agent: AgentType;
+  question: string;
+  answer: string;
+  reasoning: string;
 }
 
 export interface ResearchResult {
@@ -18,6 +51,7 @@ export interface SpecQuestion {
   question: string;
   context: string;
   importance: 'critical' | 'high' | 'medium' | 'low';
+  askedBy: AgentType;
 }
 
 export interface SpecOutput {
@@ -27,6 +61,8 @@ export interface SpecOutput {
   dependencies: string[];
   risks: string[];
   testStrategy: string[];
+  approvedBy: AgentType[];
+  dissentedBy: AgentType[];
 }
 
 export interface SpecSection {
@@ -35,13 +71,16 @@ export interface SpecSection {
   priority: 'critical' | 'high' | 'medium' | 'low';
 }
 
-export interface SelfReflection {
-  critique: string;
-  improvement: string;
+export interface SessionState {
+  rounds: Round[];
+  currentRound: number;
+  isPaused: boolean;
+  finalSpec?: SpecOutput;
+  history: HistoryEntry[];
 }
 
-export interface ImprovedPrompt {
-  version: 'unsatisfactory' | 'next-step';
-  prompt: string;
-  expectedImprovement: string;
+export interface HistoryEntry {
+  timestamp: string;
+  type: 'vote' | 'output' | 'spec' | 'user-comment';
+  data: any;
 }

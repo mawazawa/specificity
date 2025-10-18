@@ -10,38 +10,13 @@ const GROQ_API_KEY = Deno.env.get('GROQ_API_KEY');
 const EXA_API_KEY = Deno.env.get('EXA_API_KEY');
 
 interface AgentConfig {
-  name: string;
+  agent: string;
   systemPrompt: string;
+  temperature: number;
+  enabled: boolean;
 }
 
-const agents: Record<string, AgentConfig> = {
-  elon: {
-    name: "Elon Musk",
-    systemPrompt: "You are Elon Musk analyzing this spec. Focus on: 1) Can it scale to 100M+ users? 2) What's the simplest architecture? 3) What are we overengineering? Be direct and visionary."
-  },
-  cuban: {
-    name: "Mark Cuban",
-    systemPrompt: "You are Mark Cuban analyzing this spec. Focus on: 1) What's the business model? 2) How does this make money? 3) What's the market opportunity? 4) What's the competitive advantage? Be practical and business-focused."
-  },
-  dev: {
-    name: "Senior Dev",
-    systemPrompt: "You are a senior developer analyzing this spec. Focus on: 1) TypeScript strict mode readiness 2) Error handling strategy 3) Test coverage plan 4) Performance considerations 5) Security concerns. Be thorough and technical."
-  },
-  designer: {
-    name: "UX Designer",
-    systemPrompt: "You are a UX designer analyzing this spec. Focus on: 1) User experience flow 2) Visual hierarchy 3) Accessibility 4) Mobile responsiveness 5) Design system needs. Be user-centric and detail-oriented."
-  },
-  entrepreneur: {
-    name: "Entrepreneur",
-    systemPrompt: "You are an entrepreneur analyzing this spec. Focus on: 1) What's the MVP? 2) What can we ship fast? 3) What should we defer? 4) What are the critical path items? Be action-oriented and pragmatic."
-  },
-  legal: {
-    name: "Legal Expert",
-    systemPrompt: "You are a legal expert analyzing this spec. Focus on: 1) Evidence-based requirements 2) Compliance considerations 3) Data privacy 4) Terms of service needs 5) Risk mitigation. Be thorough and precise."
-  }
-};
-
-async function callGroq(systemPrompt: string, userMessage: string): Promise<string> {
+async function callGroq(systemPrompt: string, userMessage: string, temperature: number = 0.7): Promise<string> {
   const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -54,8 +29,8 @@ async function callGroq(systemPrompt: string, userMessage: string): Promise<stri
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userMessage }
       ],
-      temperature: 0.7,
-      max_tokens: 1500,
+      temperature,
+      max_tokens: 2000,
     }),
   });
 
@@ -73,7 +48,7 @@ async function researchWithExa(query: string) {
       },
       body: JSON.stringify({
         query,
-        num_results: 5,
+        num_results: 8,
         use_autoprompt: true,
         type: 'neural',
       }),
@@ -93,90 +68,35 @@ serve(async (req) => {
   }
 
   try {
-    const { userInput, stage } = await req.json();
-    console.log('Processing request:', { stage, inputLength: userInput?.length });
-
-    if (stage === 'research') {
-      console.log('Starting research phase...');
-      const researchResults = await researchWithExa(userInput);
-      
-      return new Response(
-        JSON.stringify({ researchResults }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    if (stage === 'agents') {
-      console.log('Starting multi-agent analysis...');
-      
-      // Run all agents in parallel for maximum speed
-      const agentPromises = Object.entries(agents).map(async ([type, config]) => {
-        const response = await callGroq(
-          config.systemPrompt,
-          `Analyze this project specification:\n\n${userInput}\n\nProvide your perspective in 2-3 concise paragraphs.`
-        );
-        
-        return {
-          agent: type,
-          response,
-          thinking: `Analyzing from ${config.name}'s perspective...`,
-          status: 'complete'
-        };
-      });
-
-      const perspectives = await Promise.all(agentPromises);
-      
-      return new Response(
-        JSON.stringify({ perspectives }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    if (stage === 'spec') {
-      console.log('Generating comprehensive spec...');
-      
-      const specPrompt = `Based on this project: ${userInput}
-
-Generate a comprehensive technical specification with:
-1. Executive Summary
-2. Technical Architecture
-3. Dependencies & Stack
-4. Implementation Phases
-5. Risk Assessment
-6. Testing Strategy
-
-Format as structured markdown. Be specific and actionable.`;
-
-      const spec = await callGroq(
-        "You are a senior technical architect. Create detailed, actionable specifications.",
-        specPrompt
-      );
-
-      return new Response(
-        JSON.stringify({ spec }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    const { userInput, stage, agentConfigs, roundData, userComment } = await req.json();
+    console.log('Processing:', { stage, hasConfigs: !!agentConfigs });
 
     if (stage === 'questions') {
       console.log('Generating clarifying questions...');
       
-      const questionsPrompt = `Analyze this project: ${userInput}
+      const activeAgents = agentConfigs.filter((c: AgentConfig) => c.enabled);
+      const questions = [];
+      
+      for (const config of activeAgents) {
+        const questionPrompt = `Analyze: ${userInput}
 
-Generate the 5 highest-leverage clarifying questions that would most improve the specification.
-For each question, explain:
-1. The question itself
-2. Why it's critical (weight score 1-10)
-3. What assumptions it challenges
+From your perspective, what are the 2 most critical questions that would improve this spec?
+Be specific and strategic. Return as JSON array with: question, context, importance, reasoning`;
 
-Also list 5 runner-up questions (6-10) and explain why they didn't make the top 5.
-
-Format as JSON.`;
-
-      const questions = await callGroq(
-        "You are an expert at identifying critical unknowns in project specifications.",
-        questionsPrompt
-      );
+        const response = await callGroq(config.systemPrompt, questionPrompt, config.temperature);
+        try {
+          const parsed = JSON.parse(response);
+          questions.push(...parsed.map((q: any) => ({ ...q, askedBy: config.agent })));
+        } catch {
+          questions.push({
+            question: response.split('\n')[0],
+            context: 'Generated by agent',
+            importance: 'high',
+            askedBy: config.agent,
+            reasoning: response
+          });
+        }
+      }
 
       return new Response(
         JSON.stringify({ questions }),
@@ -184,27 +104,154 @@ Format as JSON.`;
       );
     }
 
-    if (stage === 'reflection') {
-      console.log('Generating self-reflection...');
+    if (stage === 'research') {
+      console.log('Researching with Exa...');
+      const questions = roundData.questions || [];
+      const allResults = [];
       
-      const reflectionPrompt = `Review this project spec generation: ${userInput}
+      for (const q of questions.slice(0, 5)) {
+        const results = await researchWithExa(q.question);
+        allResults.push(...results);
+      }
+      
+      return new Response(
+        JSON.stringify({ research: allResults }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
-Provide 3 specific critiques from the user's perspective, as if they were giving you feedback.
-Each critique should identify a concrete way the output could be more productive.
+    if (stage === 'answers') {
+      console.log('Generating agent answers...');
+      
+      const activeAgents = agentConfigs.filter((c: AgentConfig) => c.enabled);
+      const questions = roundData.questions || [];
+      const research = roundData.research || [];
+      
+      const answerPromises = activeAgents.map(async (config: AgentConfig) => {
+        const context = userComment ? `\nUSER GUIDANCE: ${userComment}\n` : '';
+        const researchContext = research.slice(0, 3).map((r: any) => 
+          `- ${r.title}: ${r.text || r.snippet}`
+        ).join('\n');
+        
+        const answers = [];
+        
+        for (const q of questions.slice(0, 3)) {
+          if (q.askedBy === config.agent) {
+            const prompt = `${context}Question: ${q.question}
 
-Then generate 2 improved prompts:
-1. One assuming the current output is unsatisfactory
-2. One assuming it's satisfactory and exploring the next logical step
+Research findings:
+${researchContext}
 
-Aim for 10-20x improvement in clarity and value.`;
+Provide a detailed answer with reasoning from your perspective.`;
+            
+            const response = await callGroq(config.systemPrompt, prompt, config.temperature);
+            answers.push({
+              agent: config.agent,
+              question: q.question,
+              answer: response,
+              reasoning: `Analysis based on ${config.agent} perspective`
+            });
+          }
+        }
+        
+        return answers;
+      });
 
-      const reflection = await callGroq(
-        "You are a critical reviewer focused on continuous improvement.",
-        reflectionPrompt
+      const allAnswers = (await Promise.all(answerPromises)).flat();
+      
+      return new Response(
+        JSON.stringify({ answers: allAnswers }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (stage === 'voting') {
+      console.log('Collecting votes...');
+      
+      const activeAgents = agentConfigs.filter((c: AgentConfig) => c.enabled);
+      const answers = roundData.answers || [];
+      
+      const votePromises = activeAgents.map(async (config: AgentConfig) => {
+        const answerSummary = answers.map((a: any) => 
+          `${a.agent}: ${a.answer.slice(0, 200)}...`
+        ).join('\n\n');
+        
+        const votePrompt = `Review these answers:
+
+${answerSummary}
+
+Should we proceed to spec generation? Vote YES or NO and explain your reasoning in 2-3 sentences.
+Format: {"approved": true/false, "reasoning": "your explanation"}`;
+
+        const response = await callGroq(config.systemPrompt, votePrompt, config.temperature);
+        
+        try {
+          const vote = JSON.parse(response);
+          return {
+            agent: config.agent,
+            approved: vote.approved,
+            reasoning: vote.reasoning,
+            timestamp: new Date().toISOString()
+          };
+        } catch {
+          const approved = response.toLowerCase().includes('yes') || 
+                          response.toLowerCase().includes('approve');
+          return {
+            agent: config.agent,
+            approved,
+            reasoning: response,
+            timestamp: new Date().toISOString()
+          };
+        }
+      });
+
+      const votes = await Promise.all(votePromises);
+      
+      return new Response(
+        JSON.stringify({ votes }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (stage === 'spec') {
+      console.log('Generating spec...');
+      
+      const answers = roundData.answers || [];
+      const votes = roundData.votes || [];
+      
+      const context = answers.map((a: any) => 
+        `${a.agent}: ${a.answer}`
+      ).join('\n\n');
+      
+      const specPrompt = `Based on this multi-agent analysis:
+
+${context}
+
+Generate a comprehensive technical specification with:
+1. Executive Summary
+2. Architecture & Stack
+3. Implementation Phases
+4. Dependencies
+5. Risk Assessment
+6. Testing Strategy
+
+Be specific, actionable, and technical. Format as structured markdown.`;
+
+      const spec = await callGroq(
+        "You are a senior technical architect synthesizing multi-agent insights.",
+        specPrompt,
+        0.5
       );
 
+      const approvedBy = votes.filter((v: any) => v.approved).map((v: any) => v.agent);
+      const dissentedBy = votes.filter((v: any) => !v.approved).map((v: any) => v.agent);
+
       return new Response(
-        JSON.stringify({ reflection }),
+        JSON.stringify({ 
+          spec,
+          approvedBy,
+          dissentedBy
+        }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
