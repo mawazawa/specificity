@@ -4,12 +4,13 @@ import { AgentPerspective, AgentType } from "@/types/spec";
 import ReactMarkdown from "react-markdown";
 
 const agentConfig: Record<AgentType, { name: string; color: string }> = {
-  elon: { name: "Scale", color: "agent-elon" },
-  cuban: { name: "Business", color: "agent-cuban" },
-  dev: { name: "Technical", color: "agent-dev" },
-  designer: { name: "Design", color: "agent-designer" },
-  entrepreneur: { name: "Strategy", color: "agent-entrepreneur" },
-  legal: { name: "Legal", color: "agent-legal" },
+  elon: { name: "Elon", color: "purple-500/30" },
+  steve: { name: "Steve", color: "gray-500/30" },
+  oprah: { name: "Oprah", color: "amber-500/30" },
+  zaha: { name: "Zaha", color: "pink-500/30" },
+  jony: { name: "Jony", color: "slate-500/30" },
+  bartlett: { name: "Steve B.", color: "green-500/30" },
+  amal: { name: "Amal", color: "blue-400/30" },
 };
 
 const getAgentColor = (agent: AgentType) => {

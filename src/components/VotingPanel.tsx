@@ -9,12 +9,13 @@ interface VotingPanelProps {
 }
 
 const agentNames: Record<AgentType, string> = {
-  elon: "Scale",
-  cuban: "Business",
-  dev: "Technical",
-  designer: "Design",
-  entrepreneur: "Strategy",
-  legal: "Legal",
+  elon: "Elon (Scale)",
+  steve: "Steve (Product)",
+  oprah: "Oprah (Impact)",
+  zaha: "Zaha (Design)",
+  jony: "Jony (Simplicity)",
+  bartlett: "Steve B. (Business)",
+  amal: "Amal (Legal)",
 };
 
 export const VotingPanel = ({ votes, roundNumber }: VotingPanelProps) => {

@@ -1,4 +1,4 @@
-export type AgentType = 'elon' | 'cuban' | 'dev' | 'designer' | 'entrepreneur' | 'legal';
+export type AgentType = 'elon' | 'steve' | 'oprah' | 'zaha' | 'jony' | 'bartlett' | 'amal';
 
 export interface AgentConfig {
   agent: AgentType;

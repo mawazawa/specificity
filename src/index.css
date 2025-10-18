@@ -55,6 +55,11 @@ All colors MUST be HSL.
     /* Effects - subtle, refined */
     --glow-primary: 0 0 60px hsl(0 0% 100% / 0.05);
     --glow-accent: 0 0 40px hsl(210 100% 50% / 0.15);
+    
+    /* 3D Button Effects */
+    --button-shadow-3d: 0 6px 0 hsl(0 0% 0% / 0.3), 0 8px 20px hsl(0 0% 0% / 0.4);
+    --button-shadow-3d-hover: 0 4px 0 hsl(0 0% 0% / 0.3), 0 6px 16px hsl(0 0% 0% / 0.5);
+    --button-shadow-3d-active: 0 2px 0 hsl(0 0% 0% / 0.3), 0 3px 8px hsl(0 0% 0% / 0.6);
 
     --sidebar-background: 0 0% 3%;
     --sidebar-foreground: 0 0% 98%;

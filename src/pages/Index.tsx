@@ -7,19 +7,22 @@ import { PauseControls } from "@/components/PauseControls";
 import { HistoryPanel } from "@/components/HistoryPanel";
 import { ResearchPanel } from "@/components/ResearchPanel";
 import { SpecOutput } from "@/components/SpecOutput";
+import { AgentOutputCard } from "@/components/AgentOutputCard";
 import { AgentConfig, SessionState, Round, SpecQuestion, AgentAnswer } from "@/types/spec";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 const defaultConfigs: AgentConfig[] = [
-  { agent: 'elon', systemPrompt: 'You are analyzing for scalability. Focus on: 1) Can it scale to 100M+ users? 2) Simplest architecture? 3) Overengineering? Be visionary.', temperature: 0.8, enabled: true },
-  { agent: 'cuban', systemPrompt: 'You are analyzing business viability. Focus on: 1) Business model 2) Revenue 3) Market opportunity 4) Competitive advantage.', temperature: 0.7, enabled: true },
-  { agent: 'dev', systemPrompt: 'You are reviewing technical implementation. Focus on: 1) TypeScript 2) Error handling 3) Testing 4) Performance 5) Security.', temperature: 0.6, enabled: true },
-  { agent: 'designer', systemPrompt: 'You are evaluating UX. Focus on: 1) Flow 2) Hierarchy 3) Accessibility 4) Responsiveness 5) Design system.', temperature: 0.7, enabled: true },
-  { agent: 'entrepreneur', systemPrompt: 'You are defining strategy. Focus on: 1) MVP scope 2) Fast shipping 3) Critical path 4) What to defer.', temperature: 0.8, enabled: true },
-  { agent: 'legal', systemPrompt: 'You are assessing compliance. Focus on: 1) Compliance 2) Privacy 3) Terms 4) Risk mitigation.', temperature: 0.5, enabled: true },
+  { agent: 'elon', systemPrompt: 'You are Elon Musk. Focus on: 1) Scale to 100M+ users? 2) Bold innovation 3) First principles. Think 10x.', temperature: 0.8, enabled: true },
+  { agent: 'steve', systemPrompt: 'You are Steve Jobs. Focus on: 1) Product perfection 2) User delight 3) Simplicity. Make it iconic.', temperature: 0.7, enabled: true },
+  { agent: 'oprah', systemPrompt: 'You are Oprah Winfrey. Focus on: 1) Human impact 2) Empowerment 3) Authenticity. Does it change lives?', temperature: 0.75, enabled: true },
+  { agent: 'zaha', systemPrompt: 'You are Zaha Hadid. Focus on: 1) Design excellence 2) Fluid forms 3) Breaking boundaries. Make it sculptural.', temperature: 0.85, enabled: true },
+  { agent: 'jony', systemPrompt: 'You are Jony Ive. Focus on: 1) Simplicity 2) Materials 3) Craftsmanship. Pure essence.', temperature: 0.6, enabled: true },
+  { agent: 'bartlett', systemPrompt: 'You are Steven Bartlett. Focus on: 1) Growth strategy 2) Modern business 3) Disruption. Scale fast.', temperature: 0.75, enabled: true },
+  { agent: 'amal', systemPrompt: 'You are Amal Clooney. Focus on: 1) Legal compliance 2) Ethics 3) User rights 4) Privacy. Protect people.', temperature: 0.5, enabled: true },
 ];
 
 const Index = () => {
@@ -240,9 +243,41 @@ const Index = () => {
               </div>
             )}
 
+            {currentRound?.answers?.length > 0 && (
+              <div className="space-y-6 animate-slide-up">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-sm font-extralight uppercase tracking-widest text-foreground/80">
+                    Panel Perspectives
+                  </h2>
+                  <Button variant="secondary" size="sm">
+                    Refine Further
+                  </Button>
+                </div>
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {currentRound.answers.map((answer) => (
+                    <AgentOutputCard 
+                      key={answer.agent} 
+                      perspective={{
+                        agent: answer.agent,
+                        response: answer.answer,
+                        reasoning: answer.reasoning,
+                        status: 'complete',
+                        thinking: ''
+                      }} 
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
             {sessionState.finalSpec && (
-              <div className="animate-slide-up">
+              <div className="space-y-4 animate-slide-up">
                 <SpecOutput spec={sessionState.finalSpec.summary} />
+                <div className="flex justify-center">
+                  <Button variant="default" size="lg">
+                    Refine Specification
+                  </Button>
+                </div>
               </div>
             )}
           </div>
