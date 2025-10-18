@@ -34,8 +34,18 @@ async function callGroq(systemPrompt: string, userMessage: string, temperature: 
     }),
   });
 
+  if (!response.ok) {
+    const error = await response.text();
+    console.error('Groq API error:', error);
+    throw new Error(`Groq API failed: ${response.status} ${error}`);
+  }
+
   const data = await response.json();
-  return data.choices[0]?.message?.content || 'No response';
+  if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+    console.error('Unexpected Groq response:', data);
+    throw new Error('Invalid response from Groq API');
+  }
+  return data.choices[0].message.content || 'No response';
 }
 
 async function researchWithExa(query: string) {

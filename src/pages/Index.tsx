@@ -10,8 +10,10 @@ import { SpecOutput } from "@/components/SpecOutput";
 import { StageIndicator } from "@/components/StageIndicator";
 import { AgentOutputCard } from "@/components/AgentOutputCard";
 import { ExpandableAgentCard } from "@/components/ExpandableAgentCard";
+import { LiveAgentCard } from "@/components/LiveAgentCard";
 import { ProcessViewer } from "@/components/ProcessViewer";
-import { AgentConfig, SessionState, Round, SpecQuestion, AgentAnswer } from "@/types/spec";
+import { VoteTally } from "@/components/VoteTally";
+import { AgentConfig, SessionState, Round } from "@/types/spec";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
@@ -310,27 +312,57 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-hero">
-      <div className="container max-w-7xl mx-auto px-4 py-12 space-y-12">
+      <div className="container max-w-7xl mx-auto px-4 py-12 space-y-8">
         <SpecInput onSubmit={handleSubmit} isLoading={isProcessing} />
+
+        {/* Activity Section - Right under input */}
+        {isProcessing && tasks.length > 0 && (
+          <div className="animate-slide-up">
+            <ProcessViewer tasks={tasks} currentStage={currentStage} />
+          </div>
+        )}
+
+        {currentRound?.votes.length > 0 && (
+          <div className="animate-slide-up">
+            <VoteTally votes={currentRound.votes} />
+          </div>
+        )}
 
         <div className="grid gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-8">
+            {/* Advisory Panel with Live Outputs */}
             <div className="space-y-3">
               <h2 className="text-xs font-light uppercase tracking-widest text-foreground/60">
                 Advisory Panel
               </h2>
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-                {agentConfigs.map((config, index) => (
-                  <AgentCard
-                    key={config.agent}
-                    config={config}
-                    onChange={(updatedConfig) => {
-                      const newConfigs = [...agentConfigs];
-                      newConfigs[index] = updatedConfig;
-                      setAgentConfigs(newConfigs);
-                    }}
-                  />
-                ))}
+                {agentConfigs.map((config, index) => {
+                  const agentQuestion = currentRound?.questions?.find(q => q.askedBy === config.agent);
+                  const agentAnswer = currentRound?.answers?.find(a => a.agent === config.agent);
+                  const agentVote = currentRound?.votes?.find(v => v.agent === config.agent);
+                  
+                  return (
+                    <div key={config.agent} className="space-y-2">
+                      <AgentCard
+                        config={config}
+                        onChange={(updatedConfig) => {
+                          const newConfigs = [...agentConfigs];
+                          newConfigs[index] = updatedConfig;
+                          setAgentConfigs(newConfigs);
+                        }}
+                      />
+                      {(agentQuestion || agentAnswer || agentVote) && (
+                        <LiveAgentCard
+                          agent={config.agent}
+                          question={agentQuestion?.question}
+                          output={agentAnswer?.answer}
+                          vote={agentVote}
+                          isActive={currentRound?.stage === 'questions' || currentRound?.stage === 'answers'}
+                        />
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
@@ -369,42 +401,20 @@ const Index = () => {
               </div>
             )}
 
-            {currentRound?.answers?.length > 0 && (
-              <div className="space-y-6 animate-slide-up">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-sm font-extralight uppercase tracking-widest text-foreground/80">
-                    Panel Perspectives
-                  </h2>
-                  <Button variant="secondary" size="sm">
-                    Refine Further
-                  </Button>
-                </div>
-                 <ExpandableAgentCard 
-                  perspectives={currentRound.answers.map((answer) => ({
-                    agent: answer.agent,
-                    response: answer.answer,
-                    reasoning: answer.reasoning,
-                    status: 'complete' as const,
-                    thinking: ''
-                  }))} 
-                />
-              </div>
-            )}
-
-            {tasks.length > 0 && (
-              <div className="animate-slide-up">
-                <ProcessViewer tasks={tasks} currentStage={currentStage} />
-              </div>
-            )}
-
             {generatedSpec && (
-              <div className="space-y-4 animate-slide-up">
-                <SpecOutput spec={generatedSpec} />
-                <div className="flex justify-center">
-                  <Button variant="default" size="lg">
-                    Refine Specification
-                  </Button>
-                </div>
+              <div className="animate-slide-up">
+                <SpecOutput 
+                  spec={generatedSpec}
+                  onApprove={() => {
+                    toast({ title: "Approved!", description: "Specification has been approved" });
+                  }}
+                  onRefine={(refinements) => {
+                    toast({ 
+                      title: "Refining...", 
+                      description: `Applying ${refinements.length} refinement(s)` 
+                    });
+                  }}
+                />
               </div>
             )}
           </div>

@@ -1,17 +1,37 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, CheckCircle2, Download } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { FileText, CheckCircle2, Download, Copy, FileType, ThumbsUp } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "@/hooks/use-toast";
+import { useState } from "react";
+import jsPDF from "jspdf";
 
 interface SpecOutputProps {
   spec: string;
+  onApprove?: () => void;
+  onRefine?: (refinements: string[]) => void;
 }
 
-export const SpecOutput = ({ spec }: SpecOutputProps) => {
+const SUGGESTED_REFINEMENTS = [
+  "Add more technical implementation details",
+  "Expand security and compliance considerations",
+  "Include cost estimates and timeline"
+];
+
+export const SpecOutput = ({ spec, onApprove, onRefine }: SpecOutputProps) => {
+  const [showRefinements, setShowRefinements] = useState(false);
+  const [selectedRefinements, setSelectedRefinements] = useState<string[]>([]);
+  const [customRefinement, setCustomRefinement] = useState("");
+
   if (!spec) return null;
 
-  const downloadSpec = () => {
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(spec);
+    toast({ title: "Copied!", description: "Specification copied to clipboard" });
+  };
+
+  const downloadMarkdown = () => {
     const blob = new Blob([spec], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -24,50 +44,164 @@ export const SpecOutput = ({ spec }: SpecOutputProps) => {
     toast({ title: "Downloaded", description: "Specification saved as markdown" });
   };
 
-  return (
-    <Card className="p-10 bg-gradient-card backdrop-blur-xl border-border/20 rounded-fluid">
-      <div className="space-y-8">
-        <div className="flex items-center gap-4">
-          <FileText className="w-5 h-5 text-foreground/60" />
-          <h2 className="text-sm font-extralight uppercase tracking-widest text-foreground/80">
-            Specification
-          </h2>
-          <CheckCircle2 className="w-4 h-4 text-primary/60 ml-auto" />
-          <Button 
-            onClick={downloadSpec}
-            variant="outline"
-            size="sm"
-            className="gap-2"
-          >
-            <Download className="w-3 h-3" />
-            Download
-          </Button>
-        </div>
+  const downloadText = () => {
+    const blob = new Blob([spec], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `specification-${new Date().toISOString().split('T')[0]}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast({ title: "Downloaded", description: "Specification saved as text" });
+  };
 
-        <div className="prose prose-invert prose-sm max-w-none">
-          <ReactMarkdown
-            components={{
-              h1: ({ node, ...props }) => <h1 className="text-2xl font-light text-primary mb-6 tracking-wide" {...props} />,
-              h2: ({ node, ...props }) => <h2 className="text-xl font-light text-foreground/90 mt-10 mb-5 tracking-wide" {...props} />,
-              h3: ({ node, ...props }) => <h3 className="text-base font-light text-foreground/80 mt-8 mb-4" {...props} />,
-              p: ({ node, ...props }) => <p className="text-foreground/70 leading-loose mb-6 text-sm" {...props} />,
-              ul: ({ node, ...props }) => <ul className="list-none space-y-3 mb-6 ml-4" {...props} />,
-              ol: ({ node, ...props }) => <ol className="list-none space-y-3 mb-6 ml-4" {...props} />,
-              li: ({ node, ...props }) => <li className="text-foreground/70 text-sm before:content-['—'] before:mr-3 before:text-primary/40" {...props} />,
-              code: ({ node, inline, ...props }: any) => 
-                inline ? (
-                  <code className="bg-secondary/30 px-2 py-1 rounded-lg text-primary/80 font-mono text-xs" {...props} />
-                ) : (
-                  <code className="block bg-secondary/20 p-6 rounded-fluid text-foreground/70 font-mono text-xs overflow-x-auto border border-border/10" {...props} />
-                ),
-              blockquote: ({ node, ...props }) => (
-                <blockquote className="border-l border-primary/30 pl-6 italic text-muted-foreground/70 my-6 font-light" {...props} />
-              ),
-            }}
-          >
-            {spec}
-          </ReactMarkdown>
+  const downloadPDF = () => {
+    const doc = new jsPDF();
+    const lines = doc.splitTextToSize(spec, 180);
+    doc.text(lines, 15, 15);
+    doc.save(`specification-${new Date().toISOString().split('T')[0]}.pdf`);
+    toast({ title: "Downloaded", description: "Specification saved as PDF" });
+  };
+
+  const handleRefine = () => {
+    const allRefinements = [...selectedRefinements];
+    if (customRefinement.trim()) {
+      allRefinements.push(customRefinement.trim());
+    }
+    if (allRefinements.length > 0 && onRefine) {
+      onRefine(allRefinements);
+      setSelectedRefinements([]);
+      setCustomRefinement("");
+      setShowRefinements(false);
+    }
+  };
+
+  const toggleRefinement = (refinement: string) => {
+    setSelectedRefinements(prev =>
+      prev.includes(refinement)
+        ? prev.filter(r => r !== refinement)
+        : [...prev, refinement]
+    );
+  };
+
+  return (
+    <Card className="p-8 bg-gradient-card backdrop-blur-xl border-border/20 rounded-fluid space-y-6">
+      {/* Header with Actions */}
+      <div className="flex items-center justify-between gap-4 pb-4 border-b border-border/20">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+            <FileText className="w-5 h-5 text-primary" />
+          </div>
+          <div>
+            <h2 className="text-sm font-medium text-foreground">
+              Final Specification
+            </h2>
+            <p className="text-[10px] text-muted-foreground">Generated by advisory panel</p>
+          </div>
         </div>
+        <CheckCircle2 className="w-5 h-5 text-green-500" />
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex flex-wrap gap-2">
+        <Button onClick={copyToClipboard} variant="outline" size="sm" className="gap-2">
+          <Copy className="w-3 h-3" />
+          Copy All
+        </Button>
+        <Button onClick={downloadMarkdown} variant="outline" size="sm" className="gap-2">
+          <Download className="w-3 h-3" />
+          Markdown
+        </Button>
+        <Button onClick={downloadText} variant="outline" size="sm" className="gap-2">
+          <FileType className="w-3 h-3" />
+          Text
+        </Button>
+        <Button onClick={downloadPDF} variant="outline" size="sm" className="gap-2">
+          <Download className="w-3 h-3" />
+          PDF
+        </Button>
+        <div className="flex-1" />
+        <Button onClick={onApprove} variant="default" size="sm" className="gap-2">
+          <ThumbsUp className="w-3 h-3" />
+          Approve
+        </Button>
+        <Button 
+          onClick={() => setShowRefinements(!showRefinements)} 
+          variant="secondary" 
+          size="sm"
+        >
+          Refine Further
+        </Button>
+      </div>
+
+      {/* Refinement Options */}
+      {showRefinements && (
+        <Card className="p-4 bg-background/50 border-border/30 space-y-3">
+          <h3 className="text-xs font-medium text-foreground/80">Suggested Refinements</h3>
+          <div className="space-y-2">
+            {SUGGESTED_REFINEMENTS.map((refinement) => (
+              <label
+                key={refinement}
+                className="flex items-center gap-2 cursor-pointer group"
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedRefinements.includes(refinement)}
+                  onChange={() => toggleRefinement(refinement)}
+                  className="w-3 h-3 rounded border-border/50"
+                />
+                <span className="text-xs text-foreground/70 group-hover:text-foreground transition-colors">
+                  {refinement}
+                </span>
+              </label>
+            ))}
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs text-foreground/80">Custom Refinement</label>
+            <textarea
+              value={customRefinement}
+              onChange={(e) => setCustomRefinement(e.target.value)}
+              placeholder="Specify what you'd like to refine..."
+              className="w-full min-h-[60px] px-3 py-2 bg-background/50 border border-border/30 rounded-lg text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50"
+            />
+          </div>
+          <Button 
+            onClick={handleRefine} 
+            size="sm" 
+            className="w-full"
+            disabled={selectedRefinements.length === 0 && !customRefinement.trim()}
+          >
+            Apply Refinements
+          </Button>
+        </Card>
+      )}
+
+      {/* Spec Content */}
+      <div className="prose prose-invert prose-sm max-w-none">
+        <ReactMarkdown
+          components={{
+            h1: ({ node, ...props }) => <h1 className="text-2xl font-light text-primary mb-6 tracking-wide" {...props} />,
+            h2: ({ node, ...props }) => <h2 className="text-xl font-light text-foreground/90 mt-10 mb-5 tracking-wide" {...props} />,
+            h3: ({ node, ...props }) => <h3 className="text-base font-light text-foreground/80 mt-8 mb-4" {...props} />,
+            p: ({ node, ...props }) => <p className="text-foreground/70 leading-loose mb-6 text-sm" {...props} />,
+            ul: ({ node, ...props }) => <ul className="list-none space-y-3 mb-6 ml-4" {...props} />,
+            ol: ({ node, ...props }) => <ol className="list-none space-y-3 mb-6 ml-4" {...props} />,
+            li: ({ node, ...props }) => <li className="text-foreground/70 text-sm before:content-['—'] before:mr-3 before:text-primary/40" {...props} />,
+            code: ({ node, inline, ...props }: any) => 
+              inline ? (
+                <code className="bg-secondary/30 px-2 py-1 rounded-lg text-primary/80 font-mono text-xs" {...props} />
+              ) : (
+                <code className="block bg-secondary/20 p-6 rounded-fluid text-foreground/70 font-mono text-xs overflow-x-auto border border-border/10" {...props} />
+              ),
+            blockquote: ({ node, ...props }) => (
+              <blockquote className="border-l border-primary/30 pl-6 italic text-muted-foreground/70 my-6 font-light" {...props} />
+            ),
+          }}
+        >
+          {spec}
+        </ReactMarkdown>
       </div>
     </Card>
   );
