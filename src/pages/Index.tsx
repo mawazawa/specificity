@@ -315,11 +315,11 @@ const Index = () => {
 
         <div className="grid gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-8">
-            <div className="space-y-4">
-              <h2 className="text-sm font-extralight uppercase tracking-widest text-foreground/80">
+            <div className="space-y-3">
+              <h2 className="text-xs font-light uppercase tracking-widest text-foreground/60">
                 Advisory Panel
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
                 {agentConfigs.map((config, index) => (
                   <AgentCard
                     key={config.agent}

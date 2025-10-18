@@ -25,33 +25,33 @@ export const AgentCard = ({ config, onChange }: AgentCardProps) => {
   const agent = agentInfo[config.agent as keyof typeof agentInfo];
 
   return (
-    <Card className="group p-6 bg-gradient-to-br from-background/40 to-background/20 backdrop-blur-xl border-border/30 rounded-fluid hover:border-primary/30 transition-all duration-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)] transform hover:translate-y-[-4px]">
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-4">
-            <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${agent.color} flex items-center justify-center overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.3)] transform group-hover:scale-110 transition-transform duration-300 p-1`}>
-              <img src={agentPlaceholder} alt={agent.name} className="w-full h-full object-cover rounded-xl" />
+    <Card className="group p-3 bg-card/50 backdrop-blur-sm border-border/40 hover:border-primary/50 transition-all duration-300 hover:shadow-lg">
+      <div className="space-y-3">
+        {/* Compact Header */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${agent.color} flex items-center justify-center overflow-hidden shadow-md group-hover:scale-105 transition-transform duration-200 p-0.5 shrink-0`}>
+              <img src={agentPlaceholder} alt={agent.name} className="w-full h-full object-cover rounded-md" />
             </div>
-            <div>
-              <h3 className="text-lg font-light text-foreground">{agent.name}</h3>
-              <p className="text-xs uppercase tracking-widest text-muted-foreground">{agent.role}</p>
+            <div className="min-w-0">
+              <h3 className="text-sm font-medium text-foreground truncate">{agent.name}</h3>
+              <p className="text-xs text-muted-foreground truncate">{agent.role}</p>
             </div>
           </div>
           <Switch
             checked={config.enabled}
             onCheckedChange={(enabled) => onChange({ ...config, enabled })}
-            className="data-[state=checked]:bg-primary shadow-[0_2px_8px_rgba(0,0,0,0.2)]"
+            className="data-[state=checked]:bg-primary shrink-0"
           />
         </div>
 
-        {/* Settings */}
+        {/* Compact Settings */}
         {config.enabled && (
-          <div className="space-y-4 animate-fade-in">
-            <div className="space-y-2">
+          <div className="space-y-2 animate-fade-in pt-1 border-t border-border/30">
+            <div className="space-y-1">
               <div className="flex justify-between items-center">
-                <Label className="text-xs uppercase tracking-wider text-muted-foreground">Temperature</Label>
-                <span className="text-sm font-mono text-foreground/80">{config.temperature.toFixed(2)}</span>
+                <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">Temp</Label>
+                <span className="text-xs font-mono text-foreground/70">{config.temperature.toFixed(2)}</span>
               </div>
               <Slider
                 value={[config.temperature]}
@@ -59,17 +59,17 @@ export const AgentCard = ({ config, onChange }: AgentCardProps) => {
                 min={0}
                 max={1}
                 step={0.05}
-                className="py-2"
+                className="py-1"
               />
             </div>
 
-            <div className="space-y-2">
-              <Label className="text-xs uppercase tracking-wider text-muted-foreground">System Prompt</Label>
+            <div className="space-y-1">
+              <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">Prompt</Label>
               <Textarea
                 value={config.systemPrompt}
                 onChange={(e) => onChange({ ...config, systemPrompt: e.target.value })}
-                className="min-h-[100px] bg-background/30 border-border/20 focus:border-primary/30 text-sm rounded-lg backdrop-blur-sm resize-none"
-                placeholder="Define agent's perspective..."
+                className="min-h-[60px] bg-background/50 border-border/30 focus:border-primary/50 text-xs rounded-md resize-none"
+                placeholder="Define perspective..."
               />
             </div>
           </div>
