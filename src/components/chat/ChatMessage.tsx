@@ -55,7 +55,7 @@ export const ChatMessage = ({
       spec: { label: 'Spec', variant: 'default' as const },
       user: { label: 'You', variant: 'default' as const },
     };
-    return badges[type];
+    return badges[type] || { label: 'Message', variant: 'default' as const };
   };
 
   return (
