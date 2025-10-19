@@ -141,15 +141,23 @@ export const AgentOutputCard = ({ perspective }: AgentOutputCardProps) => {
           <div className="prose prose-invert prose-sm max-w-none">
             <ReactMarkdown
               components={{
+                h1: ({ node, ...props }) => <h1 className="text-xl font-semibold text-primary mb-4 mt-4" {...props} />,
+                h2: ({ node, ...props }) => <h2 className="text-lg font-semibold text-foreground/90 mt-6 mb-3" {...props} />,
+                h3: ({ node, ...props }) => <h3 className="text-base font-medium text-foreground/80 mt-4 mb-2" {...props} />,
                 p: ({ node, ...props }) => <p className="text-sm text-foreground/70 leading-relaxed mb-4" {...props} />,
                 ul: ({ node, ...props }) => <ul className="list-disc list-inside space-y-2 mb-4" {...props} />,
-                li: ({ node, ...props }) => <li className="text-sm text-foreground/70" {...props} />,
+                ol: ({ node, ...props }) => <ol className="list-decimal list-inside space-y-2 mb-4" {...props} />,
+                li: ({ node, ...props }) => <li className="text-sm text-foreground/70 leading-relaxed" {...props} />,
+                strong: ({ node, ...props }) => <strong className="font-semibold text-foreground/90" {...props} />,
                 code: ({ node, inline, ...props }: any) => 
                   inline ? (
-                    <code className="bg-secondary/30 px-2 py-1 rounded-lg text-accent font-mono text-xs" {...props} />
+                    <code className="bg-primary/10 px-2 py-0.5 rounded text-primary font-mono text-xs" {...props} />
                   ) : (
-                    <code className="block bg-secondary/20 p-4 rounded-fluid text-foreground/70 font-mono text-xs overflow-x-auto" {...props} />
+                    <code className="block bg-secondary/20 p-4 rounded-lg text-foreground/70 font-mono text-xs overflow-x-auto" {...props} />
                   ),
+                blockquote: ({ node, ...props }) => (
+                  <blockquote className="border-l-2 border-primary/40 pl-4 italic text-foreground/60 my-3" {...props} />
+                ),
               }}
             >
               {addVendorLogos(perspective.response)}

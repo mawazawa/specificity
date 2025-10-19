@@ -396,7 +396,7 @@ const Index = () => {
               <h2 className="text-xs font-light uppercase tracking-widest text-foreground/60">
                 Advisory Panel
               </h2>
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-w-5xl mx-auto">
                 {agentConfigs.map((config, index) => {
                   const agentQuestion = currentRound?.questions?.find(q => q.askedBy === config.agent);
                   const agentAnswer = currentRound?.answers?.find(a => a.agent === config.agent);

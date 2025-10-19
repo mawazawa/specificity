@@ -183,22 +183,35 @@ export const SpecOutput = ({ spec, onApprove, onRefine }: SpecOutputProps) => {
       <div className="prose prose-invert prose-sm max-w-none">
         <ReactMarkdown
           components={{
-            h1: ({ node, ...props }) => <h1 className="text-2xl font-light text-primary mb-6 tracking-wide" {...props} />,
-            h2: ({ node, ...props }) => <h2 className="text-xl font-light text-foreground/90 mt-10 mb-5 tracking-wide" {...props} />,
-            h3: ({ node, ...props }) => <h3 className="text-base font-light text-foreground/80 mt-8 mb-4" {...props} />,
-            p: ({ node, ...props }) => <p className="text-foreground/70 leading-loose mb-6 text-sm" {...props} />,
-            ul: ({ node, ...props }) => <ul className="list-none space-y-3 mb-6 ml-4" {...props} />,
-            ol: ({ node, ...props }) => <ol className="list-none space-y-3 mb-6 ml-4" {...props} />,
-            li: ({ node, ...props }) => <li className="text-foreground/70 text-sm before:content-['—'] before:mr-3 before:text-primary/40" {...props} />,
+            h1: ({ node, ...props }) => <h1 className="text-3xl font-bold text-primary mb-8 mt-8 tracking-tight border-b border-border/20 pb-4" {...props} />,
+            h2: ({ node, ...props }) => <h2 className="text-2xl font-semibold text-foreground/90 mt-12 mb-6 tracking-tight" {...props} />,
+            h3: ({ node, ...props }) => <h3 className="text-xl font-semibold text-foreground/80 mt-10 mb-4 tracking-tight" {...props} />,
+            h4: ({ node, ...props }) => <h4 className="text-lg font-medium text-foreground/70 mt-8 mb-3" {...props} />,
+            p: ({ node, ...props }) => <p className="text-foreground/70 leading-relaxed mb-5 text-sm" {...props} />,
+            ul: ({ node, ...props }) => <ul className="space-y-2 mb-6 ml-4 list-disc list-inside" {...props} />,
+            ol: ({ node, ...props }) => <ol className="space-y-2 mb-6 ml-4 list-decimal list-inside" {...props} />,
+            li: ({ node, ...props }) => <li className="text-foreground/70 text-sm leading-relaxed" {...props} />,
+            strong: ({ node, ...props }) => <strong className="font-semibold text-foreground/90" {...props} />,
+            em: ({ node, ...props }) => <em className="italic text-foreground/80" {...props} />,
             code: ({ node, inline, ...props }: any) => 
               inline ? (
-                <code className="bg-secondary/30 px-2 py-1 rounded-lg text-primary/80 font-mono text-xs" {...props} />
+                <code className="bg-primary/10 px-2 py-0.5 rounded text-primary font-mono text-xs border border-primary/20" {...props} />
               ) : (
-                <code className="block bg-secondary/20 p-6 rounded-fluid text-foreground/70 font-mono text-xs overflow-x-auto border border-border/10" {...props} />
+                <code className="block bg-secondary/30 p-5 rounded-xl text-foreground/80 font-mono text-xs overflow-x-auto border border-border/20 my-4" {...props} />
               ),
+            pre: ({ node, ...props }) => <pre className="my-4 overflow-x-auto" {...props} />,
             blockquote: ({ node, ...props }) => (
-              <blockquote className="border-l border-primary/30 pl-6 italic text-muted-foreground/70 my-6 font-light" {...props} />
+              <blockquote className="border-l-4 border-primary/40 pl-6 pr-4 py-3 my-6 bg-primary/5 rounded-r-lg italic text-foreground/70" {...props} />
             ),
+            hr: ({ node, ...props }) => <hr className="my-8 border-border/30" {...props} />,
+            table: ({ node, ...props }) => (
+              <div className="overflow-x-auto my-6">
+                <table className="w-full border-collapse border border-border/30 rounded-lg" {...props} />
+              </div>
+            ),
+            th: ({ node, ...props }) => <th className="border border-border/30 px-4 py-2 bg-primary/10 text-left text-sm font-semibold text-foreground/90" {...props} />,
+            td: ({ node, ...props }) => <td className="border border-border/30 px-4 py-2 text-sm text-foreground/70" {...props} />,
+            a: ({ node, ...props }) => <a className="text-primary hover:text-primary/80 underline transition-colors" {...props} />,
           }}
         >
           {spec}
