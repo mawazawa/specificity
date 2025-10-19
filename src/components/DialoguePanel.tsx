@@ -20,7 +20,7 @@ export interface DialogueEntry {
   agent: AgentType;
   message: string;
   timestamp: string;
-  type: 'question' | 'answer' | 'vote' | 'reasoning';
+  type: 'question' | 'answer' | 'vote' | 'reasoning' | 'discussion';
 }
 
 interface DialoguePanelProps {
@@ -73,6 +73,7 @@ export const DialoguePanel = ({ entries, isOpen = false, onToggle }: DialoguePan
       case 'answer': return <Lightbulb className="w-3.5 h-3.5 text-blue-400" />;
       case 'vote': return <CheckCircle className="w-3.5 h-3.5 text-green-400" />;
       case 'reasoning': return <Brain className="w-3.5 h-3.5 text-purple-400" />;
+      case 'discussion': return <MessageSquare className="w-3.5 h-3.5 text-cyan-400" />;
       default: return <MessageSquare className="w-3.5 h-3.5 text-foreground/50" />;
     }
   };
