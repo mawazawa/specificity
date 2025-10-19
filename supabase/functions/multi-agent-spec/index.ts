@@ -21,8 +21,7 @@ const agentConfigSchema = z.object({
 const requestSchema = z.object({
   userInput: z.string()
     .min(10, 'Input too short')
-    .max(2000, 'Input too long (max 2000 characters)')
-    .regex(/^[\w\s\.,!?\-:;()'"/@#$%&*+=[\]{}|\\<>~`]+$/, 'Invalid characters detected'),
+    .max(2000, 'Input too long (max 2000 characters)'),
   stage: z.enum(['questions', 'research', 'answers', 'voting', 'spec']),
   userComment: z.string().max(500).optional(),
   agentConfigs: z.array(agentConfigSchema).min(1).max(10),
