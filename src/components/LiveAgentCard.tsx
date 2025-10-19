@@ -5,16 +5,17 @@ import { motion } from "framer-motion";
 import steveJobsAvatar from "@/assets/steve-jobs.png";
 import oprahAvatar from "@/assets/oprah.png";
 import stevenBartlettAvatar from "@/assets/steven-bartlett.png";
+import jonyIveAvatar from "@/assets/jony-ive.png";
 import agentPlaceholder from "@/assets/agent-placeholder.png";
 
 const agentInfo = {
-  elon: { name: "Elon", color: "from-purple-500 to-pink-500", avatar: agentPlaceholder },
-  steve: { name: "Steve", color: "from-blue-500 to-cyan-500", avatar: steveJobsAvatar },
-  oprah: { name: "Oprah", color: "from-amber-500 to-orange-500", avatar: oprahAvatar },
-  zaha: { name: "Zaha", color: "from-emerald-500 to-teal-500", avatar: agentPlaceholder },
-  jony: { name: "Jony", color: "from-slate-500 to-zinc-500", avatar: agentPlaceholder },
-  bartlett: { name: "Steven", color: "from-red-500 to-rose-500", avatar: stevenBartlettAvatar },
-  amal: { name: "Amal", color: "from-indigo-500 to-violet-500", avatar: agentPlaceholder },
+  elon: { name: "Elon", color: "from-purple-500 via-fuchsia-500 to-pink-500", avatar: agentPlaceholder },
+  steve: { name: "Steve", color: "from-blue-500 via-cyan-500 to-teal-500", avatar: steveJobsAvatar },
+  oprah: { name: "Oprah", color: "from-amber-500 via-orange-500 to-red-500", avatar: oprahAvatar },
+  zaha: { name: "Zaha", color: "from-emerald-500 via-teal-500 to-cyan-500", avatar: agentPlaceholder },
+  jony: { name: "Jony", color: "from-slate-400 via-zinc-400 to-neutral-500", avatar: jonyIveAvatar },
+  bartlett: { name: "Steven", color: "from-red-500 via-rose-500 to-pink-500", avatar: stevenBartlettAvatar },
+  amal: { name: "Amal", color: "from-indigo-500 via-violet-500 to-purple-500", avatar: agentPlaceholder },
 };
 
 const extractInsights = (text: string) => {
@@ -50,19 +51,26 @@ export const LiveAgentCard = ({ agent, output, vote, question, isActive }: LiveA
   const tags = output ? getTagsFromText(output) : [];
   
   return (
-    <Card className={`p-3 bg-card/30 backdrop-blur-sm border transition-all duration-300 ${
-      isActive ? 'border-primary/50 shadow-lg' : 'border-border/30'
+    <Card className={`relative p-4 bg-gradient-to-br from-card/70 via-card/50 to-card/30 backdrop-blur-xl border transition-all duration-500 overflow-hidden ${
+      isActive ? 'border-primary/60 shadow-[0_8px_30px_rgb(0,0,0,0.12)] shadow-primary/30' : 'border-border/40 hover:border-border/60'
     }`}>
-      <div className="space-y-2">
+      {/* Gradient overlay */}
+      <div className={`absolute inset-0 bg-gradient-to-br ${agentData.color} opacity-0 ${isActive ? 'opacity-10' : 'opacity-0'} transition-opacity duration-500`} />
+      
+      <div className="relative space-y-3">
         {/* Agent Header */}
-        <div className="flex items-center gap-2">
-          <div className={`w-8 h-8 rounded-md bg-gradient-to-br ${agentData.color} flex items-center justify-center overflow-hidden p-0.5 shrink-0`}>
-            <img src={agentData.avatar} alt={agentData.name} className="w-full h-full object-cover rounded-sm" />
+        <div className="flex items-center gap-3">
+          <div className={`relative w-10 h-10 rounded-lg bg-gradient-to-br ${agentData.color} flex items-center justify-center overflow-hidden shadow-md p-[2px] shrink-0 ${isActive ? 'shadow-lg shadow-primary/30 scale-110' : ''} transition-all duration-500`}>
+            <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-40" />
+            <img src={agentData.avatar} alt={agentData.name} className="relative w-full h-full object-cover rounded-[6px]" />
           </div>
-          <span className="text-xs font-medium text-foreground">{agentData.name}</span>
+          <span className="text-xs font-semibold text-foreground tracking-tight">{agentData.name}</span>
           {isActive && (
             <div className="ml-auto">
-              <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+              <div className="relative w-2.5 h-2.5">
+                <div className="absolute inset-0 bg-primary rounded-full animate-pulse" />
+                <div className="absolute inset-0 bg-primary rounded-full animate-ping opacity-75" />
+              </div>
             </div>
           )}
         </div>
