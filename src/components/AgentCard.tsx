@@ -8,16 +8,18 @@ import steveJobsAvatar from "@/assets/steve-jobs.png";
 import oprahAvatar from "@/assets/oprah.png";
 import stevenBartlettAvatar from "@/assets/steven-bartlett.png";
 import jonyIveAvatar from "@/assets/jony-ive.png";
+import amalClooneyAvatar from "@/assets/amal-clooney.png";
+import elonMuskAvatar from "@/assets/elon-musk.png";
 import agentPlaceholder from "@/assets/agent-placeholder.png";
 
 const agentInfo = {
-  elon: { name: "Elon Musk", role: "First Principles", color: "from-purple-500 via-fuchsia-500 to-pink-500", avatar: agentPlaceholder },
+  elon: { name: "Elon Musk", role: "First Principles", color: "from-purple-500 via-fuchsia-500 to-pink-500", avatar: elonMuskAvatar },
   steve: { name: "Steve Jobs", role: "Product Vision", color: "from-blue-500 via-cyan-500 to-teal-500", avatar: steveJobsAvatar },
   oprah: { name: "Oprah Winfrey", role: "Human Impact", color: "from-amber-500 via-orange-500 to-red-500", avatar: oprahAvatar },
   zaha: { name: "Zaha Hadid", role: "Design Innovation", color: "from-emerald-500 via-teal-500 to-cyan-500", avatar: agentPlaceholder },
   jony: { name: "Jony Ive", role: "Simplicity & Craft", color: "from-slate-400 via-zinc-400 to-neutral-500", avatar: jonyIveAvatar },
   bartlett: { name: "Steven Bartlett", role: "Growth Strategy", color: "from-red-500 via-rose-500 to-pink-500", avatar: stevenBartlettAvatar },
-  amal: { name: "Amal Clooney", role: "Ethics & Law", color: "from-indigo-500 via-violet-500 to-purple-500", avatar: agentPlaceholder },
+  amal: { name: "Amal Clooney", role: "Ethics & Law", color: "from-indigo-500 via-violet-500 to-purple-500", avatar: amalClooneyAvatar },
 };
 
 interface AgentCardProps {

@@ -10,15 +10,18 @@ import jsPDF from "jspdf";
 import steveJobsAvatar from "@/assets/steve-jobs.png";
 import oprahAvatar from "@/assets/oprah.png";
 import stevenBartlettAvatar from "@/assets/steven-bartlett.png";
+import jonyIveAvatar from "@/assets/jony-ive.png";
+import amalClooneyAvatar from "@/assets/amal-clooney.png";
+import elonMuskAvatar from "@/assets/elon-musk.png";
 
 const agentConfig: Record<AgentType, { name: string; role: string; avatar: string; color: string }> = {
-  elon: { name: "Elon", role: "Scale & Innovation", avatar: "🚀", color: "from-purple-500/20 to-blue-500/20" },
+  elon: { name: "Elon", role: "Scale & Innovation", avatar: elonMuskAvatar, color: "from-purple-500/20 to-blue-500/20" },
   steve: { name: "Steve", role: "Product Vision", avatar: steveJobsAvatar, color: "from-gray-400/20 to-gray-600/20" },
   oprah: { name: "Oprah", role: "User Impact", avatar: oprahAvatar, color: "from-amber-500/20 to-orange-500/20" },
   zaha: { name: "Zaha", role: "Design Excellence", avatar: "✨", color: "from-pink-500/20 to-rose-500/20" },
-  jony: { name: "Jony", role: "Design Simplicity", avatar: "⚪", color: "from-slate-400/20 to-zinc-500/20" },
+  jony: { name: "Jony", role: "Design Simplicity", avatar: jonyIveAvatar, color: "from-slate-400/20 to-zinc-500/20" },
   bartlett: { name: "Steve B.", role: "Business Strategy", avatar: stevenBartlettAvatar, color: "from-green-500/20 to-emerald-500/20" },
-  amal: { name: "Amal", role: "Legal & Ethics", avatar: "⚖️", color: "from-blue-400/20 to-cyan-500/20" },
+  amal: { name: "Amal", role: "Legal & Ethics", avatar: amalClooneyAvatar, color: "from-blue-400/20 to-cyan-500/20" },
 };
 
 const vendorLogos: Record<string, string> = {
