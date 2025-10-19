@@ -18,10 +18,9 @@ export const LandingHero = () => {
     <div className="space-y-32 animate-fade-in">
       {/* HERO SECTION - PAS Framework: Problem → Agitate → Solve */}
       <div className="text-center space-y-12 max-w-6xl mx-auto pt-16 pb-8">
-      {/* Clean headline - no gimmicks */}
-        <h1 className="text-5xl md:text-7xl lg:text-8xl font-light tracking-tight leading-[1.05]">
-          <span className="block text-foreground mb-3">Specificity</span>
-          <span className="block text-foreground/60 text-3xl md:text-5xl lg:text-6xl font-extralight">
+      <h1 className="text-4xl md:text-6xl lg:text-7xl font-light tracking-tight leading-[1.1]">
+          <span className="block text-foreground/90">Specificity:</span>
+          <span className="block text-foreground/60 text-2xl md:text-4xl lg:text-5xl font-extralight mt-2">
             Production-Ready Specs in 30 Minutes
           </span>
         </h1>
@@ -228,6 +227,25 @@ export const LandingHero = () => {
 
       {/* Scrolling Text Section */}
       <ScrollingTextSection />
+
+      {/* Final "Ship." with lighting effect */}
+      <div className="flex items-center justify-center min-h-[60vh] relative">
+        <div className="relative group">
+          <div className="absolute -inset-8 bg-accent/20 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <h2 
+            className="text-[15vw] md:text-[12vw] font-bold relative"
+            style={{
+              background: "linear-gradient(135deg, hsl(var(--foreground)), hsl(var(--accent)))",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+              filter: "drop-shadow(0 0 40px hsl(var(--accent) / 0.3))"
+            }}
+          >
+            Ship.
+          </h2>
+        </div>
+      </div>
 
       {/* Footer */}
       <Footer />

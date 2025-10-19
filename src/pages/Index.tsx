@@ -441,13 +441,18 @@ const Index = () => {
   // Check if we should show landing page
   const showLanding = !isProcessing && dialogueEntries.length === 0 && !generatedSpec && sessionState.rounds.length === 0;
 
+  const scrollToInput = () => {
+    const inputElement = document.querySelector('[data-spec-input]');
+    inputElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
   // Show loading while checking auth
   if (!user && !session) {
     return null;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-hero">
+    <div className="min-h-screen bg-background grid-background">
       {/* Sign Out Button */}
       {user && (
         <div className="absolute top-4 right-4 z-50">

@@ -1,120 +1,86 @@
-import { useEffect, useRef } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
 
 const words = [
-  "design.",
-  "prototype.",
-  "solve.",
-  "build.",
-  "develop.",
-  "debug.",
-  "learn.",
-  "ship.",
-  "prompt.",
-  "collaborate.",
-  "create.",
-  "inspire.",
-  "innovate.",
-  "test.",
-  "optimize.",
-  "visualize.",
-  "transform.",
-  "scale.",
-  "deliver.",
+  "design", "prototype", "solve", "build", "develop", "debug", "learn", "ship",
+  "prompt", "collaborate", "create", "inspire", "innovate", "test", "optimize",
+  "visualize", "transform", "scale", "deliver", "dream", "code", "refactor",
+  "deploy", "architect", "research", "iterate", "validate", "measure", "improve",
+  "automate", "integrate", "discover", "experiment", "achieve", "execute",
+  "strategize", "analyze", "synthesize", "implement", "launch", "evolve"
 ];
 
 export const ScrollingTextSection = () => {
-  const ulRef = useRef<HTMLUListElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [currentStickyWord, setCurrentStickyWord] = useState(0);
+  
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"]
+  });
 
   useEffect(() => {
-    if (!ulRef.current) return;
+    const unsubscribe = scrollYProgress.on("change", (latest) => {
+      const wordIndex = Math.floor(latest * words.length);
+      setCurrentStickyWord(Math.min(wordIndex, words.length - 1));
+    });
     
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("in-view");
-          }
-        });
-      },
-      { threshold: 0.5 }
-    );
+    return () => unsubscribe();
+  }, [scrollYProgress]);
 
-    const items = ulRef.current.querySelectorAll("li");
-    items.forEach((item) => observer.observe(item));
-
-    return () => observer.disconnect();
-  }, []);
+  const stickyWord = words[currentStickyWord];
 
   return (
-    <section className="relative w-full min-h-screen py-24 overflow-hidden">
-      {/* Grid overlay */}
-      <div className="absolute inset-0 pointer-events-none opacity-30">
-        <div 
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `
-              linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px),
-              linear-gradient(to bottom, hsl(var(--border)) 1px, transparent 1px)
-            `,
-            backgroundSize: '45px 45px',
-            maskImage: 'linear-gradient(-20deg, transparent 50%, black)',
-            WebkitMaskImage: 'linear-gradient(-20deg, transparent 50%, black)',
-          }}
-        />
-      </div>
-
-      <div className="container mx-auto px-4 md:px-8 lg:px-16 flex items-start gap-8 min-h-screen">
-        {/* Sticky header */}
-        <div className="sticky top-[50vh] -translate-y-1/2 hidden lg:block">
-          <h2 className="text-6xl md:text-7xl lg:text-8xl font-bold bg-gradient-to-b from-foreground to-foreground/30 bg-clip-text text-transparent leading-tight">
-            you can
-          </h2>
+    <section ref={containerRef} className="relative w-full py-32">
+      {/* Sticky large word */}
+      <div className="sticky top-1/2 -translate-y-1/2 z-10 pointer-events-none mb-32">
+        <div className="container mx-auto px-4">
+          <motion.h2 
+            key={stickyWord}
+            initial={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }}
+            animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+            transition={{ 
+              duration: 0.6,
+              type: "spring",
+              stiffness: 100,
+              damping: 20
+            }}
+            className="text-[20vw] md:text-[15vw] font-bold text-center leading-none"
+            style={{
+              background: "linear-gradient(135deg, hsl(var(--foreground)), hsl(var(--foreground) / 0.5))",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}
+          >
+            {stickyWord}.
+          </motion.h2>
         </div>
+      </div>
 
-        {/* Scrolling words */}
-        <ul 
-          ref={ulRef}
-          className="flex-1 space-y-2 list-none m-0 p-0"
-          style={{ 
-            counterReset: 'item',
-            ['--count' as string]: words.length 
-          }}
-        >
-          {words.map((word, i) => (
-            <motion.li
-              key={i}
-              className="scroll-word text-6xl md:text-7xl lg:text-8xl font-bold py-4 opacity-20 transition-all duration-300"
-              style={
-                {
-                  ['--i' as string]: i,
-                  ['--hue' as string]: `calc(0 + (360 / ${words.length} * ${i}))`,
-                } as React.CSSProperties
-              }
-              initial={{ opacity: 0.2 }}
-              whileInView={{ 
-                opacity: 1,
-                filter: "brightness(1.2)",
-                color: `oklch(75% 0.3 calc(0 + (360 / ${words.length} * ${i})))`,
-              }}
-              viewport={{ amount: 0.5, margin: "-200px" }}
-              transition={{ duration: 0.3 }}
-            >
-              {word}
-            </motion.li>
+      {/* Scrolling background words */}
+      <div className="absolute inset-0 overflow-hidden opacity-15">
+        <div className="space-y-8 py-32">
+          {[...Array(3)].map((_, groupIndex) => (
+            <div key={groupIndex} className="space-y-4">
+              {words.map((word, i) => (
+                <motion.div
+                  key={`${groupIndex}-${i}`}
+                  className="text-7xl md:text-9xl font-bold text-foreground/40 whitespace-nowrap"
+                  style={{
+                    marginLeft: `${(i * 15) % 100}%`,
+                  }}
+                >
+                  {word}.
+                </motion.div>
+              ))}
+            </div>
           ))}
-          <li className="text-6xl md:text-7xl lg:text-8xl font-bold py-4 bg-gradient-to-b from-foreground to-foreground/30 bg-clip-text text-transparent">
-            do it.
-          </li>
-        </ul>
+        </div>
       </div>
 
-      {/* Final section */}
-      <div className="flex items-center justify-center min-h-screen">
-        <h2 className="text-8xl md:text-9xl font-bold bg-gradient-to-b from-foreground to-foreground/30 bg-clip-text text-transparent">
-          fin.
-        </h2>
-      </div>
+      {/* Spacer for scroll */}
+      <div style={{ height: `${words.length * 100}vh` }} />
     </section>
   );
 };

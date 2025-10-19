@@ -109,6 +109,14 @@ All colors MUST be HSL.
     position: relative;
     z-index: 1;
   }
+
+  /* Faint grid background - precision aesthetic */
+  .grid-background {
+    background-image: 
+      linear-gradient(to right, hsl(var(--border) / 0.08) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--border) / 0.08) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
   
   /* Custom scrollbar */
   .custom-scrollbar::-webkit-scrollbar {
