@@ -430,15 +430,17 @@ const Index = () => {
           )}
         </div>
 
-        {/* Chat View */}
+        {/* Main Content */}
         {viewMode === 'chat' ? (
-          <ChatView
-            entries={chatEntries}
-            isPaused={sessionState.isPaused}
-            onPause={handlePause}
-            onResume={handleResume}
-            isProcessing={isProcessing}
-          />
+          <div className="space-y-6">
+            <ChatView
+              entries={chatEntries}
+              isPaused={sessionState.isPaused}
+              onPause={handlePause}
+              onResume={handleResume}
+              isProcessing={isProcessing}
+            />
+          </div>
         ) : (
           <>
             {/* Activity Section - Right under input */}
