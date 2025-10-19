@@ -19,7 +19,7 @@ import { LandingHero } from "@/components/LandingHero";
 import { AgentConfig, SessionState, Round } from "@/types/spec";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, MessageSquare, LayoutGrid, LogOut } from "lucide-react";
+import { Loader2, MessageSquare, LayoutGrid, LogOut, CheckCircle2 } from "lucide-react";
 import type { User, Session } from '@supabase/supabase-js';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -482,13 +482,28 @@ const Index = () => {
             
             {/* CTA Section - White Space = Focus, above the fold */}
             <div className="max-w-3xl mx-auto space-y-8">
-              <div className="text-center space-y-4">
-                <h2 className="text-2xl md:text-3xl font-bold">
-                  Describe Your Product Idea
+              <div className="text-center space-y-6">
+                <h2 className="text-3xl md:text-4xl font-bold">
+                  Start Your Free Spec in 2 Minutes
                 </h2>
-                <p className="text-muted-foreground">
-                  Our AI advisory panel will transform it into a complete technical specification
+                <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                  Describe your product idea below. Our AI panel will analyze it, research the tech, 
+                  and deliver a complete battle-tested specification.
                 </p>
+                <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground/70">
+                  <span className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-accent" />
+                    No credit card
+                  </span>
+                  <span className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-accent" />
+                    2-minute setup
+                  </span>
+                  <span className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-accent" />
+                    Export to PDF
+                  </span>
+                </div>
               </div>
               
               {/* CTA First-Person Psychology: "Get MY spec" */}

@@ -185,7 +185,7 @@ export const SpecInput = ({ onSubmit, isLoading }: SpecInputProps) => {
             >
               <div className="absolute inset-0 bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_100%] animate-shimmer opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <span className="relative flex items-center justify-center gap-3 uppercase tracking-widest text-sm font-light">
-                {isLoading ? 'Processing' : 'Generate Specification'}
+                {isLoading ? 'Analyzing Your Idea' : 'Get My Free Spec →'}
               </span>
             </Button>
           </div>
