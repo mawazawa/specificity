@@ -2,7 +2,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChatMessage } from "./ChatMessage";
 import { ChatInput } from "./ChatInput";
 import { AgentType } from "@/types/spec";
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { MentorContactCard } from "../mentor/MentorContactCard";
 import { mentorProfiles } from "@/types/mentor";
@@ -30,13 +30,16 @@ export const ChatView = ({
   isProcessing 
 }: ChatViewProps) => {
   const [selectedMentor, setSelectedMentor] = useState<AgentType | null>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Auto-scroll to bottom when new messages arrive
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    // Auto-scroll to bottom when new messages arrive - using a small delay to ensure DOM is updated
+    const timer = setTimeout(() => {
+      const viewport = document.querySelector('[data-radix-scroll-area-viewport]');
+      if (viewport) {
+        viewport.scrollTop = viewport.scrollHeight;
+      }
+    }, 100);
+    return () => clearTimeout(timer);
   }, [entries]);
 
   const handleSend = (message: string) => {
@@ -50,7 +53,7 @@ export const ChatView = ({
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)] md:h-[calc(100vh-12rem)]">
       {/* Messages Area */}
-      <ScrollArea className="flex-1 px-4 md:px-6" ref={scrollRef}>
+      <ScrollArea className="flex-1 px-4 md:px-6">
         <div className="max-w-4xl mx-auto py-6 space-y-2">
           {entries.length === 0 ? (
             <motion.div
