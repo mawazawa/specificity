@@ -62,9 +62,10 @@ export const LiveAgentCard = ({ agent, output, vote, question, isActive }: LiveA
       <div className="relative space-y-3">
         {/* Agent Header */}
         <div className="flex items-center gap-3">
-          <div className={`relative w-10 h-10 rounded-lg bg-gradient-to-br ${agentData.color} flex items-center justify-center overflow-hidden shadow-md p-[2px] shrink-0 ${isActive ? 'shadow-lg shadow-primary/30 scale-110' : ''} transition-all duration-500`}>
-            <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-40" />
-            <img src={agentData.avatar} alt={agentData.name} className="relative w-full h-full object-cover rounded-[6px]" />
+          <div className={`relative w-16 h-16 rounded-2xl bg-gradient-to-br ${agentData.color} flex items-center justify-center overflow-hidden shadow-lg p-[3px] shrink-0 ${isActive ? 'shadow-2xl shadow-primary/40 scale-105 ring-2 ring-primary/30' : 'shadow-xl'} transition-all duration-500`}>
+            <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-white/10 to-transparent opacity-50" />
+            <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/20 to-transparent" />
+            <img src={agentData.avatar} alt={agentData.name} className="relative w-full h-full object-cover rounded-[14px]" />
           </div>
           <span className="text-xs font-semibold text-foreground tracking-tight">{agentData.name}</span>
           {isActive && (

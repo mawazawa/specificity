@@ -91,10 +91,13 @@ export const VotingPanel = ({ votes, roundNumber }: VotingPanelProps) => {
           {/* Agent Header Card */}
           <div className="p-4 bg-gradient-to-r from-background/40 to-transparent border-b border-border/20">
             <div className="flex items-center gap-3">
-              <Avatar className="w-12 h-12 ring-2 ring-border/30">
-                <AvatarImage src={agentAvatars[vote.agent]} alt={agentNames[vote.agent]} />
-                <AvatarFallback>{agentNames[vote.agent][0]}</AvatarFallback>
-              </Avatar>
+              <div className="relative w-14 h-14 shrink-0">
+                <Avatar className="w-14 h-14 ring-2 ring-border/40 shadow-xl">
+                  <AvatarImage src={agentAvatars[vote.agent]} alt={agentNames[vote.agent]} />
+                  <AvatarFallback className="text-sm">{agentNames[vote.agent][0]}</AvatarFallback>
+                </Avatar>
+                <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-black/10 rounded-full pointer-events-none" />
+              </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-semibold text-foreground truncate">
@@ -159,19 +162,23 @@ export const VotingPanel = ({ votes, roundNumber }: VotingPanelProps) => {
               variant="ghost"
               size="sm"
               onClick={() => toggleVoteExpansion(vote.agent)}
-              className="w-full mt-3 h-8 text-[10px] hover:bg-background/60 rounded-lg transition-all"
+              className="relative w-full mt-3 h-9 text-[11px] rounded-full bg-gradient-to-b from-background/60 to-background/40 hover:from-background/80 hover:to-background/60 border border-border/30 hover:border-border/50 shadow-sm hover:shadow-md transition-all duration-300 active:scale-98"
             >
-              {isExpanded ? (
-                <>
-                  <ChevronDown className="w-3 h-3 mr-1.5 rotate-180 transition-transform" />
-                  Show less
-                </>
-              ) : (
-                <>
-                  <ChevronDown className="w-3 h-3 mr-1.5 transition-transform" />
-                  Read detailed reasoning
-                </>
-              )}
+              <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent rounded-full pointer-events-none" />
+              <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/5 to-transparent rounded-full pointer-events-none" />
+              <span className="relative z-10">
+                {isExpanded ? (
+                  <>
+                    <ChevronDown className="w-3.5 h-3.5 mr-1.5 rotate-180 transition-transform inline-block" />
+                    Show less
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="w-3.5 h-3.5 mr-1.5 transition-transform inline-block" />
+                    Read detailed reasoning
+                  </>
+                )}
+              </span>
             </Button>
           </div>
         </Card>

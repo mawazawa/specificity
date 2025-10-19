@@ -128,10 +128,13 @@ export const DialoguePanel = ({ entries, isOpen = false, onToggle }: DialoguePan
                         transition={{ delay: index * 0.05 }}
                         className="flex gap-3"
                       >
-                        <Avatar className="w-8 h-8 ring-2 ring-border/20 shrink-0">
-                          <AvatarImage src={agentAvatars[entry.agent]} alt={agentNames[entry.agent]} />
-                          <AvatarFallback className="text-[10px]">{agentNames[entry.agent][0]}</AvatarFallback>
-                        </Avatar>
+                        <div className="relative w-12 h-12 shrink-0">
+                          <Avatar className="w-12 h-12 ring-2 ring-border/30 shadow-lg">
+                            <AvatarImage src={agentAvatars[entry.agent]} alt={agentNames[entry.agent]} />
+                            <AvatarFallback className="text-xs">{agentNames[entry.agent][0]}</AvatarFallback>
+                          </Avatar>
+                          <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-black/10 rounded-full pointer-events-none" />
+                        </div>
                         <div className="flex-1 min-w-0 space-y-1">
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-xs font-semibold text-foreground/90">
@@ -177,10 +180,11 @@ export const DialoguePanel = ({ entries, isOpen = false, onToggle }: DialoguePan
           >
             <Button
               onClick={handleToggle}
-              className="relative h-14 w-14 rounded-full bg-gradient-to-br from-primary via-primary/90 to-primary/80 hover:from-primary/90 hover:via-primary/80 hover:to-primary/70 shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 border border-primary/20 transition-all duration-300 hover:scale-110"
+              className="relative h-16 w-16 rounded-full bg-gradient-to-br from-primary via-primary/90 to-primary/70 hover:from-primary/95 hover:via-primary/85 hover:to-primary/75 shadow-[0_8px_24px_-4px] shadow-primary/40 hover:shadow-[0_12px_32px_-4px] hover:shadow-primary/50 border-2 border-primary/30 transition-all duration-300 hover:scale-105 active:scale-95"
             >
-              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/20 to-transparent" />
-              <MessageSquare className="w-5 h-5 relative z-10" />
+              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/30 via-white/10 to-transparent" />
+              <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/15 to-transparent rounded-full" />
+              <MessageSquare className="w-6 h-6 relative z-10" />
               {entries.length > 0 && (
                 <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center border-2 border-background shadow-lg">
                   {entries.length}
