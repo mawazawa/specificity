@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.75.1';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -9,6 +10,8 @@ const corsHeaders = {
 
 const GROQ_API_KEY = Deno.env.get('GROQ_API_KEY');
 const EXA_API_KEY = Deno.env.get('EXA_API_KEY');
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 // Input validation schemas
 const agentConfigSchema = z.object({
@@ -142,8 +145,65 @@ async function researchWithExa(query: string) {
     return data.results || [];
   } catch (error) {
     console.error('Search API error:', sanitizeError(error));
-    return [];
+  return [];
   }
+}
+
+// Rate limiting function
+async function checkRateLimit(userId: string, endpoint: string, maxRequests: number = 5): Promise<{ allowed: boolean; remaining: number }> {
+  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+  
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+  
+  // Get or create rate limit record
+  const { data: existing, error: fetchError } = await supabase
+    .from('rate_limits')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('endpoint', endpoint)
+    .gte('window_start', oneHourAgo)
+    .single();
+
+  if (fetchError && fetchError.code !== 'PGRST116') {
+    console.error('Rate limit check error:', sanitizeError(fetchError));
+    return { allowed: true, remaining: maxRequests }; // Fail open
+  }
+
+  if (!existing) {
+    // Create new rate limit record
+    const { error: insertError } = await supabase
+      .from('rate_limits')
+      .insert({
+        user_id: userId,
+        endpoint,
+        request_count: 1,
+        window_start: new Date().toISOString()
+      });
+    
+    if (insertError) {
+      console.error('Rate limit insert error:', sanitizeError(insertError));
+      return { allowed: true, remaining: maxRequests - 1 };
+    }
+    
+    return { allowed: true, remaining: maxRequests - 1 };
+  }
+
+  // Check if limit exceeded
+  if (existing.request_count >= maxRequests) {
+    return { allowed: false, remaining: 0 };
+  }
+
+  // Increment counter
+  const { error: updateError } = await supabase
+    .from('rate_limits')
+    .update({ request_count: existing.request_count + 1 })
+    .eq('id', existing.id);
+
+  if (updateError) {
+    console.error('Rate limit update error:', sanitizeError(updateError));
+  }
+
+  return { allowed: true, remaining: maxRequests - existing.request_count - 1 };
 }
 
 serve(async (req) => {
@@ -158,6 +218,38 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ error: 'Authentication required' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Extract user ID from JWT token
+    const token = authHeader.replace('Bearer ', '');
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid authentication' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Check rate limit (5 requests per hour per user)
+    const rateLimit = await checkRateLimit(user.id, 'multi-agent-spec', 5);
+    if (!rateLimit.allowed) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Rate limit exceeded. You can generate up to 5 specifications per hour. Please try again later.',
+          retryAfter: 3600 
+        }),
+        { 
+          status: 429, 
+          headers: { 
+            ...corsHeaders, 
+            'Content-Type': 'application/json',
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': new Date(Date.now() + 60 * 60 * 1000).toISOString()
+          } 
+        }
       );
     }
 
