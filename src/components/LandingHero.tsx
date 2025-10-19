@@ -15,9 +15,21 @@ export const LandingHero = () => {
   };
 
   return (
-    <div className="space-y-32 animate-fade-in">
+    <div className="space-y-32 animate-fade-in relative">
+      {/* Grid background overlay */}
+      <div 
+        className="fixed inset-0 pointer-events-none opacity-15 z-0"
+        style={{
+          backgroundImage: `
+            linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px),
+            linear-gradient(to bottom, hsl(var(--border)) 1px, transparent 1px)
+          `,
+          backgroundSize: '40px 40px',
+        }}
+      />
+
       {/* HERO SECTION - PAS Framework: Problem → Agitate → Solve */}
-      <div className="text-center space-y-12 max-w-6xl mx-auto pt-16 pb-8">
+      <div className="text-center space-y-12 max-w-6xl mx-auto pt-16 pb-8 relative z-10">
       <h1 className="text-4xl md:text-6xl lg:text-7xl font-light tracking-tight leading-[1.1]">
           <span className="block text-foreground/90">Specificity:</span>
           <span className="block text-foreground/60 text-2xl md:text-4xl lg:text-5xl font-extralight mt-2">
@@ -115,7 +127,7 @@ export const LandingHero = () => {
         <div className="text-center space-y-3">
           <h2 className="text-3xl md:text-4xl font-light tracking-tight">Your Advisory Panel</h2>
           <p className="text-sm text-muted-foreground/70 max-w-3xl mx-auto leading-relaxed">
-            High-fidelity AI models trained on the complete corpus of publicly available tweets, videos, books, 
+            Simulating a productive meeting by world-renowned major league moguls — at the speed of <span className="font-semibold text-foreground/80">Groq Cloud</span> with the research power of <span className="font-semibold text-foreground/80">Exa MCP</span> remote workers in the cloud. High-fidelity AI models trained on the complete corpus of publicly available tweets, videos, books, 
             news articles, and interviews — with daily real-time monitoring and scraping. Each advisor brings 
             authentic expertise from Steve Jobs' user obsession to Amal Clooney's risk analysis.
           </p>

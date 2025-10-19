@@ -32,6 +32,18 @@ export const ScrollingTextSection = () => {
 
   return (
     <section ref={containerRef} className="relative w-full py-32">
+      {/* Visible grid overlay */}
+      <div 
+        className="absolute inset-0 pointer-events-none opacity-20"
+        style={{
+          backgroundImage: `
+            linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px),
+            linear-gradient(to bottom, hsl(var(--border)) 1px, transparent 1px)
+          `,
+          backgroundSize: '40px 40px',
+        }}
+      />
+
       {/* Intro text + Sticky large word */}
       <div className="sticky top-1/2 -translate-y-1/2 z-10 pointer-events-none mb-32">
         <div className="container mx-auto px-4">
