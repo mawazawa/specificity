@@ -14,6 +14,7 @@ import { LiveAgentCard } from "@/components/LiveAgentCard";
 import { ProcessViewer } from "@/components/ProcessViewer";
 import { VoteTally } from "@/components/VoteTally";
 import { DialoguePanel, DialogueEntry } from "@/components/DialoguePanel";
+import { LandingHero } from "@/components/LandingHero";
 import { AgentConfig, SessionState, Round } from "@/types/spec";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -384,10 +385,13 @@ const Index = () => {
     type: entry.type as ChatEntry['type']
   }));
 
+  // Check if we should show landing page
+  const showLanding = !isProcessing && dialogueEntries.length === 0 && !generatedSpec && sessionState.rounds.length === 0;
+
   return (
     <div className="min-h-screen bg-gradient-hero">
       {/* Mobile Header - only show in chat mode on mobile */}
-      {viewMode === 'chat' && (
+      {viewMode === 'chat' && !showLanding && (
         <div className="md:hidden">
           <MobileHeader 
             agentConfigs={agentConfigs}
@@ -398,40 +402,83 @@ const Index = () => {
       )}
 
       <div className="container max-w-7xl mx-auto px-4 py-6 md:py-12 space-y-8">
-        {/* View Mode Toggle - Desktop */}
-        <div className="hidden md:flex items-center justify-between">
-          <SpecInput onSubmit={handleSubmit} isLoading={isProcessing} />
-          <div className="flex gap-2 ml-4">
-            <Button
-              variant={viewMode === 'chat' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setViewMode('chat')}
-              className="gap-2 rounded-full"
-            >
-              <MessageSquare className="w-4 h-4" />
-              Chat
-            </Button>
-            <Button
-              variant={viewMode === 'panels' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setViewMode('panels')}
-              className="gap-2 rounded-full"
-            >
-              <LayoutGrid className="w-4 h-4" />
-              Panels
-            </Button>
+        {/* Landing Page - Show when nothing is active */}
+        {showLanding ? (
+          <div className="space-y-12">
+            <LandingHero />
+            
+            {/* CTA Section - White Space = Focus, above the fold */}
+            <div className="max-w-3xl mx-auto space-y-8">
+              <div className="text-center space-y-4">
+                <h2 className="text-2xl md:text-3xl font-bold">
+                  Describe Your Product Idea
+                </h2>
+                <p className="text-muted-foreground">
+                  Our AI advisory panel will transform it into a complete technical specification
+                </p>
+              </div>
+              
+              {/* CTA First-Person Psychology: "Get MY spec" */}
+              <SpecInput onSubmit={handleSubmit} isLoading={isProcessing} />
+              
+              {/* Advisory Panel Preview - Social Proof */}
+              <div className="space-y-4">
+                <h3 className="text-center text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                  Your Expert Advisory Panel
+                </h3>
+                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 gap-3">
+                  {agentConfigs.slice(0, 8).map((config) => (
+                    <AgentCard
+                      key={config.agent}
+                      config={config}
+                      onChange={(updatedConfig) => {
+                        const newConfigs = [...agentConfigs];
+                        const index = agentConfigs.findIndex(c => c.agent === config.agent);
+                        newConfigs[index] = updatedConfig;
+                        setAgentConfigs(newConfigs);
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
+        ) : (
+          <>
+            {/* View Mode Toggle - Desktop */}
+            <div className="hidden md:flex items-center justify-between">
+              <SpecInput onSubmit={handleSubmit} isLoading={isProcessing} />
+              <div className="flex gap-2 ml-4">
+                <Button
+                  variant={viewMode === 'chat' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('chat')}
+                  className="gap-2 rounded-full"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  Chat
+                </Button>
+                <Button
+                  variant={viewMode === 'panels' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('panels')}
+                  className="gap-2 rounded-full"
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                  Panels
+                </Button>
+              </div>
+            </div>
 
-        {/* Mobile - Just Input */}
-        <div className="md:hidden">
-          {viewMode === 'panels' && (
-            <SpecInput onSubmit={handleSubmit} isLoading={isProcessing} />
-          )}
-        </div>
+            {/* Mobile - Just Input */}
+            <div className="md:hidden">
+              {viewMode === 'panels' && (
+                <SpecInput onSubmit={handleSubmit} isLoading={isProcessing} />
+              )}
+            </div>
 
-        {/* Main Content */}
-        {viewMode === 'chat' ? (
+            {/* Main Content */}
+            {viewMode === 'chat' ? (
           <div className="space-y-6">
             <ChatView
               entries={chatEntries}
@@ -565,11 +612,13 @@ const Index = () => {
           </div>
         </div>
           </>
+            )}
+          </>
         )}
       </div>
 
-      {/* Floating Dialogue Panel - only in panels mode */}
-      {viewMode === 'panels' && (
+      {/* Floating Dialogue Panel - only in panels mode when not on landing */}
+      {viewMode === 'panels' && !showLanding && (
         <DialoguePanel 
           entries={dialogueEntries}
           isOpen={isDialogueOpen}
