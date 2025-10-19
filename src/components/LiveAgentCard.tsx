@@ -2,16 +2,19 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MessageSquare, ThumbsUp, ThumbsDown, Sparkles, Brain, Target } from "lucide-react";
 import { motion } from "framer-motion";
+import steveJobsAvatar from "@/assets/steve-jobs.png";
+import oprahAvatar from "@/assets/oprah.png";
+import stevenBartlettAvatar from "@/assets/steven-bartlett.png";
 import agentPlaceholder from "@/assets/agent-placeholder.png";
 
 const agentInfo = {
-  elon: { name: "Elon", color: "from-purple-500 to-pink-500" },
-  steve: { name: "Steve", color: "from-blue-500 to-cyan-500" },
-  oprah: { name: "Oprah", color: "from-amber-500 to-orange-500" },
-  zaha: { name: "Zaha", color: "from-emerald-500 to-teal-500" },
-  jony: { name: "Jony", color: "from-slate-500 to-zinc-500" },
-  bartlett: { name: "Steven", color: "from-red-500 to-rose-500" },
-  amal: { name: "Amal", color: "from-indigo-500 to-violet-500" },
+  elon: { name: "Elon", color: "from-purple-500 to-pink-500", avatar: agentPlaceholder },
+  steve: { name: "Steve", color: "from-blue-500 to-cyan-500", avatar: steveJobsAvatar },
+  oprah: { name: "Oprah", color: "from-amber-500 to-orange-500", avatar: oprahAvatar },
+  zaha: { name: "Zaha", color: "from-emerald-500 to-teal-500", avatar: agentPlaceholder },
+  jony: { name: "Jony", color: "from-slate-500 to-zinc-500", avatar: agentPlaceholder },
+  bartlett: { name: "Steven", color: "from-red-500 to-rose-500", avatar: stevenBartlettAvatar },
+  amal: { name: "Amal", color: "from-indigo-500 to-violet-500", avatar: agentPlaceholder },
 };
 
 const extractInsights = (text: string) => {
@@ -54,7 +57,7 @@ export const LiveAgentCard = ({ agent, output, vote, question, isActive }: LiveA
         {/* Agent Header */}
         <div className="flex items-center gap-2">
           <div className={`w-8 h-8 rounded-md bg-gradient-to-br ${agentData.color} flex items-center justify-center overflow-hidden p-0.5 shrink-0`}>
-            <img src={agentPlaceholder} alt={agentData.name} className="w-full h-full object-cover rounded-sm" />
+            <img src={agentData.avatar} alt={agentData.name} className="w-full h-full object-cover rounded-sm" />
           </div>
           <span className="text-xs font-medium text-foreground">{agentData.name}</span>
           {isActive && (

@@ -4,16 +4,19 @@ import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { AgentConfig } from "@/types/spec";
+import steveJobsAvatar from "@/assets/steve-jobs.png";
+import oprahAvatar from "@/assets/oprah.png";
+import stevenBartlettAvatar from "@/assets/steven-bartlett.png";
 import agentPlaceholder from "@/assets/agent-placeholder.png";
 
 const agentInfo = {
-  elon: { name: "Elon Musk", role: "Visionary", color: "from-purple-500 to-pink-500" },
-  steve: { name: "Steve Jobs", role: "Designer", color: "from-blue-500 to-cyan-500" },
-  oprah: { name: "Oprah Winfrey", role: "Humanitarian", color: "from-amber-500 to-orange-500" },
-  zaha: { name: "Zaha Hadid", role: "Architect", color: "from-emerald-500 to-teal-500" },
-  jony: { name: "Jony Ive", role: "Craftsman", color: "from-slate-500 to-zinc-500" },
-  bartlett: { name: "Steven Bartlett", role: "Entrepreneur", color: "from-red-500 to-rose-500" },
-  amal: { name: "Amal Clooney", role: "Legal Expert", color: "from-indigo-500 to-violet-500" },
+  elon: { name: "Elon Musk", role: "Visionary", color: "from-purple-500 to-pink-500", avatar: agentPlaceholder },
+  steve: { name: "Steve Jobs", role: "Designer", color: "from-blue-500 to-cyan-500", avatar: steveJobsAvatar },
+  oprah: { name: "Oprah Winfrey", role: "Humanitarian", color: "from-amber-500 to-orange-500", avatar: oprahAvatar },
+  zaha: { name: "Zaha Hadid", role: "Architect", color: "from-emerald-500 to-teal-500", avatar: agentPlaceholder },
+  jony: { name: "Jony Ive", role: "Craftsman", color: "from-slate-500 to-zinc-500", avatar: agentPlaceholder },
+  bartlett: { name: "Steven Bartlett", role: "Entrepreneur", color: "from-red-500 to-rose-500", avatar: stevenBartlettAvatar },
+  amal: { name: "Amal Clooney", role: "Legal Expert", color: "from-indigo-500 to-violet-500", avatar: agentPlaceholder },
 };
 
 interface AgentCardProps {
@@ -31,7 +34,7 @@ export const AgentCard = ({ config, onChange }: AgentCardProps) => {
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
             <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${agent.color} flex items-center justify-center overflow-hidden shadow-md group-hover:scale-105 transition-transform duration-200 p-0.5 shrink-0`}>
-              <img src={agentPlaceholder} alt={agent.name} className="w-full h-full object-cover rounded-md" />
+              <img src={agent.avatar} alt={agent.name} className="w-full h-full object-cover rounded-md" />
             </div>
             <div className="min-w-0">
               <h3 className="text-sm font-medium text-foreground truncate">{agent.name}</h3>

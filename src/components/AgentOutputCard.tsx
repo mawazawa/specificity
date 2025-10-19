@@ -7,14 +7,17 @@ import { AgentPerspective, AgentType } from "@/types/spec";
 import { toast } from "@/hooks/use-toast";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import steveJobsAvatar from "@/assets/steve-jobs.png";
+import oprahAvatar from "@/assets/oprah.png";
+import stevenBartlettAvatar from "@/assets/steven-bartlett.png";
 
 const agentConfig: Record<AgentType, { name: string; role: string; avatar: string; color: string }> = {
   elon: { name: "Elon", role: "Scale & Innovation", avatar: "🚀", color: "from-purple-500/20 to-blue-500/20" },
-  steve: { name: "Steve", role: "Product Vision", avatar: "🍎", color: "from-gray-400/20 to-gray-600/20" },
-  oprah: { name: "Oprah", role: "User Impact", avatar: "💫", color: "from-amber-500/20 to-orange-500/20" },
+  steve: { name: "Steve", role: "Product Vision", avatar: steveJobsAvatar, color: "from-gray-400/20 to-gray-600/20" },
+  oprah: { name: "Oprah", role: "User Impact", avatar: oprahAvatar, color: "from-amber-500/20 to-orange-500/20" },
   zaha: { name: "Zaha", role: "Design Excellence", avatar: "✨", color: "from-pink-500/20 to-rose-500/20" },
   jony: { name: "Jony", role: "Design Simplicity", avatar: "⚪", color: "from-slate-400/20 to-zinc-500/20" },
-  bartlett: { name: "Steve B.", role: "Business Strategy", avatar: "📈", color: "from-green-500/20 to-emerald-500/20" },
+  bartlett: { name: "Steve B.", role: "Business Strategy", avatar: stevenBartlettAvatar, color: "from-green-500/20 to-emerald-500/20" },
   amal: { name: "Amal", role: "Legal & Ethics", avatar: "⚖️", color: "from-blue-400/20 to-cyan-500/20" },
 };
 
@@ -98,7 +101,11 @@ export const AgentOutputCard = ({ perspective }: AgentOutputCardProps) => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-3xl">{config.avatar}</span>
+            {typeof config.avatar === 'string' && config.avatar.startsWith('/') || config.avatar.includes('src/assets') ? (
+              <img src={config.avatar} alt={config.name} className="w-10 h-10 rounded-lg object-cover" />
+            ) : (
+              <span className="text-3xl">{config.avatar}</span>
+            )}
             <div>
               <h3 className="text-base font-light text-foreground/90">{config.name}</h3>
               <p className="text-xs text-foreground/50">{config.role}</p>
