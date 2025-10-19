@@ -7,6 +7,8 @@ import { ExpertCard } from "./ExpertCard";
 import { EXPERTS } from "@/types/expert";
 import { ScrollingTextSection } from "./ScrollingTextSection";
 import { Footer } from "./Footer";
+import DottedGlowBackground from "./ui/dotted-glow-background";
+import { motion } from "framer-motion";
 
 export const LandingHero = () => {
   const scrollToInput = () => {
@@ -27,6 +29,54 @@ export const LandingHero = () => {
           backgroundSize: '40px 40px',
         }}
       />
+
+      {/* ADVANCED HEADER - Specificity AI */}
+      <div className="relative min-h-[70vh] flex items-center justify-center overflow-hidden bg-gradient-to-b from-background via-background/95 to-background">
+        <DottedGlowBackground
+          className="pointer-events-none"
+          opacity={0.8}
+          gap={12}
+          radius={1.8}
+          colorLightVar="--foreground"
+          glowColorLightVar="--accent"
+          colorDarkVar="--foreground"
+          glowColorDarkVar="--accent"
+          backgroundOpacity={0.05}
+          speedMin={0.2}
+          speedMax={1.2}
+          speedScale={1}
+        />
+        
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, ease: "easeOut" }}
+          className="relative z-10 text-center space-y-8"
+        >
+          <h1 
+            className="text-6xl md:text-8xl lg:text-9xl font-bold tracking-tight"
+            style={{
+              background: "linear-gradient(135deg, hsl(var(--foreground)), hsl(var(--accent)))",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+              filter: "drop-shadow(0 0 60px hsl(var(--accent) / 0.4))"
+            }}
+          >
+            Specificity AI
+          </h1>
+          
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5, duration: 0.8 }}
+          >
+            <AnimatedButton onClick={scrollToInput} className="text-lg px-12 py-6">
+              Get Started
+            </AnimatedButton>
+          </motion.div>
+        </motion.div>
+      </div>
 
       {/* HERO SECTION - PAS Framework: Problem → Agitate → Solve */}
       <div className="text-center space-y-12 max-w-6xl mx-auto pt-16 pb-8 relative z-10">
@@ -75,7 +125,7 @@ export const LandingHero = () => {
         {/* CTA */}
         <div className="flex flex-col gap-3 justify-center items-center pt-10">
           <AnimatedButton onClick={scrollToInput} className="text-base px-10 py-5">
-            Get Started →
+            Get Started
           </AnimatedButton>
           <p className="text-xs text-muted-foreground/60">$20 per spec • Money back guarantee</p>
         </div>
@@ -133,7 +183,7 @@ export const LandingHero = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6">
           {EXPERTS.map((expert, index) => (
             <ExpertCard key={expert.id} expert={expert} index={index} />
           ))}
@@ -231,7 +281,7 @@ export const LandingHero = () => {
               <p className="text-xs text-foreground/60">No trial, no subscription</p>
             </div>
             <AnimatedButton onClick={scrollToInput} className="text-base px-10 py-5">
-              Get Started →
+              Get Started
             </AnimatedButton>
           </div>
         </Card>
