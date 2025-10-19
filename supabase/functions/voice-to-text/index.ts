@@ -5,6 +5,30 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Utility: Sanitize errors for logging
+const sanitizeError = (error: any) => {
+  if (error instanceof Error) {
+    return { message: error.message, name: error.name };
+  }
+  return { message: 'Unknown error' };
+};
+
+// Utility: Get user-friendly error message
+const getUserMessage = (error: any): string => {
+  const message = error instanceof Error ? error.message : String(error);
+  
+  if (message.includes('audio') || message.includes('Audio')) {
+    return 'Invalid audio format. Please try recording again.';
+  }
+  if (message.includes('RATE_LIMIT') || message.includes('rate limit')) {
+    return 'Service temporarily unavailable. Please try again shortly.';
+  }
+  if (message.includes('API') || message.includes('api')) {
+    return 'Transcription service error. Please try again.';
+  }
+  return 'An unexpected error occurred. Please try again.';
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -38,8 +62,8 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Groq API error: ${errorText}`);
+      console.error('Transcription API error:', sanitizeError(new Error('API request failed')));
+      throw new Error('API request failed');
     }
 
     const result = await response.json();
@@ -50,10 +74,9 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Voice-to-text error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    console.error('Voice-to-text error:', sanitizeError(error));
     return new Response(
-      JSON.stringify({ error: errorMessage }),
+      JSON.stringify({ error: getUserMessage(error) }),
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

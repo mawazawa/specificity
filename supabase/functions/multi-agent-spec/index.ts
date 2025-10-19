@@ -9,6 +9,30 @@ const corsHeaders = {
 const GROQ_API_KEY = Deno.env.get('GROQ_API_KEY');
 const EXA_API_KEY = Deno.env.get('EXA_API_KEY');
 
+// Utility: Sanitize errors for logging
+const sanitizeError = (error: any) => {
+  if (error instanceof Error) {
+    return { message: error.message, name: error.name };
+  }
+  return { message: 'Unknown error' };
+};
+
+// Utility: Get user-friendly error message
+const getUserMessage = (error: any): string => {
+  const message = error instanceof Error ? error.message : String(error);
+  
+  if (message.includes('RATE_LIMIT') || message.includes('rate limit')) {
+    return 'Service temporarily unavailable. Please try again shortly.';
+  }
+  if (message.includes('API') || message.includes('api')) {
+    return 'Processing error. Please try again.';
+  }
+  if (message.includes('not configured')) {
+    return 'Service configuration error. Please contact support.';
+  }
+  return 'An unexpected error occurred. Please try again.';
+};
+
 interface AgentConfig {
   agent: string;
   systemPrompt: string;
@@ -36,26 +60,20 @@ async function callGroq(systemPrompt: string, userMessage: string, temperature: 
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('Groq API error:', response.status, errorText);
+    console.error('Groq API error:', sanitizeError(new Error(`API request failed with status ${response.status}`)));
     
     // Parse rate limit errors
     if (response.status === 429) {
-      try {
-        const errorData = JSON.parse(errorText);
-        const message = errorData.error?.message || 'Rate limit exceeded';
-        throw new Error(`RATE_LIMIT: ${message}`);
-      } catch {
-        throw new Error('RATE_LIMIT: Groq API rate limit exceeded. Please wait before retrying.');
-      }
+      throw new Error('RATE_LIMIT: Rate limit exceeded');
     }
     
-    throw new Error(`Groq API failed: ${response.status} - ${errorText}`);
+    throw new Error('API request failed');
   }
 
   const data = await response.json();
   if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-    console.error('Unexpected Groq response:', data);
-    throw new Error('Invalid response from Groq API');
+    console.error('Unexpected API response:', sanitizeError(new Error('Invalid response structure')));
+    throw new Error('Invalid response from API');
   }
   return data.choices[0].message.content || 'No response';
 }
@@ -79,7 +97,7 @@ async function researchWithExa(query: string) {
     const data = await response.json();
     return data.results || [];
   } catch (error) {
-    console.error('Exa search error:', error);
+    console.error('Search API error:', sanitizeError(error));
     return [];
   }
 }
@@ -296,10 +314,9 @@ Be concise and actionable. Use markdown.`;
     throw new Error('Invalid stage');
 
   } catch (error) {
-    console.error('Error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    console.error('Request error:', sanitizeError(error));
     return new Response(
-      JSON.stringify({ error: errorMessage }),
+      JSON.stringify({ error: getUserMessage(error) }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
