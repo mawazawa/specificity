@@ -32,29 +32,37 @@ export const ScrollingTextSection = () => {
 
   return (
     <section ref={containerRef} className="relative w-full py-32">
-      {/* Sticky large word */}
+      {/* Intro text + Sticky large word */}
       <div className="sticky top-1/2 -translate-y-1/2 z-10 pointer-events-none mb-32">
         <div className="container mx-auto px-4">
-          <motion.h2 
-            key={stickyWord}
-            initial={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }}
-            animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-            transition={{ 
-              duration: 0.6,
-              type: "spring",
-              stiffness: 100,
-              damping: 20
-            }}
-            className="text-[20vw] md:text-[15vw] font-bold text-center leading-none"
-            style={{
-              background: "linear-gradient(135deg, hsl(var(--foreground)), hsl(var(--foreground) / 0.5))",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}
-          >
-            {stickyWord}.
-          </motion.h2>
+          <div className="text-center space-y-4">
+            {/* Intro text */}
+            <p className="text-2xl md:text-3xl font-light text-foreground/40 tracking-wide">
+              you can
+            </p>
+            
+            {/* Sticky word with gentler animation */}
+            <motion.h2 
+              key={stickyWord}
+              initial={{ opacity: 0, scale: 0.95, filter: "blur(8px)" }}
+              animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+              transition={{ 
+                duration: 0.8,
+                type: "spring",
+                stiffness: 60,
+                damping: 25
+              }}
+              className="text-[18vw] md:text-[14vw] font-bold leading-none"
+              style={{
+                background: "linear-gradient(135deg, hsl(var(--foreground)), hsl(var(--foreground) / 0.5))",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}
+            >
+              {stickyWord}.
+            </motion.h2>
+          </div>
         </div>
       </div>
 
