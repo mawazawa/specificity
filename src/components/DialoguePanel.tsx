@@ -16,7 +16,7 @@ import jonyAvatar from "@/assets/jony-ive.png";
 import bartlettAvatar from "@/assets/steven-bartlett.png";
 import amalAvatar from "@/assets/amal-clooney.png";
 
-interface DialogueEntry {
+export interface DialogueEntry {
   agent: AgentType;
   message: string;
   timestamp: string;

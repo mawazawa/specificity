@@ -13,13 +13,15 @@ import { ExpandableAgentCard } from "@/components/ExpandableAgentCard";
 import { LiveAgentCard } from "@/components/LiveAgentCard";
 import { ProcessViewer } from "@/components/ProcessViewer";
 import { VoteTally } from "@/components/VoteTally";
-import { DialoguePanel } from "@/components/DialoguePanel";
+import { DialoguePanel, DialogueEntry } from "@/components/DialoguePanel";
 import { AgentConfig, SessionState, Round } from "@/types/spec";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, MessageSquare, LayoutGrid } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ChatView, ChatEntry } from "@/components/chat/ChatView";
+import { MobileHeader } from "@/components/mobile/MobileHeader";
 
 interface Task {
   id: string;
@@ -31,12 +33,7 @@ interface Task {
   result?: any;
 }
 
-interface DialogueEntry {
-  agent: any;
-  message: string;
-  timestamp: string;
-  type: 'question' | 'answer' | 'vote' | 'reasoning';
-}
+// DialogueEntry is now imported from DialoguePanel
 
 const defaultConfigs: AgentConfig[] = [
   { agent: 'elon', systemPrompt: 'You are Elon Musk. Challenge everything with first-principles thinking. Ask: Can this scale to 100M+ users? What\'s the 10x solution? Is this bold enough? Prioritize massive impact, revolutionary technology, and exponential growth. Question conventional wisdom relentlessly.', temperature: 0.8, enabled: true },
@@ -61,7 +58,8 @@ const Index = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [generatedSpec, setGeneratedSpec] = useState<string>("");
   const [dialogueEntries, setDialogueEntries] = useState<DialogueEntry[]>([]);
-  const [isDialogueOpen, setIsDialogueOpen] = useState(false);
+  const [isDialogueOpen, setIsDialogueOpen] = useState(true);
+  const [viewMode, setViewMode] = useState<'chat' | 'panels'>('chat');
   const { toast } = useToast();
 
   const addTask = (task: Omit<Task, 'id'>) => {
@@ -365,6 +363,12 @@ const Index = () => {
   const handleResume = async (comment?: string) => {
     if (comment) {
       addHistoryEntry('user-comment', { comment });
+      setDialogueEntries(prev => [...prev, {
+        agent: 'user' as any,
+        message: comment,
+        timestamp: new Date().toISOString(),
+        type: 'user' as any
+      }]);
     }
     setSessionState(prev => ({ ...prev, isPaused: false }));
     toast({ title: "Resuming", description: "Continuing with your guidance..." });
@@ -372,17 +376,77 @@ const Index = () => {
 
   const currentRound = sessionState.rounds[sessionState.currentRound];
 
+  // Convert dialogue entries to chat entries
+  const chatEntries: ChatEntry[] = dialogueEntries.map(entry => ({
+    agent: entry.agent,
+    message: entry.message,
+    timestamp: entry.timestamp,
+    type: entry.type as ChatEntry['type']
+  }));
+
   return (
     <div className="min-h-screen bg-gradient-hero">
-      <div className="container max-w-7xl mx-auto px-4 py-12 space-y-8">
-        <SpecInput onSubmit={handleSubmit} isLoading={isProcessing} />
+      {/* Mobile Header - only show in chat mode on mobile */}
+      {viewMode === 'chat' && (
+        <div className="md:hidden">
+          <MobileHeader 
+            agentConfigs={agentConfigs}
+            onAgentClick={(agent) => console.log('Agent clicked:', agent)}
+            onMenuClick={() => setViewMode('panels')}
+          />
+        </div>
+      )}
 
-        {/* Activity Section - Right under input */}
-        {isProcessing && tasks.length > 0 && (
-          <div className="animate-slide-up">
-            <ProcessViewer tasks={tasks} currentStage={currentStage} />
+      <div className="container max-w-7xl mx-auto px-4 py-6 md:py-12 space-y-8">
+        {/* View Mode Toggle - Desktop */}
+        <div className="hidden md:flex items-center justify-between">
+          <SpecInput onSubmit={handleSubmit} isLoading={isProcessing} />
+          <div className="flex gap-2 ml-4">
+            <Button
+              variant={viewMode === 'chat' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('chat')}
+              className="gap-2 rounded-full"
+            >
+              <MessageSquare className="w-4 h-4" />
+              Chat
+            </Button>
+            <Button
+              variant={viewMode === 'panels' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('panels')}
+              className="gap-2 rounded-full"
+            >
+              <LayoutGrid className="w-4 h-4" />
+              Panels
+            </Button>
           </div>
-        )}
+        </div>
+
+        {/* Mobile - Just Input */}
+        <div className="md:hidden">
+          {viewMode === 'panels' && (
+            <SpecInput onSubmit={handleSubmit} isLoading={isProcessing} />
+          )}
+        </div>
+
+        {/* Chat View */}
+        {viewMode === 'chat' ? (
+          <ChatView
+            entries={chatEntries}
+            isPaused={sessionState.isPaused}
+            onPause={handlePause}
+            onResume={handleResume}
+            isProcessing={isProcessing}
+          />
+        ) : (
+          <>
+            {/* Activity Section - Right under input */}
+            {isProcessing && tasks.length > 0 && (
+              <div className="animate-slide-up">
+                <ProcessViewer tasks={tasks} currentStage={currentStage} />
+              </div>
+            )}
 
         {currentRound?.votes.length > 0 && (
           <div className="animate-slide-up">
@@ -498,14 +562,18 @@ const Index = () => {
             )}
           </div>
         </div>
+          </>
+        )}
       </div>
 
-      {/* Floating Dialogue Panel */}
-      <DialoguePanel 
-        entries={dialogueEntries}
-        isOpen={isDialogueOpen}
-        onToggle={() => setIsDialogueOpen(!isDialogueOpen)}
-      />
+      {/* Floating Dialogue Panel - only in panels mode */}
+      {viewMode === 'panels' && (
+        <DialoguePanel 
+          entries={dialogueEntries}
+          isOpen={isDialogueOpen}
+          onToggle={() => setIsDialogueOpen(!isDialogueOpen)}
+        />
+      )}
     </div>
   );
 };
