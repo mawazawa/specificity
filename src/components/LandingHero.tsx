@@ -1,4 +1,4 @@
-import { Sparkles, Users, FileText, Zap, Search, GitBranch, Shield, CheckCircle2, ExternalLink } from "lucide-react";
+import { FileText, Zap, Search, GitBranch, Shield, CheckCircle2, ExternalLink } from "lucide-react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
@@ -18,18 +18,11 @@ export const LandingHero = () => {
     <div className="space-y-32 animate-fade-in">
       {/* HERO SECTION - PAS Framework: Problem → Agitate → Solve */}
       <div className="text-center space-y-12 max-w-6xl mx-auto pt-16 pb-8">
-        {/* Urgency Badge - Cognitive Bias: Scarcity */}
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-destructive/10 border border-destructive/20 animate-pulse">
-          <Sparkles className="w-4 h-4 text-destructive" />
-          <span className="text-sm font-medium text-destructive">Limited Beta Access • 147 Spots Remaining</span>
-        </div>
-        
-        {/* 4-U Headline: Useful, Unique, Urgent, Ultra-specific */}
-        <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1]">
-          <span className="block text-foreground/90 mb-2">Stop Wasting 3 Weeks</span>
-          <span className="block text-foreground/90 mb-2">on Incomplete Requirements.</span>
-          <span className="block bg-clip-text text-transparent bg-gradient-to-r from-accent via-primary to-accent bg-[length:200%_100%] animate-shimmer">
-            Get Production-Ready Specs in 30 Minutes.
+      {/* Clean headline - no gimmicks */}
+        <h1 className="text-5xl md:text-7xl lg:text-8xl font-light tracking-tight leading-[1.05]">
+          <span className="block text-foreground mb-3">Specificity</span>
+          <span className="block text-foreground/60 text-3xl md:text-5xl lg:text-6xl font-extralight">
+            Production-Ready Specs in 30 Minutes
           </span>
         </h1>
         
@@ -48,214 +41,45 @@ export const LandingHero = () => {
           </p>
         </div>
 
-        {/* Social Proof - Above Fold */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 pt-6 max-w-5xl mx-auto">
-          <div className="text-center space-y-2">
-            <div className="text-5xl md:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-br from-accent to-primary">8</div>
-            <div className="text-sm text-muted-foreground font-medium">AI Expert Advisors</div>
-            <div className="text-xs text-muted-foreground/60">Debate every decision</div>
+        {/* Minimal value props */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-8 max-w-4xl mx-auto">
+          <div className="text-center space-y-1">
+            <div className="text-4xl md:text-5xl font-extralight text-foreground">8</div>
+            <div className="text-xs text-muted-foreground/80">Expert Advisors</div>
           </div>
-          <div className="text-center space-y-2">
-            <div className="text-5xl md:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-br from-accent to-primary">30m</div>
-            <div className="text-sm text-muted-foreground font-medium">Average Time</div>
-            <div className="text-xs text-muted-foreground/60">vs 3 weeks manual</div>
+          <div className="text-center space-y-1">
+            <div className="text-4xl md:text-5xl font-extralight text-foreground">30m</div>
+            <div className="text-xs text-muted-foreground/80">Average Time</div>
           </div>
-          <div className="text-center space-y-2">
-            <div className="text-5xl md:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-br from-accent to-primary">15</div>
-            <div className="text-sm text-muted-foreground font-medium">Complete Sections</div>
-            <div className="text-xs text-muted-foreground/60">From vision to deploy</div>
+          <div className="text-center space-y-1">
+            <div className="text-4xl md:text-5xl font-extralight text-foreground">15</div>
+            <div className="text-xs text-muted-foreground/80">Sections</div>
           </div>
-          <div className="text-center space-y-2">
-            <div className="text-5xl md:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-br from-accent to-primary">100%</div>
-            <div className="text-sm text-muted-foreground font-medium">Research-Backed</div>
-            <div className="text-xs text-muted-foreground/60">Live web searches</div>
+          <div className="text-center space-y-1">
+            <div className="text-4xl md:text-5xl font-extralight text-foreground">$20</div>
+            <div className="text-xs text-muted-foreground/80">Per Spec</div>
           </div>
         </div>
 
-        {/* CTA - First Person Psychology */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
-          <AnimatedButton onClick={scrollToInput} className="text-lg px-8 py-6">
-            Get My Free Spec Now →
+        {/* CTA */}
+        <div className="flex flex-col gap-3 justify-center items-center pt-10">
+          <AnimatedButton onClick={scrollToInput} className="text-base px-10 py-5">
+            Get Started →
           </AnimatedButton>
-          <p className="text-xs text-muted-foreground">No credit card • 2-minute setup</p>
-        </div>
-
-        {/* Trust Signal Clustering */}
-        <div className="flex flex-wrap items-center justify-center gap-6 pt-6 text-sm text-muted-foreground/70">
-          <div className="flex items-center gap-2">
-            <Shield className="w-4 h-4 text-accent" />
-            <span>SOC 2 Compliant</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-accent" />
-            <span>GDPR Ready</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Zap className="w-4 h-4 text-accent" />
-            <span>99.9% Uptime SLA</span>
-          </div>
+          <p className="text-xs text-muted-foreground/60">$20 per spec • Money back guarantee</p>
         </div>
       </div>
 
-      {/* OBJECTION PREEMPTION - Address top 3 concerns */}
-      <div className="max-w-5xl mx-auto">
-        <Card className="p-10 bg-gradient-to-br from-card/50 via-card to-accent/5 border-accent/20">
-          <h2 className="text-2xl font-bold text-center mb-8">"Will This Actually Work for My Project?"</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="space-y-3">
-              <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center">
-                <CheckCircle2 className="w-6 h-6 text-accent" />
-              </div>
-              <h3 className="font-semibold text-lg">Not Another Generic Template</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Each spec is custom-researched with live web searches. We find the latest framework versions, 
-                security patches, and architectural patterns specific to <em>your</em> tech stack.
-              </p>
-            </div>
-            <div className="space-y-3">
-              <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center">
-                <Users className="w-6 h-6 text-accent" />
-              </div>
-              <h3 className="font-semibold text-lg">Multi-Perspective Analysis</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                8 AI experts (modeled on Jobs, Musk, Clooney, etc.) debate trade-offs. 
-                What one misses, another catches. You get the wisdom of crowds, not a single AI voice.
-              </p>
-            </div>
-            <div className="space-y-3">
-              <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center">
-                <Shield className="w-6 h-6 text-accent" />
-              </div>
-              <h3 className="font-semibold text-lg">Anti-Drift Built In</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Every spec includes scope boundaries, change management processes, and validation checklists. 
-                No more "just one more feature" killing your timeline.
-              </p>
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      {/* Expert Advisory Panel - Social Proof */}
-      <div className="max-w-7xl mx-auto space-y-10">
-        <div className="text-center space-y-4">
-          <Badge variant="outline" className="px-4 py-2 border-accent/30">
-            <Users className="w-3 h-3 mr-2" />
-            Meet Your AI Advisory Panel
-          </Badge>
-          <h2 className="text-3xl md:text-4xl font-bold">8 Expert Minds. One Spec.</h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
-            <strong>Not static bots or generic prompts.</strong> These are high-fidelity AI models trained on the complete corpus 
-            of publicly available tweets, videos, books, news articles, and interviews — with daily real-time monitoring and scraping. 
-            Each advisor brings authentic expertise: from Steve Jobs' user obsession to Amal Clooney's risk analysis. 
-            They debate, challenge, and refine until every edge case is covered.
-          </p>
-        </div>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {EXPERTS.map((expert, index) => (
-            <ExpertCard key={expert.id} expert={expert} index={index} />
-          ))}
-        </div>
-      </div>
-
-      {/* Benefit-First Methodology */}
-      <div className="max-w-6xl mx-auto space-y-10">
-        <div className="text-center space-y-4">
-          <Badge variant="outline" className="px-4 py-2 border-accent/30">
-            <GitBranch className="w-3 h-3 mr-2" />
-            Proven GitHub SpecKit Process
-          </Badge>
-          <h2 className="text-3xl md:text-4xl font-bold">Never Miss a Requirement Again</h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
-            Our 6-phase workflow catches what others miss. Each phase builds on the last, 
-            with research validation and expert debate ensuring nothing falls through the cracks.
-          </p>
-        </div>
-
-        <div className="grid md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {[
-            { phase: "Constitution", icon: Shield, desc: "Establish core principles & constraints" },
-            { phase: "Specify", icon: FileText, desc: "Define user needs & requirements" },
-            { phase: "Plan", icon: GitBranch, desc: "Technical architecture & design" },
-            { phase: "Clarify", icon: Search, desc: "Research & validation with Exa" },
-            { phase: "Tasks", icon: CheckCircle2, desc: "Implementation breakdown" },
-            { phase: "Implement", icon: Zap, desc: "Final spec with traceability" }
-          ].map((item, i) => (
-            <Card key={i} className="p-4 text-center hover-scale border-accent/20 bg-gradient-card">
-              <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center mx-auto mb-3">
-                <item.icon className="w-5 h-5 text-accent" />
-              </div>
-              <div className="text-xs font-semibold mb-2">{i + 1}. {item.phase}</div>
-              <div className="text-[10px] text-muted-foreground leading-tight">{item.desc}</div>
-            </Card>
-          ))}
-        </div>
-      </div>
-
-      {/* Benefit: Never Use Outdated Tech */}
-      <div className="max-w-6xl mx-auto">
-        <Card className="p-10 md:p-12 bg-gradient-to-br from-accent/5 via-card to-card/50 border-accent/20 shadow-2xl">
-          <div className="grid md:grid-cols-2 gap-10 items-center">
-            <div className="space-y-6">
-              <Badge variant="outline" className="border-accent/30">
-                <Search className="w-3 h-3 mr-2" />
-                Live Research Engine
-              </Badge>
-              <h3 className="text-2xl md:text-3xl font-bold">Never Deploy Deprecated Code Again</h3>
-              <p className="text-muted-foreground leading-relaxed text-lg">
-                Your specs are checked against the <span className="text-foreground font-semibold">absolute cutting-edge, bleeding-edge state-of-the-art</span> AI-native tools. 
-                We monitor and scrape in real-time daily — finding today's security patches, framework updates, and breakthrough architectural patterns 
-                from the latest tweets, videos, documentation, and research papers — before you write a single line of code.
-              </p>
-              <div className="space-y-2 pt-4">
-                {[
-                  "Latest framework versions & compatibility",
-                  "Current security best practices",
-                  "Recent architectural patterns",
-                  "Up-to-date compliance requirements"
-                ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-2 text-sm">
-                    <CheckCircle2 className="w-4 h-4 text-accent flex-shrink-0" />
-                    <span className="text-foreground/80">{item}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="bg-background/50 rounded-xl p-6 border border-border/30">
-              <div className="text-xs text-muted-foreground mb-3">Sample Research Query</div>
-              <div className="space-y-3">
-                <div className="bg-accent/10 rounded-lg p-3 border border-accent/20">
-                  <div className="text-xs font-mono text-accent">Searching: "React 19 server components best practices 2025"</div>
-                </div>
-                <div className="space-y-2">
-                  {[1, 2, 3].map(i => (
-                    <div key={i} className="flex items-start gap-2 text-xs">
-                      <ExternalLink className="w-3 h-3 text-muted-foreground mt-0.5 flex-shrink-0" />
-                      <div>
-                        <div className="text-foreground/70">React Documentation - Server Components</div>
-                        <div className="text-muted-foreground text-[10px]">Published 2025, Score: 0.98</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      {/* Benefit: Everything Your Dev Team Needs */}
-      <div className="max-w-6xl mx-auto space-y-10">
-        <div className="text-center space-y-4">
-          <h2 className="text-3xl md:text-4xl font-bold">From Napkin Sketch to Dev-Ready in Minutes</h2>
-          <p className="text-muted-foreground max-w-3xl mx-auto text-lg">
-            Stop bouncing between Notion, Figma, and Google Docs. Get <span className="text-foreground font-semibold">15 battle-tested sections</span> 
-            covering everything from user stories to rollback strategies — in one exportable document.
+      {/* What You Get - Deliverable Preview */}
+      <div className="max-w-6xl mx-auto space-y-8">
+        <div className="text-center space-y-3">
+          <h2 className="text-3xl md:text-4xl font-light tracking-tight">What You Get</h2>
+          <p className="text-sm text-muted-foreground/70 max-w-2xl mx-auto">
+            Production-ready specification with 15 comprehensive sections
           </p>
         </div>
         
-        <div className="grid md:grid-cols-3 gap-4">
+        <div className="grid md:grid-cols-3 gap-3">
           {[
             { title: "Executive Summary", items: ["Business value", "Key objectives", "Timeline & costs"] },
             { title: "Requirements", items: ["Functional & non-functional", "Acceptance criteria", "Traceability matrix"] },
@@ -270,14 +94,14 @@ export const LandingHero = () => {
             { title: "Tech Stack Analysis", items: ["Recommended technologies", "Alternatives comparison", "Research-backed"] },
             { title: "Anti-Drift Controls", items: ["Scope boundaries", "Change management", "Validation checklist"] }
           ].map((section, i) => (
-            <Card key={i} className="p-5 space-y-3 border-border/30 bg-card/50 hover-scale">
+            <Card key={i} className="p-4 space-y-2 border-border/30 bg-card/30 backdrop-blur-sm">
               <div className="flex items-start gap-2">
-                <CheckCircle2 className="w-4 h-4 text-accent mt-1 flex-shrink-0" />
+                <CheckCircle2 className="w-3 h-3 text-foreground/40 mt-0.5 flex-shrink-0" />
                 <div className="flex-1">
-                  <div className="font-semibold text-sm mb-2">{section.title}</div>
-                  <ul className="space-y-1">
+                  <div className="font-medium text-xs mb-1.5">{section.title}</div>
+                  <ul className="space-y-0.5">
                     {section.items.map((item, j) => (
-                      <li key={j} className="text-xs text-muted-foreground">• {item}</li>
+                      <li key={j} className="text-[10px] text-muted-foreground/60">• {item}</li>
                     ))}
                   </ul>
                 </div>
@@ -285,6 +109,121 @@ export const LandingHero = () => {
             </Card>
           ))}
         </div>
+      </div>
+
+      {/* Expert Advisory Panel */}
+      <div className="max-w-6xl mx-auto space-y-8">
+        <div className="text-center space-y-3">
+          <h2 className="text-3xl md:text-4xl font-light tracking-tight">Your Advisory Panel</h2>
+          <p className="text-sm text-muted-foreground/70 max-w-3xl mx-auto leading-relaxed">
+            High-fidelity AI models trained on the complete corpus of publicly available tweets, videos, books, 
+            news articles, and interviews — with daily real-time monitoring and scraping. Each advisor brings 
+            authentic expertise from Steve Jobs' user obsession to Amal Clooney's risk analysis.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {EXPERTS.map((expert, index) => (
+            <ExpertCard key={expert.id} expert={expert} index={index} />
+          ))}
+        </div>
+      </div>
+
+      {/* Process */}
+      <div className="max-w-5xl mx-auto space-y-8">
+        <div className="text-center space-y-3">
+          <h2 className="text-3xl md:text-4xl font-light tracking-tight">How It Works</h2>
+          <p className="text-sm text-muted-foreground/70 max-w-2xl mx-auto">
+            Six-phase workflow with research validation and expert debate
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-6 gap-3">
+          {[
+            { phase: "Constitution", icon: Shield },
+            { phase: "Specify", icon: FileText },
+            { phase: "Plan", icon: GitBranch },
+            { phase: "Research", icon: Search },
+            { phase: "Tasks", icon: CheckCircle2 },
+            { phase: "Deliver", icon: Zap }
+          ].map((item, i) => (
+            <Card key={i} className="p-3 text-center border-border/20 bg-card/20">
+              <div className="w-8 h-8 rounded-lg bg-foreground/5 flex items-center justify-center mx-auto mb-2">
+                <item.icon className="w-4 h-4 text-foreground/50" />
+              </div>
+              <div className="text-[10px] font-medium text-foreground/70">{i + 1}. {item.phase}</div>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      {/* Cutting Edge Research */}
+      <div className="max-w-5xl mx-auto">
+        <Card className="p-8 md:p-10 border-border/20 bg-card/20">
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div className="space-y-4">
+              <h3 className="text-2xl md:text-3xl font-light tracking-tight">Absolute Cutting Edge</h3>
+              <p className="text-sm text-muted-foreground/80 leading-relaxed">
+                Your specs are validated against the latest AI-native tools and frameworks. 
+                We monitor and scrape in real-time daily — finding today's security patches, 
+                framework updates, and breakthrough architectural patterns from tweets, videos, 
+                documentation, and research papers.
+              </p>
+              <div className="space-y-1.5 pt-2">
+                {[
+                  "Latest framework versions",
+                  "Current security practices",
+                  "Recent architectural patterns",
+                  "Up-to-date compliance"
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center gap-2 text-xs">
+                    <CheckCircle2 className="w-3 h-3 text-foreground/40 flex-shrink-0" />
+                    <span className="text-foreground/60">{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="bg-background/30 rounded-lg p-5 border border-border/20">
+              <div className="text-[10px] text-muted-foreground/50 mb-2">Sample Research Query</div>
+              <div className="space-y-2">
+                <div className="bg-foreground/5 rounded p-2.5 border border-border/10">
+                  <div className="text-[10px] font-mono text-foreground/70">React 19 server components 2025</div>
+                </div>
+                <div className="space-y-1.5">
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="flex items-start gap-1.5 text-[10px]">
+                      <ExternalLink className="w-2.5 h-2.5 text-muted-foreground/40 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <div className="text-foreground/50">React Docs - Server Components</div>
+                        <div className="text-muted-foreground/40 text-[9px]">Score: 0.98</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Simple Pricing */}
+      <div className="max-w-2xl mx-auto">
+        <Card className="p-10 md:p-12 text-center border-border/20 bg-card/20">
+          <div className="space-y-6">
+            <div>
+              <div className="text-6xl md:text-7xl font-extralight text-foreground mb-2">$20</div>
+              <div className="text-sm text-muted-foreground/70">per specification</div>
+            </div>
+            <div className="space-y-2">
+              <p className="text-xs text-foreground/60">Complete production-ready spec</p>
+              <p className="text-xs text-foreground/60">Money back guarantee</p>
+              <p className="text-xs text-foreground/60">No trial, no subscription</p>
+            </div>
+            <AnimatedButton onClick={scrollToInput} className="text-base px-10 py-5">
+              Get Started →
+            </AnimatedButton>
+          </div>
+        </Card>
       </div>
 
       {/* Scrolling Text Section */}
