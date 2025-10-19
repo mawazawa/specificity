@@ -21,10 +21,11 @@ const agentConfigSchema = z.object({
 const requestSchema = z.object({
   userInput: z.string()
     .min(10, 'Input too short')
-    .max(2000, 'Input too long (max 2000 characters)'),
+    .max(2000, 'Input too long (max 2000 characters)')
+    .optional(),
   stage: z.enum(['questions', 'research', 'answers', 'voting', 'spec']),
   userComment: z.string().max(500).optional(),
-  agentConfigs: z.array(agentConfigSchema).min(1).max(10),
+  agentConfigs: z.array(agentConfigSchema).optional(),
   roundData: z.any().optional(),
 });
 
@@ -205,6 +206,13 @@ serve(async (req) => {
     if (stage === 'questions') {
       console.log('Generating clarifying questions...');
       
+      if (!agentConfigs) {
+        return new Response(
+          JSON.stringify({ error: 'Agent configurations required for questions stage' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
       const activeAgents = agentConfigs.filter((c: AgentConfig) => c.enabled);
       const questions = [];
       
@@ -254,6 +262,13 @@ Return ONLY a JSON array: [{"question": "...", "context": "...", "importance": "
     if (stage === 'answers') {
       console.log('Generating agent answers...');
       
+      if (!agentConfigs) {
+        return new Response(
+          JSON.stringify({ error: 'Agent configurations required for answers stage' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
       const activeAgents = agentConfigs.filter((c: AgentConfig) => c.enabled);
       const questions = roundData.questions || [];
       const research = roundData.research || [];
@@ -298,6 +313,13 @@ Answer briefly with your key insight and reasoning.`;
 
     if (stage === 'voting') {
       console.log('Collecting votes...');
+      
+      if (!agentConfigs) {
+        return new Response(
+          JSON.stringify({ error: 'Agent configurations required for voting stage' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
       
       const activeAgents = agentConfigs.filter((c: AgentConfig) => c.enabled);
       const answers = roundData.answers || [];
