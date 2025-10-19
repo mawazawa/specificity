@@ -276,10 +276,20 @@ const Index = () => {
       }
     } catch (error: any) {
       console.error('Round error:', error);
-      const errorMsg = error.message?.includes('429') || error.message?.includes('rate limit') || error.message?.includes('Rate limit')
-        ? "⚠️ Rate limit exceeded. Groq API has limits on requests per minute and tokens per day. Please wait a few minutes and try again."
-        : error.message || "An error occurred during processing";
-      toast({ title: "Error", description: errorMsg, variant: "destructive" });
+      
+      let errorMsg = "An error occurred during processing";
+      let errorTitle = "Error";
+      
+      if (error.message?.includes('RATE_LIMIT') || error.message?.includes('429') || error.message?.includes('rate limit')) {
+        errorTitle = "⚠️ Groq Rate Limit";
+        errorMsg = error.message?.includes('daily') 
+          ? "Daily token limit reached. Resets at midnight UTC. Consider upgrading your Groq account for higher limits."
+          : "Too many requests. Groq limits: 30 req/min, 14,400 req/day. Wait 1-2 minutes and retry.";
+      } else {
+        errorMsg = error.message || errorMsg;
+      }
+      
+      toast({ title: errorTitle, description: errorMsg, variant: "destructive", duration: 8000 });
       setIsProcessing(false);
     }
   };

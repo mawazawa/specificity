@@ -16,7 +16,7 @@ interface AgentConfig {
   enabled: boolean;
 }
 
-async function callGroq(systemPrompt: string, userMessage: string, temperature: number = 0.7): Promise<string> {
+async function callGroq(systemPrompt: string, userMessage: string, temperature: number = 0.7, maxTokens: number = 800): Promise<string> {
   const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -30,14 +30,26 @@ async function callGroq(systemPrompt: string, userMessage: string, temperature: 
         { role: 'user', content: userMessage }
       ],
       temperature,
-      max_tokens: 2000,
+      max_tokens: maxTokens,
     }),
   });
 
   if (!response.ok) {
-    const error = await response.text();
-    console.error('Groq API error:', error);
-    throw new Error(`Groq API failed: ${response.status} ${error}`);
+    const errorText = await response.text();
+    console.error('Groq API error:', response.status, errorText);
+    
+    // Parse rate limit errors
+    if (response.status === 429) {
+      try {
+        const errorData = JSON.parse(errorText);
+        const message = errorData.error?.message || 'Rate limit exceeded';
+        throw new Error(`RATE_LIMIT: ${message}`);
+      } catch {
+        throw new Error('RATE_LIMIT: Groq API rate limit exceeded. Please wait before retrying.');
+      }
+    }
+    
+    throw new Error(`Groq API failed: ${response.status} - ${errorText}`);
   }
 
   const data = await response.json();
@@ -111,12 +123,12 @@ serve(async (req) => {
       const questions = [];
       
       for (const config of activeAgents) {
-        const questionPrompt = `Analyze: ${userInput}
+        const questionPrompt = `Input: ${userInput}
 
-From your perspective, what are the 2 most critical questions that would improve this spec?
-Be specific and strategic. Return as JSON array with: question, context, importance, reasoning`;
+Generate 2 critical questions to clarify this spec from your perspective.
+Return ONLY a JSON array: [{"question": "...", "context": "...", "importance": "high", "reasoning": "..."}]`;
 
-        const response = await callGroq(config.systemPrompt, questionPrompt, config.temperature);
+        const response = await callGroq(config.systemPrompt, questionPrompt, config.temperature, 400);
         try {
           const parsed = JSON.parse(response);
           questions.push(...parsed.map((q: any) => ({ ...q, askedBy: config.agent })));
@@ -170,14 +182,14 @@ Be specific and strategic. Return as JSON array with: question, context, importa
         
         for (const q of questions.slice(0, 3)) {
           if (q.askedBy === config.agent) {
-            const prompt = `${context}Question: ${q.question}
+            const prompt = `${context}Q: ${q.question}
 
-Research findings:
+Research:
 ${researchContext}
 
-Provide a detailed answer with reasoning from your perspective.`;
+Answer briefly with your key insight and reasoning.`;
             
-            const response = await callGroq(config.systemPrompt, prompt, config.temperature);
+            const response = await callGroq(config.systemPrompt, prompt, config.temperature, 500);
             answers.push({
               agent: config.agent,
               question: q.question,
@@ -209,14 +221,12 @@ Provide a detailed answer with reasoning from your perspective.`;
           `${a.agent}: ${a.answer.slice(0, 200)}...`
         ).join('\n\n');
         
-        const votePrompt = `Review these answers:
-
+        const votePrompt = `Answers:
 ${answerSummary}
 
-Should we proceed to spec generation? Vote YES or NO and explain your reasoning in 2-3 sentences.
-Format: {"approved": true/false, "reasoning": "your explanation"}`;
+Vote YES or NO to proceed. Return JSON: {"approved": true/false, "reasoning": "brief explanation"}`;
 
-        const response = await callGroq(config.systemPrompt, votePrompt, config.temperature);
+        const response = await callGroq(config.systemPrompt, votePrompt, config.temperature, 200);
         
         try {
           const vote = JSON.parse(response);
@@ -256,24 +266,18 @@ Format: {"approved": true/false, "reasoning": "your explanation"}`;
         `${a.agent}: ${a.answer}`
       ).join('\n\n');
       
-      const specPrompt = `Based on this multi-agent analysis:
+      const specPrompt = `Synthesize this analysis into a technical spec:
 
 ${context}
 
-Generate a comprehensive technical specification with:
-1. Executive Summary
-2. Architecture & Stack
-3. Implementation Phases
-4. Dependencies
-5. Risk Assessment
-6. Testing Strategy
-
-Be specific, actionable, and technical. Format as structured markdown.`;
+Include: 1) Summary 2) Architecture 3) Phases 4) Dependencies 5) Risks 6) Testing
+Be concise and actionable. Use markdown.`;
 
       const spec = await callGroq(
-        "You are a senior technical architect synthesizing multi-agent insights.",
+        "You are a senior technical architect. Be concise and specific.",
         specPrompt,
-        0.5
+        0.5,
+        1200
       );
 
       const approvedBy = votes.filter((v: any) => v.approved).map((v: any) => v.agent);
