@@ -54,10 +54,25 @@ export interface SpecQuestion {
   askedBy: AgentType;
 }
 
+export interface TechAlternative {
+  name: string;
+  logo: string;
+  rating: number;
+  pros: string[];
+  cons: string[];
+}
+
+export interface TechStackItem {
+  category: string;
+  selected: TechAlternative;
+  alternatives: TechAlternative[];
+}
+
 export interface SpecOutput {
   title: string;
   summary: string;
   sections: SpecSection[];
+  techStack: TechStackItem[];
   dependencies: string[];
   risks: string[];
   testStrategy: string[];

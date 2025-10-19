@@ -3,10 +3,18 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare, ChevronDown, ChevronUp, X, Sparkles } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { MessageSquare, X, Sparkles, HelpCircle, Lightbulb, CheckCircle, Brain } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { AgentType } from "@/types/spec";
+import elonAvatar from "@/assets/elon-musk.png";
+import steveAvatar from "@/assets/steve-jobs.png";
+import oprahAvatar from "@/assets/oprah.png";
+import zahaAvatar from "@/assets/agent-placeholder.png";
+import jonyAvatar from "@/assets/jony-ive.png";
+import bartlettAvatar from "@/assets/steven-bartlett.png";
+import amalAvatar from "@/assets/amal-clooney.png";
 
 interface DialogueEntry {
   agent: AgentType;
@@ -41,6 +49,16 @@ const agentNames: Record<AgentType, string> = {
   amal: "Amal Clooney",
 };
 
+const agentAvatars: Record<AgentType, string> = {
+  elon: elonAvatar,
+  steve: steveAvatar,
+  oprah: oprahAvatar,
+  zaha: zahaAvatar,
+  jony: jonyAvatar,
+  bartlett: bartlettAvatar,
+  amal: amalAvatar,
+};
+
 export const DialoguePanel = ({ entries, isOpen = false, onToggle }: DialoguePanelProps) => {
   const [expanded, setExpanded] = useState(isOpen);
 
@@ -51,11 +69,11 @@ export const DialoguePanel = ({ entries, isOpen = false, onToggle }: DialoguePan
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'question': return '❓';
-      case 'answer': return '💡';
-      case 'vote': return '✓';
-      case 'reasoning': return '🧠';
-      default: return '💬';
+      case 'question': return <HelpCircle className="w-3.5 h-3.5 text-amber-400" />;
+      case 'answer': return <Lightbulb className="w-3.5 h-3.5 text-blue-400" />;
+      case 'vote': return <CheckCircle className="w-3.5 h-3.5 text-green-400" />;
+      case 'reasoning': return <Brain className="w-3.5 h-3.5 text-purple-400" />;
+      default: return <MessageSquare className="w-3.5 h-3.5 text-foreground/50" />;
     }
   };
 
@@ -77,7 +95,7 @@ export const DialoguePanel = ({ entries, isOpen = false, onToggle }: DialoguePan
                     <Sparkles className="w-5 h-5 text-primary" />
                     <div className="absolute inset-0 bg-primary/20 blur-lg rounded-full animate-pulse" />
                   </div>
-                  <h3 className="text-sm font-semibold text-foreground tracking-tight">Panel Dialogue</h3>
+                  <h3 className="text-sm font-semibold text-foreground tracking-tight">Live Roundtable</h3>
                   <Badge variant="secondary" className="text-[10px] px-2 py-0.5">
                     {entries.length}
                   </Badge>
@@ -108,29 +126,33 @@ export const DialoguePanel = ({ entries, isOpen = false, onToggle }: DialoguePan
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.05 }}
-                        className={`p-4 rounded-xl bg-gradient-to-br ${agentColors[entry.agent]} border border-border/10 hover:border-border/30 transition-all duration-300`}
+                        className="flex gap-3"
                       >
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs">{getTypeIcon(entry.type)}</span>
-                              <span className="text-xs font-semibold text-foreground/90">
-                                {agentNames[entry.agent]}
-                              </span>
-                              <Badge variant="outline" className="text-[9px] px-1.5 py-0">
-                                {entry.type}
-                              </Badge>
-                            </div>
-                            <span className="text-[10px] text-muted-foreground/60">
+                        <Avatar className="w-8 h-8 ring-2 ring-border/20 shrink-0">
+                          <AvatarImage src={agentAvatars[entry.agent]} alt={agentNames[entry.agent]} />
+                          <AvatarFallback className="text-[10px]">{agentNames[entry.agent][0]}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0 space-y-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-xs font-semibold text-foreground/90">
+                              {agentNames[entry.agent]}
+                            </span>
+                            {getTypeIcon(entry.type)}
+                            <Badge variant="outline" className="text-[9px] px-1.5 py-0">
+                              {entry.type}
+                            </Badge>
+                            <span className="text-[10px] text-muted-foreground/50 ml-auto">
                               {new Date(entry.timestamp).toLocaleTimeString([], { 
                                 hour: '2-digit', 
                                 minute: '2-digit' 
                               })}
                             </span>
                           </div>
-                          <div className="prose prose-sm prose-invert max-w-none prose-p:text-xs prose-p:text-foreground/70 prose-p:leading-relaxed">
-                            <ReactMarkdown>{entry.message}</ReactMarkdown>
-                          </div>
+                          <Card className={`p-3 bg-gradient-to-br ${agentColors[entry.agent]} border border-border/10 rounded-xl`}>
+                            <div className="prose prose-sm prose-invert max-w-none prose-p:text-xs prose-p:text-foreground/70 prose-p:leading-relaxed prose-p:my-1">
+                              <ReactMarkdown>{entry.message}</ReactMarkdown>
+                            </div>
+                          </Card>
                         </div>
                       </motion.div>
                     ))
@@ -141,7 +163,7 @@ export const DialoguePanel = ({ entries, isOpen = false, onToggle }: DialoguePan
               {/* Footer */}
               <div className="p-3 border-t border-border/20 bg-gradient-to-r from-transparent to-primary/5">
                 <p className="text-[10px] text-muted-foreground/60 text-center">
-                  Live panel discussion • Real-time updates
+                  🔴 Live roundtable • Real-time conversation
                 </p>
               </div>
             </Card>

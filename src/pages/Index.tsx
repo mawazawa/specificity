@@ -297,6 +297,7 @@ const Index = () => {
             title: 'Generated Specification',
             summary: specData.spec.slice(0, 200),
             sections: [],
+            techStack: [],
             dependencies: [],
             risks: [],
             testStrategy: [],

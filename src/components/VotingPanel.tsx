@@ -3,9 +3,17 @@ import { Card } from "@/components/ui/card";
 import { Vote, AgentType } from "@/types/spec";
 import { CheckCircle2, XCircle, MessageSquare, ChevronDown, TrendingUp, Users } from "lucide-react";
 import ReactMarkdown from "react-markdown";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import elonAvatar from "@/assets/elon-musk.png";
+import steveAvatar from "@/assets/steve-jobs.png";
+import oprahAvatar from "@/assets/oprah.png";
+import zahaAvatar from "@/assets/agent-placeholder.png";
+import jonyAvatar from "@/assets/jony-ive.png";
+import bartlettAvatar from "@/assets/steven-bartlett.png";
+import amalAvatar from "@/assets/amal-clooney.png";
 
 interface VotingPanelProps {
   votes: Vote[];
@@ -32,6 +40,16 @@ const agentRoles: Record<AgentType, string> = {
   amal: "Ethics & Law",
 };
 
+const agentAvatars: Record<AgentType, string> = {
+  elon: elonAvatar,
+  steve: steveAvatar,
+  oprah: oprahAvatar,
+  zaha: zahaAvatar,
+  jony: jonyAvatar,
+  bartlett: bartlettAvatar,
+  amal: amalAvatar,
+};
+
 export const VotingPanel = ({ votes, roundNumber }: VotingPanelProps) => {
   const [expandedVotes, setExpandedVotes] = useState<Set<string>>(new Set());
   const approved = votes.filter(v => v.approved);
@@ -52,93 +70,106 @@ export const VotingPanel = ({ votes, roundNumber }: VotingPanelProps) => {
 
   const renderVoteCard = (vote: Vote, index: number, isApproved: boolean) => {
     const isExpanded = expandedVotes.has(vote.agent);
-    const snippet = vote.reasoning.split('\n')[0].slice(0, 80) + (vote.reasoning.length > 80 ? '...' : '');
 
     return (
       <motion.div
         key={vote.agent}
-        initial={{ opacity: 0, x: isApproved ? -20 : 20, scale: 0.95 }}
-        animate={{ opacity: 1, x: 0, scale: 1 }}
+        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ 
-          delay: index * 0.08, 
-          duration: 0.4,
+          delay: index * 0.1, 
+          duration: 0.5,
           type: "spring",
-          bounce: 0.3
+          bounce: 0.35
         }}
       >
-        <Card className={`p-5 backdrop-blur-sm border transition-all duration-300 hover:shadow-lg ${
+        <Card className={`overflow-hidden backdrop-blur-sm border transition-all duration-300 ${
           isApproved 
-            ? 'bg-gradient-to-br from-primary/5 via-background/40 to-background/20 border-primary/20 hover:border-primary/30' 
-            : 'bg-gradient-to-br from-destructive/5 via-background/40 to-background/20 border-destructive/20 hover:border-destructive/30'
-        } rounded-xl`}>
-          <div className="space-y-3">
-            <div className="flex items-start justify-between gap-3">
+            ? 'bg-gradient-to-br from-primary/10 via-background/60 to-background/30 border-primary/30 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10' 
+            : 'bg-gradient-to-br from-destructive/10 via-background/60 to-background/30 border-destructive/30 hover:border-destructive/50 hover:shadow-lg hover:shadow-destructive/10'
+        } rounded-2xl`}>
+          {/* Agent Header Card */}
+          <div className="p-4 bg-gradient-to-r from-background/40 to-transparent border-b border-border/20">
+            <div className="flex items-center gap-3">
+              <Avatar className="w-12 h-12 ring-2 ring-border/30">
+                <AvatarImage src={agentAvatars[vote.agent]} alt={agentNames[vote.agent]} />
+                <AvatarFallback>{agentNames[vote.agent][0]}</AvatarFallback>
+              </Avatar>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  {isApproved ? (
-                    <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
-                  ) : (
-                    <XCircle className="w-4 h-4 text-destructive shrink-0" />
-                  )}
-                  <span className="text-sm font-semibold text-foreground/90 truncate">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-foreground truncate">
                     {agentNames[vote.agent]}
                   </span>
+                  <Badge 
+                    variant={isApproved ? "default" : "destructive"} 
+                    className="text-[9px] px-2 py-0"
+                  >
+                    {isApproved ? 'Approved' : 'Dissent'}
+                  </Badge>
                 </div>
-                <p className="text-[10px] text-muted-foreground/60 uppercase tracking-wider">
+                <p className="text-[10px] text-muted-foreground/70 uppercase tracking-wider mt-0.5">
                   {agentRoles[vote.agent]}
                 </p>
               </div>
-              <div className="flex flex-col items-end gap-1 shrink-0">
-                <Badge 
-                  variant={isApproved ? "default" : "destructive"} 
-                  className="text-[10px] px-2 py-0.5"
-                >
-                  {isApproved ? 'Approved' : 'Dissent'}
-                </Badge>
-                <span className="text-[10px] text-muted-foreground/50">
-                  {new Date(vote.timestamp).toLocaleTimeString([], { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                  })}
-                </span>
-              </div>
+              <span className="text-[10px] text-muted-foreground/50 shrink-0">
+                {new Date(vote.timestamp).toLocaleTimeString([], { 
+                  hour: '2-digit', 
+                  minute: '2-digit' 
+                })}
+              </span>
             </div>
+          </div>
 
-            <div className={`transition-all duration-300 ${isExpanded ? 'space-y-2' : ''}`}>
-              {!isExpanded && (
-                <p className="text-xs text-foreground/60 leading-relaxed">
-                  {snippet}
-                </p>
-              )}
-              
-              {isExpanded && (
+          {/* Nested Reasoning Card */}
+          <div className="p-4">
+            <AnimatePresence mode="wait">
+              {isExpanded ? (
                 <motion.div
+                  key="expanded"
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="prose prose-sm prose-invert max-w-none prose-p:text-xs prose-p:text-foreground/70 prose-p:leading-relaxed prose-ul:text-xs prose-li:text-foreground/70"
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
                 >
-                  <ReactMarkdown>{vote.reasoning}</ReactMarkdown>
+                  <Card className="p-4 bg-background/50 border-border/30 rounded-xl">
+                    <div className="flex items-center gap-2 mb-3">
+                      <MessageSquare className="w-3.5 h-3.5 text-primary" />
+                      <h4 className="text-xs font-semibold text-foreground/90">Detailed Reasoning</h4>
+                    </div>
+                    <div className="prose prose-sm prose-invert max-w-none prose-p:text-xs prose-p:text-foreground/70 prose-p:leading-relaxed prose-ul:text-xs prose-li:text-foreground/70 prose-strong:text-foreground/90 prose-headings:text-sm prose-headings:text-foreground/80">
+                      <ReactMarkdown>{vote.reasoning}</ReactMarkdown>
+                    </div>
+                  </Card>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="collapsed"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="text-xs text-foreground/60 leading-relaxed line-clamp-2"
+                >
+                  {vote.reasoning.split('\n')[0]}
                 </motion.div>
               )}
-            </div>
+            </AnimatePresence>
 
             <Button
               variant="ghost"
               size="sm"
               onClick={() => toggleVoteExpansion(vote.agent)}
-              className="w-full h-7 text-[10px] hover:bg-background/40 rounded-lg"
+              className="w-full mt-3 h-8 text-[10px] hover:bg-background/60 rounded-lg transition-all"
             >
               {isExpanded ? (
                 <>
-                  <ChevronDown className="w-3 h-3 mr-1 rotate-180" />
+                  <ChevronDown className="w-3 h-3 mr-1.5 rotate-180 transition-transform" />
                   Show less
                 </>
               ) : (
                 <>
-                  <ChevronDown className="w-3 h-3 mr-1" />
-                  Read full reasoning
+                  <ChevronDown className="w-3 h-3 mr-1.5 transition-transform" />
+                  Read detailed reasoning
                 </>
               )}
             </Button>
