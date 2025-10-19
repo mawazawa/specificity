@@ -82,6 +82,32 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    position: relative;
+  }
+
+  /* Grid overlay - millimeter precision aesthetic */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 0;
+    background-image: 
+      linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--border)) 1px, transparent 1px);
+    background-size: 45px 45px;
+    mask-image: linear-gradient(-20deg, transparent 50%, black);
+    -webkit-mask-image: linear-gradient(-20deg, transparent 50%, black);
+    opacity: 0.15;
+  }
+
+  /* Ensure content is above grid */
+  body > * {
+    position: relative;
+    z-index: 1;
   }
   
   /* Custom scrollbar */

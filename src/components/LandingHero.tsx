@@ -5,6 +5,8 @@ import { Badge } from "./ui/badge";
 import { AnimatedButton } from "./AnimatedButton";
 import { ExpertCard } from "./ExpertCard";
 import { EXPERTS } from "@/types/expert";
+import { ScrollingTextSection } from "./ScrollingTextSection";
+import { Footer } from "./Footer";
 
 export const LandingHero = () => {
   const scrollToInput = () => {
@@ -17,7 +19,7 @@ export const LandingHero = () => {
       {/* Branding - Very Top */}
       <div className="text-center pt-8">
         <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-4">
-          <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-foreground via-foreground/80 to-foreground">
             Specificity AI
           </span>
         </h1>
@@ -221,26 +223,11 @@ export const LandingHero = () => {
         </div>
       </div>
 
+      {/* Scrolling Text Section */}
+      <ScrollingTextSection />
+
       {/* Footer */}
-      <footer className="border-t border-border/30 pt-12 mt-24">
-        <div className="max-w-6xl mx-auto text-center space-y-6">
-          <div className="text-sm text-muted-foreground">
-            <p className="mb-2">Specificity AI — Precision Intelligence for Production-Grade Specifications</p>
-            <p className="text-xs">
-              Powered by advanced AI models, real-time research, and proven software engineering methodologies
-            </p>
-          </div>
-          <div className="flex justify-center gap-6 text-xs text-muted-foreground">
-            <a href="#" className="hover:text-foreground transition-colors">Documentation</a>
-            <a href="#" className="hover:text-foreground transition-colors">Methodology</a>
-            <a href="#example-spec" className="hover:text-foreground transition-colors">Example Specs</a>
-            <a href="#" className="hover:text-foreground transition-colors">Privacy</a>
-          </div>
-          <div className="text-xs text-muted-foreground/60">
-            © 2025 Specificity AI. Built with precision.
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };
