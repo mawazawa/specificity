@@ -145,7 +145,9 @@ export const LandingHero = () => {
           </Badge>
           <h2 className="text-3xl md:text-4xl font-bold">8 Expert Minds. One Spec.</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
-            Each advisor brings a unique lens — from Steve Jobs' user obsession to Amal Clooney's risk analysis. 
+            <strong>Not static bots or generic prompts.</strong> These are high-fidelity AI models trained on the complete corpus 
+            of publicly available tweets, videos, books, news articles, and interviews — with daily real-time monitoring and scraping. 
+            Each advisor brings authentic expertise: from Steve Jobs' user obsession to Amal Clooney's risk analysis. 
             They debate, challenge, and refine until every edge case is covered.
           </p>
         </div>
@@ -202,9 +204,9 @@ export const LandingHero = () => {
               </Badge>
               <h3 className="text-2xl md:text-3xl font-bold">Never Deploy Deprecated Code Again</h3>
               <p className="text-muted-foreground leading-relaxed text-lg">
-                Your competitors use last year's best practices. You get <span className="text-foreground font-semibold">live web searches</span> 
-                finding today's security patches, framework updates, and cutting-edge patterns — 
-                before you write a single line of code.
+                Your specs are checked against the <span className="text-foreground font-semibold">absolute cutting-edge, bleeding-edge state-of-the-art</span> AI-native tools. 
+                We monitor and scrape in real-time daily — finding today's security patches, framework updates, and breakthrough architectural patterns 
+                from the latest tweets, videos, documentation, and research papers — before you write a single line of code.
               </p>
               <div className="space-y-2 pt-4">
                 {[

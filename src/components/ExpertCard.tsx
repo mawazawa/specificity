@@ -56,7 +56,7 @@ export const ExpertCard = ({ expert, index }: ExpertCardProps) => {
               )`
             }} />
             {/* Backlight glow */}
-            <div className={`absolute inset-0 bg-gradient-to-br ${expert.color} opacity-20 blur-3xl group-hover:opacity-30 transition-opacity duration-700`} />
+            <div className={`absolute inset-0 bg-gradient-to-br ${expert.color} opacity-20 group-hover:opacity-30 transition-opacity duration-700`} />
           </div>
           
           <div className="relative p-6 space-y-5">
@@ -72,7 +72,7 @@ export const ExpertCard = ({ expert, index }: ExpertCardProps) => {
                   <div className="absolute inset-0 bg-gradient-to-br from-zinc-700 via-zinc-800 to-zinc-900 opacity-20" />
                   
                   {/* Backlight behind avatar */}
-                  <div className={`absolute inset-0 bg-gradient-to-br ${expert.color} opacity-30 blur-xl`} />
+                  <div className={`absolute inset-0 bg-gradient-to-br ${expert.color} opacity-30`} />
                   
                   {/* Avatar image */}
                   <img 
