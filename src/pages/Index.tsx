@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SpecInput } from "@/components/SpecInput";
 import { AgentCard } from "@/components/AgentCard";
 import { VotingPanel } from "@/components/VotingPanel";
@@ -13,6 +13,7 @@ import { ExpandableAgentCard } from "@/components/ExpandableAgentCard";
 import { LiveAgentCard } from "@/components/LiveAgentCard";
 import { ProcessViewer } from "@/components/ProcessViewer";
 import { VoteTally } from "@/components/VoteTally";
+import { DialoguePanel } from "@/components/DialoguePanel";
 import { AgentConfig, SessionState, Round } from "@/types/spec";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -28,6 +29,13 @@ interface Task {
   status: 'pending' | 'running' | 'complete';
   duration?: number;
   result?: any;
+}
+
+interface DialogueEntry {
+  agent: any;
+  message: string;
+  timestamp: string;
+  type: 'question' | 'answer' | 'vote' | 'reasoning';
 }
 
 const defaultConfigs: AgentConfig[] = [
@@ -52,6 +60,8 @@ const Index = () => {
   const [currentStage, setCurrentStage] = useState<string>("");
   const [tasks, setTasks] = useState<Task[]>([]);
   const [generatedSpec, setGeneratedSpec] = useState<string>("");
+  const [dialogueEntries, setDialogueEntries] = useState<DialogueEntry[]>([]);
+  const [isDialogueOpen, setIsDialogueOpen] = useState(false);
   const { toast } = useToast();
 
   const addTask = (task: Omit<Task, 'id'>) => {
@@ -119,6 +129,17 @@ const Index = () => {
       
       round.questions = questionsData.questions;
       addHistoryEntry('output', { stage: 'questions', questions: round.questions });
+      
+      // Add questions to dialogue
+      round.questions.forEach(q => {
+        setDialogueEntries(prev => [...prev, {
+          agent: q.askedBy,
+          message: q.question,
+          timestamp: new Date().toISOString(),
+          type: 'question'
+        }]);
+      });
+      
       toast({ 
         title: "Questions Complete", 
         description: `${round.questions.length} questions generated in ${questionsDuration}ms`
@@ -182,6 +203,17 @@ const Index = () => {
       
       round.answers = answersData.answers;
       addHistoryEntry('output', { stage: 'answers', answers: round.answers });
+      
+      // Add answers to dialogue
+      round.answers.forEach(a => {
+        setDialogueEntries(prev => [...prev, {
+          agent: a.agent,
+          message: a.answer,
+          timestamp: new Date().toISOString(),
+          type: 'answer'
+        }]);
+      });
+      
       toast({ 
         title: "Analysis Complete", 
         description: `${round.answers.length} expert analyses in ${answersDuration}ms`
@@ -211,6 +243,16 @@ const Index = () => {
       
       round.votes = votesData.votes;
       round.votes.forEach(vote => addHistoryEntry('vote', vote));
+      
+      // Add votes to dialogue
+      round.votes.forEach(v => {
+        setDialogueEntries(prev => [...prev, {
+          agent: v.agent,
+          message: v.reasoning,
+          timestamp: v.timestamp,
+          type: 'vote'
+        }]);
+      });
       
       const approvedCount = round.votes.filter(v => v.approved).length;
       toast({ 
@@ -298,6 +340,7 @@ const Index = () => {
     setIsProcessing(true);
     setTasks([]);
     setGeneratedSpec("");
+    setDialogueEntries([]);
     setSessionState({
       rounds: [],
       currentRound: 0,
@@ -455,6 +498,13 @@ const Index = () => {
           </div>
         </div>
       </div>
+
+      {/* Floating Dialogue Panel */}
+      <DialoguePanel 
+        entries={dialogueEntries}
+        isOpen={isDialogueOpen}
+        onToggle={() => setIsDialogueOpen(!isDialogueOpen)}
+      />
     </div>
   );
 };
