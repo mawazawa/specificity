@@ -6,12 +6,12 @@ import { Label } from "@/components/ui/label";
 import { AgentConfig } from "@/types/spec";
 import { ChevronDown, ChevronUp, Settings, Sparkles } from "lucide-react";
 import { NeumorphicSlider } from "./NeumorphicSlider";
-import steveJobsAvatar from "@/assets/steve-jobs.png";
-import oprahAvatar from "@/assets/oprah.png";
-import stevenBartlettAvatar from "@/assets/steven-bartlett.png";
-import jonyIveAvatar from "@/assets/jony-ive.png";
-import amalClooneyAvatar from "@/assets/amal-clooney.png";
-import elonMuskAvatar from "@/assets/elon-musk.png";
+import steveJobsAvatar from "@/assets/steve-jobs-nobg.png";
+import oprahAvatar from "@/assets/oprah-nobg.png";
+import stevenBartlettAvatar from "@/assets/steven-bartlett-nobg.png";
+import jonyIveAvatar from "@/assets/jony-ive-nobg.png";
+import amalClooneyAvatar from "@/assets/amal-clooney-nobg.png";
+import elonMuskAvatar from "@/assets/elon-musk-nobg.png";
 import agentPlaceholder from "@/assets/agent-placeholder.png";
 
 const agentInfo = {

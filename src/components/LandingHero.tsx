@@ -2,6 +2,9 @@ import { Sparkles, Users, FileText, Zap, Search, GitBranch, Shield, CheckCircle2
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
+import { AnimatedButton } from "./AnimatedButton";
+import { ExpertCard } from "./ExpertCard";
+import { EXPERTS } from "@/types/expert";
 
 export const LandingHero = () => {
   const scrollToInput = () => {
@@ -19,6 +22,27 @@ export const LandingHero = () => {
           </span>
         </h1>
         <p className="text-sm text-muted-foreground">Precision Intelligence for Production-Grade Specifications</p>
+      </div>
+
+      {/* Expert Advisory Panel - Top Priority */}
+      <div className="max-w-7xl mx-auto space-y-8">
+        <div className="text-center space-y-4">
+          <Badge variant="outline" className="px-4 py-2">
+            <Users className="w-3 h-3 mr-2" />
+            Your Expert Advisory Panel
+          </Badge>
+          <h2 className="text-3xl font-bold">World-Class AI Advisors</h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            Each specification is analyzed by 6 AI experts, each embodying the methodologies and thinking patterns 
+            of legendary innovators. This isn't just prompt engineering—it's a carefully crafted multi-perspective analysis system.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {EXPERTS.map((expert, index) => (
+            <ExpertCard key={expert.id} expert={expert} index={index} />
+          ))}
+        </div>
       </div>
 
       {/* Hero Section - Above the fold, value proposition first */}
@@ -44,24 +68,10 @@ export const LandingHero = () => {
         </p>
 
         {/* CTA */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <Button 
-            onClick={scrollToInput}
-            size="lg" 
-            className="gap-2 text-base px-8 py-6"
-          >
-            <Zap className="w-5 h-5" />
-            Start Your Spec Now
-          </Button>
-          <Button 
-            variant="outline" 
-            size="lg"
-            onClick={() => window.open('#example-spec', '_self')}
-            className="gap-2 text-base px-8 py-6"
-          >
-            <FileText className="w-5 h-5" />
-            View Example Spec
-          </Button>
+        <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+          <AnimatedButton onClick={scrollToInput}>
+            Start Your Spec
+          </AnimatedButton>
         </div>
 
         {/* Enhanced Social Proof */}
