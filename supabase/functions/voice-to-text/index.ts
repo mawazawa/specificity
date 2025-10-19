@@ -1,9 +1,17 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Validation schema
+const audioRequestSchema = z.object({
+  audio: z.string()
+    .min(100, 'Audio data too short')
+    .regex(/^[A-Za-z0-9+/=]+$/, 'Invalid audio format - must be base64'),
+});
 
 // Utility: Sanitize errors for logging
 const sanitizeError = (error: any) => {
@@ -35,10 +43,38 @@ serve(async (req) => {
   }
 
   try {
-    const { audio } = await req.json();
+    // Verify authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Authentication required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const rawBody = await req.json();
     
-    if (!audio) {
-      throw new Error('No audio data provided');
+    // Validate request
+    let validated;
+    try {
+      validated = audioRequestSchema.parse(rawBody);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        console.error('Validation error:', sanitizeError(error));
+        return new Response(
+          JSON.stringify({ error: 'Invalid audio format', details: error.errors[0]?.message }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      throw error;
+    }
+
+    const { audio } = validated;
+    
+    // Validate audio size (max 10MB)
+    const sizeEstimate = (audio.length * 3) / 4;
+    if (sizeEstimate > 10 * 1024 * 1024) {
+      throw new Error('Audio file too large (max 10MB)');
     }
 
     // Convert base64 to binary

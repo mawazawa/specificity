@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -8,6 +9,48 @@ const corsHeaders = {
 
 const GROQ_API_KEY = Deno.env.get('GROQ_API_KEY');
 const EXA_API_KEY = Deno.env.get('EXA_API_KEY');
+
+// Input validation schemas
+const agentConfigSchema = z.object({
+  agent: z.string().min(1).max(50),
+  systemPrompt: z.string().min(1).max(2000),
+  temperature: z.number().min(0).max(1),
+  enabled: z.boolean(),
+});
+
+const requestSchema = z.object({
+  userInput: z.string()
+    .min(10, 'Input too short')
+    .max(2000, 'Input too long (max 2000 characters)')
+    .regex(/^[\w\s\.,!?\-:;()'"/@#$%&*+=[\]{}|\\<>~`]+$/, 'Invalid characters detected'),
+  stage: z.enum(['questions', 'research', 'answers', 'voting', 'spec']),
+  userComment: z.string().max(500).optional(),
+  agentConfigs: z.array(agentConfigSchema).min(1).max(10),
+  roundData: z.any().optional(),
+});
+
+// Prompt injection detection
+const detectPromptInjection = (input: string): boolean => {
+  const suspiciousPatterns = [
+    /ignore\s+(all\s+)?(previous|prior|above)\s+(instructions?|prompts?|commands?)/i,
+    /system\s+(prompt|message|instruction)/i,
+    /(api|secret|private)\s*key/i,
+    /reveal\s+(secrets?|credentials?|keys?)/i,
+    /(output|show|display|print|return)\s+(your|the)\s+(prompt|instructions?|system)/i,
+    /you\s+are\s+now/i,
+    /new\s+instructions?:/i,
+    /reset\s+context/i,
+  ];
+  return suspiciousPatterns.some(pattern => pattern.test(input));
+};
+
+// Sanitize user input
+const sanitizeInput = (input: string): string => {
+  return input
+    .replace(/[<>"'`]/g, '') // Remove potentially dangerous chars
+    .slice(0, 2000)
+    .trim();
+};
 
 // Utility: Sanitize errors for logging
 const sanitizeError = (error: any) => {
@@ -108,31 +151,57 @@ serve(async (req) => {
   }
 
   try {
-    const { userInput, stage, agentConfigs, roundData, userComment } = await req.json();
-    
-    // Validate input lengths
-    if (userInput && userInput.length > 5000) {
+    // Verify authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
       return new Response(
-        JSON.stringify({ error: 'Input too long (max 5000 characters)' }),
+        JSON.stringify({ error: 'Authentication required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Parse and validate request body
+    const rawBody = await req.json();
+    
+    // Validate with zod schema
+    let validated;
+    try {
+      validated = requestSchema.parse(rawBody);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        console.error('Validation error:', sanitizeError(error));
+        return new Response(
+          JSON.stringify({ error: 'Invalid request format', details: error.errors[0]?.message }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      throw error;
+    }
+
+    const { userInput, stage, agentConfigs, roundData, userComment } = validated;
+    
+    // Check for prompt injection
+    if (userInput && detectPromptInjection(userInput)) {
+      console.warn('Prompt injection attempt detected:', sanitizeError(new Error('Injection attempt')));
+      return new Response(
+        JSON.stringify({ error: 'Invalid input detected. Please rephrase your request.' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-    
-    if (userComment && userComment.length > 1000) {
+
+    if (userComment && detectPromptInjection(userComment)) {
+      console.warn('Prompt injection in comment:', sanitizeError(new Error('Injection attempt')));
       return new Response(
-        JSON.stringify({ error: 'Comment too long (max 1000 characters)' }),
+        JSON.stringify({ error: 'Invalid comment detected. Please rephrase.' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    // Sanitize inputs
+    const cleanInput = userInput ? sanitizeInput(userInput) : '';
+    const cleanComment = userComment ? sanitizeInput(userComment) : undefined;
     
-    if (!['questions', 'research', 'answers', 'voting', 'spec'].includes(stage)) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid stage' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-    
-    console.log('Processing:', { stage, hasConfigs: !!agentConfigs });
+    console.log('Processing:', { stage, hasConfigs: !!agentConfigs, authenticated: true });
 
     if (stage === 'questions') {
       console.log('Generating clarifying questions...');
@@ -141,7 +210,7 @@ serve(async (req) => {
       const questions = [];
       
       for (const config of activeAgents) {
-        const questionPrompt = `Input: ${userInput}
+        const questionPrompt = `Input: ${cleanInput}
 
 Generate 2 critical questions to clarify this spec from your perspective.
 Return ONLY a JSON array: [{"question": "...", "context": "...", "importance": "high", "reasoning": "..."}]`;
@@ -191,7 +260,7 @@ Return ONLY a JSON array: [{"question": "...", "context": "...", "importance": "
       const research = roundData.research || [];
       
       const answerPromises = activeAgents.map(async (config: AgentConfig) => {
-        const context = userComment ? `\nUSER GUIDANCE: ${userComment}\n` : '';
+        const context = cleanComment ? `\nUSER GUIDANCE: ${cleanComment}\n` : '';
         const researchContext = research.slice(0, 3).map((r: any) => 
           `- ${r.title}: ${r.text || r.snippet}`
         ).join('\n');

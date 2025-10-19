@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { SpecInput } from "@/components/SpecInput";
 import { AgentCard } from "@/components/AgentCard";
 import { VotingPanel } from "@/components/VotingPanel";
@@ -18,7 +19,8 @@ import { LandingHero } from "@/components/LandingHero";
 import { AgentConfig, SessionState, Round } from "@/types/spec";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, MessageSquare, LayoutGrid } from "lucide-react";
+import { Loader2, MessageSquare, LayoutGrid, LogOut } from "lucide-react";
+import type { User, Session } from '@supabase/supabase-js';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChatView, ChatEntry } from "@/components/chat/ChatView";
@@ -47,6 +49,8 @@ const defaultConfigs: AgentConfig[] = [
 ];
 
 const Index = () => {
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [agentConfigs, setAgentConfigs] = useState<AgentConfig[]>(defaultConfigs);
   const [sessionState, setSessionState] = useState<SessionState>({
     rounds: [],
@@ -61,7 +65,39 @@ const Index = () => {
   const [dialogueEntries, setDialogueEntries] = useState<DialogueEntry[]>([]);
   const [isDialogueOpen, setIsDialogueOpen] = useState(true);
   const [viewMode, setViewMode] = useState<'chat' | 'panels'>('chat');
+  const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Authentication check
+  useEffect(() => {
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      
+      if (!session) {
+        navigate('/auth');
+      }
+    });
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      
+      if (!session) {
+        navigate('/auth');
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate('/auth');
+    toast({ title: "Signed out", description: "You have been signed out successfully." });
+  };
 
   const addTask = (task: Omit<Task, 'id'>) => {
     const id = `${task.type}-${Date.now()}-${Math.random()}`;
@@ -388,8 +424,28 @@ const Index = () => {
   // Check if we should show landing page
   const showLanding = !isProcessing && dialogueEntries.length === 0 && !generatedSpec && sessionState.rounds.length === 0;
 
+  // Show loading while checking auth
+  if (!user && !session) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-hero">
+      {/* Sign Out Button */}
+      {user && (
+        <div className="absolute top-4 right-4 z-50">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleSignOut}
+            className="gap-2"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign Out
+          </Button>
+        </div>
+      )}
+
       {/* Mobile Header - only show in chat mode on mobile */}
       {viewMode === 'chat' && !showLanding && (
         <div className="md:hidden">

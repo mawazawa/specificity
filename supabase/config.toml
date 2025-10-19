@@ -1,7 +1,7 @@
 project_id = "kxrdxiznaudatxyfrbxe"
 
 [functions.multi-agent-spec]
-verify_jwt = false
+verify_jwt = true
 
 [functions.voice-to-text]
-verify_jwt = false
+verify_jwt = true
