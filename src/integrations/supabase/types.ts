@@ -46,6 +46,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_and_increment_rate_limit: {
+        Args: {
+          p_endpoint: string
+          p_max_requests: number
+          p_user_id: string
+          p_window_start_cutoff: string
+        }
+        Returns: Json
+      }
       cleanup_old_rate_limits: {
         Args: Record<PropertyKey, never>
         Returns: undefined

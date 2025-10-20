@@ -1,10 +1,14 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.75.1';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 // Validation schema
 const audioRequestSchema = z.object({
@@ -29,7 +33,7 @@ const getUserMessage = (error: any): string => {
     return 'Invalid audio format. Please try recording again.';
   }
   if (message.includes('RATE_LIMIT') || message.includes('rate limit')) {
-    return 'Service temporarily unavailable. Please try again shortly.';
+    return 'Rate limit exceeded. Please try again in an hour.';
   }
   if (message.includes('API') || message.includes('api')) {
     return 'Transcription service error. Please try again.';
@@ -37,18 +41,79 @@ const getUserMessage = (error: any): string => {
   return 'An unexpected error occurred. Please try again.';
 };
 
+// Atomic rate limiting function
+async function checkRateLimit(userId: string, endpoint: string, maxRequests: number = 5): Promise<{ allowed: boolean; remaining: number }> {
+  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+  
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+  
+  try {
+    const { data, error } = await supabase.rpc('check_and_increment_rate_limit', {
+      p_user_id: userId,
+      p_endpoint: endpoint,
+      p_max_requests: maxRequests,
+      p_window_start_cutoff: oneHourAgo
+    });
+
+    if (error) {
+      console.error('Rate limit error:', { type: 'rate_limit_error', user_id: userId });
+      return { allowed: false, remaining: 0 };
+    }
+
+    return { 
+      allowed: data.allowed, 
+      remaining: data.remaining 
+    };
+  } catch (error) {
+    console.error('Rate limit exception:', { type: 'rate_limit_exception', user_id: userId });
+    return { allowed: false, remaining: 0 };
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    // Verify authentication
+    // Verify authentication and extract user
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return new Response(
         JSON.stringify({ error: 'Authentication required' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Extract and validate user from JWT
+    const token = authHeader.replace('Bearer ', '');
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid authentication' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Check rate limit (5 requests per hour per user)
+    const rateLimit = await checkRateLimit(user.id, 'voice-to-text', 5);
+    if (!rateLimit.allowed) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Rate limit exceeded. You can transcribe up to 5 audio clips per hour. Please try again later.',
+          retryAfter: 3600 
+        }),
+        { 
+          status: 429, 
+          headers: { 
+            ...corsHeaders, 
+            'Content-Type': 'application/json',
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': new Date(Date.now() + 60 * 60 * 1000).toISOString()
+          } 
+        }
       );
     }
 
@@ -60,9 +125,9 @@ serve(async (req) => {
       validated = audioRequestSchema.parse(rawBody);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        console.error('Validation error:', sanitizeError(error));
+        console.error('Validation failed:', { type: 'validation_error', user_id: user.id });
         return new Response(
-          JSON.stringify({ error: 'Invalid audio format', details: error.errors[0]?.message }),
+          JSON.stringify({ error: 'Invalid audio format' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
@@ -98,19 +163,27 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
-      console.error('Transcription API error:', sanitizeError(new Error('API request failed')));
+      console.error('Transcription error:', { type: 'api_error', status: response.status, user_id: user.id });
+      
+      if (response.status === 429) {
+        throw new Error('RATE_LIMIT: External API rate limit');
+      }
+      
       throw new Error('API request failed');
     }
 
     const result = await response.json();
 
     return new Response(
-      JSON.stringify({ text: result.text }),
+      JSON.stringify({ 
+        text: result.text,
+        remaining: rateLimit.remaining 
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
-    console.error('Voice-to-text error:', sanitizeError(error));
+    console.error('Service error:', { type: 'transcription_error' });
     return new Response(
       JSON.stringify({ error: getUserMessage(error) }),
       {

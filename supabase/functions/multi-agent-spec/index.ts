@@ -48,10 +48,19 @@ const detectPromptInjection = (input: string): boolean => {
   return suspiciousPatterns.some(pattern => pattern.test(input));
 };
 
-// Sanitize user input
+// Enhanced input sanitization
 const sanitizeInput = (input: string): string => {
   return input
-    .replace(/[<>"'`]/g, '') // Remove potentially dangerous chars
+    // Remove HTML special chars
+    .replace(/[<>"'`]/g, '')
+    // Remove zero-width and invisible characters
+    .replace(/[\u200B-\u200D\uFEFF]/g, '')
+    // Remove control characters except newline/tab
+    .replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]/g, '')
+    // Remove directional overrides
+    .replace(/[\u202A-\u202E]/g, '')
+    // Normalize Unicode (convert homoglyphs to standard forms)
+    .normalize('NFKC')
     .slice(0, 2000)
     .trim();
 };
@@ -106,8 +115,7 @@ async function callGroq(systemPrompt: string, userMessage: string, temperature: 
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    console.error('Groq API error:', sanitizeError(new Error(`API request failed with status ${response.status}`)));
+    console.error('External API error:', { type: 'api_error', status: response.status });
     
     // Parse rate limit errors
     if (response.status === 429) {
@@ -119,7 +127,7 @@ async function callGroq(systemPrompt: string, userMessage: string, temperature: 
 
   const data = await response.json();
   if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-    console.error('Unexpected API response:', sanitizeError(new Error('Invalid response structure')));
+    console.error('Invalid response:', { type: 'invalid_api_response' });
     throw new Error('Invalid response from API');
   }
   return data.choices[0].message.content || 'No response';
@@ -144,66 +152,39 @@ async function researchWithExa(query: string) {
     const data = await response.json();
     return data.results || [];
   } catch (error) {
-    console.error('Search API error:', sanitizeError(error));
-  return [];
+    console.error('Search error:', { type: 'search_api_error' });
+    return [];
   }
 }
 
-// Rate limiting function
+// Atomic rate limiting function - prevents race conditions
 async function checkRateLimit(userId: string, endpoint: string, maxRequests: number = 5): Promise<{ allowed: boolean; remaining: number }> {
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
   
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
   
-  // Get or create rate limit record
-  const { data: existing, error: fetchError } = await supabase
-    .from('rate_limits')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('endpoint', endpoint)
-    .gte('window_start', oneHourAgo)
-    .single();
+  try {
+    // Use atomic database function to prevent concurrent request bypass
+    const { data, error } = await supabase.rpc('check_and_increment_rate_limit', {
+      p_user_id: userId,
+      p_endpoint: endpoint,
+      p_max_requests: maxRequests,
+      p_window_start_cutoff: oneHourAgo
+    });
 
-  if (fetchError && fetchError.code !== 'PGRST116') {
-    console.error('Rate limit check error:', sanitizeError(fetchError));
-    return { allowed: true, remaining: maxRequests }; // Fail open
-  }
-
-  if (!existing) {
-    // Create new rate limit record
-    const { error: insertError } = await supabase
-      .from('rate_limits')
-      .insert({
-        user_id: userId,
-        endpoint,
-        request_count: 1,
-        window_start: new Date().toISOString()
-      });
-    
-    if (insertError) {
-      console.error('Rate limit insert error:', sanitizeError(insertError));
-      return { allowed: true, remaining: maxRequests - 1 };
+    if (error) {
+      console.error('Rate limit error:', { type: 'rate_limit_error', user_id: userId });
+      return { allowed: false, remaining: 0 }; // Fail closed for security
     }
-    
-    return { allowed: true, remaining: maxRequests - 1 };
+
+    return { 
+      allowed: data.allowed, 
+      remaining: data.remaining 
+    };
+  } catch (error) {
+    console.error('Rate limit exception:', { type: 'rate_limit_exception', user_id: userId });
+    return { allowed: false, remaining: 0 }; // Fail closed
   }
-
-  // Check if limit exceeded
-  if (existing.request_count >= maxRequests) {
-    return { allowed: false, remaining: 0 };
-  }
-
-  // Increment counter
-  const { error: updateError } = await supabase
-    .from('rate_limits')
-    .update({ request_count: existing.request_count + 1 })
-    .eq('id', existing.id);
-
-  if (updateError) {
-    console.error('Rate limit update error:', sanitizeError(updateError));
-  }
-
-  return { allowed: true, remaining: maxRequests - existing.request_count - 1 };
 }
 
 serve(async (req) => {
@@ -262,9 +243,9 @@ serve(async (req) => {
       validated = requestSchema.parse(rawBody);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        console.error('Validation error:', sanitizeError(error));
+        console.error('Validation failed:', { type: 'validation_error', user_id: user.id });
         return new Response(
-          JSON.stringify({ error: 'Invalid request format', details: error.errors[0]?.message }),
+          JSON.stringify({ error: 'Invalid request format' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
@@ -273,21 +254,34 @@ serve(async (req) => {
 
     const { userInput, stage, agentConfigs, roundData, userComment, discussionTurns = 8 } = validated;
     
-    // Check for prompt injection
+    // Check for prompt injection in all user-controlled fields
     if (userInput && detectPromptInjection(userInput)) {
-      console.warn('Prompt injection attempt detected:', sanitizeError(new Error('Injection attempt')));
+      console.warn('Security event:', { type: 'injection_detected', field: 'userInput', user_id: user.id });
       return new Response(
-        JSON.stringify({ error: 'Invalid input detected. Please rephrase your request.' }),
+        JSON.stringify({ error: 'Please rephrase your request.' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     if (userComment && detectPromptInjection(userComment)) {
-      console.warn('Prompt injection in comment:', sanitizeError(new Error('Injection attempt')));
+      console.warn('Security event:', { type: 'injection_detected', field: 'userComment', user_id: user.id });
       return new Response(
-        JSON.stringify({ error: 'Invalid comment detected. Please rephrase.' }),
+        JSON.stringify({ error: 'Please rephrase your comment.' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    }
+
+    // Validate agent systemPrompts for injection attempts
+    if (agentConfigs) {
+      for (const config of agentConfigs) {
+        if (config.systemPrompt && detectPromptInjection(config.systemPrompt)) {
+          console.warn('Security event:', { type: 'injection_detected', field: 'systemPrompt', user_id: user.id });
+          return new Response(
+            JSON.stringify({ error: 'Invalid agent configuration detected.' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      }
     }
 
     // Sanitize inputs
