@@ -173,34 +173,33 @@ export const LandingHero = () => {
         </div>
       </div>
 
-      {/* Expert Advisory Panel with Collaborative Flow */}
-      <div className="max-w-7xl mx-auto space-y-12">
-        <div className="text-center space-y-3">
+      {/* Expert Advisory Panel - Unified */}
+      <div className="max-w-7xl mx-auto space-y-16">
+        <div className="text-center space-y-4">
           <h2 className="text-3xl md:text-4xl font-light tracking-tight">Your Advisory Panel</h2>
           <p className="text-sm text-muted-foreground/70 max-w-3xl mx-auto leading-relaxed">
             Simulating a productive meeting by world-renowned major league moguls — at the speed of <span className="font-semibold text-foreground/80">Groq Cloud</span> with the research power of <span className="font-semibold text-foreground/80">Exa MCP</span> remote workers in the cloud. High-fidelity AI models trained on the complete corpus of publicly available tweets, videos, books, 
-            news articles, and interviews — with daily real-time monitoring and scraping. Each advisor brings 
-            authentic expertise from Steve Jobs' user obsession to Amal Clooney's risk analysis.
+            news articles, and interviews — with daily real-time monitoring and scraping.
           </p>
         </div>
 
-        {/* Expert Cards */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6">
+        {/* Expert Cards Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 lg:gap-8">
           {EXPERTS.map((expert, index) => (
             <ExpertCard key={expert.id} expert={expert} index={index} />
           ))}
         </div>
 
-        {/* Collaborative Process Flow */}
-        <div className="grid lg:grid-cols-2 gap-12 items-start mt-16">
-          {/* Flow Diagram */}
-          <div className="order-2 lg:order-1">
-            <Card className="p-8 border-border/20 bg-card/20 backdrop-blur-sm">
+        {/* How They Collaborate */}
+        <div className="grid lg:grid-cols-5 gap-8 items-start">
+          {/* Collaborative Flow Diagram */}
+          <div className="lg:col-span-3">
+            <Card className="p-8 border-border/20 bg-card/20 backdrop-blur-sm h-full">
               <div className="space-y-6">
                 <div className="text-center space-y-2">
-                  <h3 className="text-xl md:text-2xl font-light tracking-tight">Collaborative Refinement</h3>
+                  <h3 className="text-xl md:text-2xl font-light tracking-tight">Collaborative Refinement Process</h3>
                   <p className="text-xs text-muted-foreground/60">
-                    Watch how advisors influence each other in real-time
+                    Watch how advisors influence each other through iterative rounds
                   </p>
                 </div>
                 <CollaborativeFlowDiagram />
@@ -209,44 +208,58 @@ export const LandingHero = () => {
           </div>
 
           {/* Key Differentiators */}
-          <div className="order-1 lg:order-2 space-y-4">
-            <Card className="p-6 border-border/20 bg-gradient-to-br from-primary/5 to-accent/5">
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <Users className="w-5 h-5 text-primary" />
+          <div className="lg:col-span-2 space-y-4">
+            <Card className="p-5 border-border/20 bg-gradient-to-br from-primary/5 to-accent/5">
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Users className="w-4 h-4 text-primary" />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <h4 className="font-medium text-sm">True Collaboration</h4>
                   <p className="text-xs text-muted-foreground/70 leading-relaxed">
-                    Advisors don't just answer questions in isolation. They <span className="text-foreground font-medium">debate, challenge, and refine</span> each other's perspectives in a dynamic roundtable discussion — exactly like a real executive team.
+                    Advisors <span className="text-foreground font-medium">debate, challenge, and refine</span> each other's perspectives — exactly like a real executive roundtable.
                   </p>
                 </div>
               </div>
             </Card>
 
-            <Card className="p-6 border-border/20 bg-gradient-to-br from-accent/5 to-primary/5">
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
-                  <Zap className="w-5 h-5 text-accent" />
+            <Card className="p-5 border-border/20 bg-gradient-to-br from-accent/5 to-primary/5">
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
+                  <Search className="w-4 h-4 text-accent" />
                 </div>
-                <div className="space-y-2">
-                  <h4 className="font-medium text-sm">Research-Backed Decisions</h4>
+                <div className="space-y-1.5">
+                  <h4 className="font-medium text-sm">Research-Backed</h4>
                   <p className="text-xs text-muted-foreground/70 leading-relaxed">
-                    Every technical choice is validated against <span className="text-foreground font-medium">real-time web research</span> using Exa MCP. No hallucinations, no outdated patterns — just cutting-edge, verified recommendations.
+                    Every decision validated against <span className="text-foreground font-medium">real-time web research</span> using Exa MCP. No hallucinations, just verified recommendations.
                   </p>
                 </div>
               </div>
             </Card>
 
-            <Card className="p-6 border-border/20 bg-gradient-to-br from-primary/5 to-accent/5">
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <GitBranch className="w-5 h-5 text-primary" />
+            <Card className="p-5 border-border/20 bg-gradient-to-br from-primary/5 to-accent/5">
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <GitBranch className="w-4 h-4 text-primary" />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <h4 className="font-medium text-sm">Iterative Synthesis</h4>
                   <p className="text-xs text-muted-foreground/70 leading-relaxed">
-                    The spec evolves through <span className="text-foreground font-medium">multiple refinement loops</span>. Advisors vote, provide feedback, and the spec gets regenerated until consensus is reached — ensuring nothing falls through the cracks.
+                    The spec evolves through <span className="text-foreground font-medium">multiple refinement loops</span> until consensus is reached.
+                  </p>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-5 border-border/20 bg-gradient-to-br from-accent/5 to-primary/5">
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
+                  <Zap className="w-4 h-4 text-accent" />
+                </div>
+                <div className="space-y-1.5">
+                  <h4 className="font-medium text-sm">Expert Synthesis</h4>
+                  <p className="text-xs text-muted-foreground/70 leading-relaxed">
+                    Each advisor brings <span className="text-foreground font-medium">authentic expertise</span> from Steve Jobs' design obsession to Amal Clooney's risk analysis.
                   </p>
                 </div>
               </div>
