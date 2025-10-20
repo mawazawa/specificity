@@ -1,4 +1,4 @@
-import { FileText, Zap, Search, GitBranch, Shield, CheckCircle2, ExternalLink } from "lucide-react";
+import { FileText, Zap, Search, GitBranch, Shield, CheckCircle2, ExternalLink, Users } from "lucide-react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
@@ -9,6 +9,7 @@ import { ScrollingTextSection } from "./ScrollingTextSection";
 import { Footer } from "./Footer";
 import DottedGlowBackground from "./ui/dotted-glow-background";
 import { motion } from "framer-motion";
+import { CollaborativeFlowDiagram } from "./CollaborativeFlowDiagram";
 
 export const LandingHero = () => {
   const scrollToInput = () => {
@@ -172,8 +173,8 @@ export const LandingHero = () => {
         </div>
       </div>
 
-      {/* Expert Advisory Panel */}
-      <div className="max-w-6xl mx-auto space-y-8">
+      {/* Expert Advisory Panel with Collaborative Flow */}
+      <div className="max-w-7xl mx-auto space-y-12">
         <div className="text-center space-y-3">
           <h2 className="text-3xl md:text-4xl font-light tracking-tight">Your Advisory Panel</h2>
           <p className="text-sm text-muted-foreground/70 max-w-3xl mx-auto leading-relaxed">
@@ -183,10 +184,74 @@ export const LandingHero = () => {
           </p>
         </div>
 
+        {/* Expert Cards */}
         <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6">
           {EXPERTS.map((expert, index) => (
             <ExpertCard key={expert.id} expert={expert} index={index} />
           ))}
+        </div>
+
+        {/* Collaborative Process Flow */}
+        <div className="grid lg:grid-cols-2 gap-12 items-start mt-16">
+          {/* Flow Diagram */}
+          <div className="order-2 lg:order-1">
+            <Card className="p-8 border-border/20 bg-card/20 backdrop-blur-sm">
+              <div className="space-y-6">
+                <div className="text-center space-y-2">
+                  <h3 className="text-xl md:text-2xl font-light tracking-tight">Collaborative Refinement</h3>
+                  <p className="text-xs text-muted-foreground/60">
+                    Watch how advisors influence each other in real-time
+                  </p>
+                </div>
+                <CollaborativeFlowDiagram />
+              </div>
+            </Card>
+          </div>
+
+          {/* Key Differentiators */}
+          <div className="order-1 lg:order-2 space-y-4">
+            <Card className="p-6 border-border/20 bg-gradient-to-br from-primary/5 to-accent/5">
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Users className="w-5 h-5 text-primary" />
+                </div>
+                <div className="space-y-2">
+                  <h4 className="font-medium text-sm">True Collaboration</h4>
+                  <p className="text-xs text-muted-foreground/70 leading-relaxed">
+                    Advisors don't just answer questions in isolation. They <span className="text-foreground font-medium">debate, challenge, and refine</span> each other's perspectives in a dynamic roundtable discussion — exactly like a real executive team.
+                  </p>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-6 border-border/20 bg-gradient-to-br from-accent/5 to-primary/5">
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
+                  <Zap className="w-5 h-5 text-accent" />
+                </div>
+                <div className="space-y-2">
+                  <h4 className="font-medium text-sm">Research-Backed Decisions</h4>
+                  <p className="text-xs text-muted-foreground/70 leading-relaxed">
+                    Every technical choice is validated against <span className="text-foreground font-medium">real-time web research</span> using Exa MCP. No hallucinations, no outdated patterns — just cutting-edge, verified recommendations.
+                  </p>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-6 border-border/20 bg-gradient-to-br from-primary/5 to-accent/5">
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <GitBranch className="w-5 h-5 text-primary" />
+                </div>
+                <div className="space-y-2">
+                  <h4 className="font-medium text-sm">Iterative Synthesis</h4>
+                  <p className="text-xs text-muted-foreground/70 leading-relaxed">
+                    The spec evolves through <span className="text-foreground font-medium">multiple refinement loops</span>. Advisors vote, provide feedback, and the spec gets regenerated until consensus is reached — ensuring nothing falls through the cracks.
+                  </p>
+                </div>
+              </div>
+            </Card>
+          </div>
         </div>
       </div>
 
