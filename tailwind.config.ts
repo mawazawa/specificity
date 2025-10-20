@@ -38,6 +38,23 @@ export default {
         accent: {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
+          glow: "hsl(var(--accent-glow))",
+        },
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+        },
+        error: {
+          DEFAULT: "hsl(var(--error))",
+          foreground: "hsl(var(--error-foreground))",
+        },
+        info: {
+          DEFAULT: "hsl(var(--info))",
+          foreground: "hsl(var(--info-foreground))",
         },
         popover: {
           DEFAULT: "hsl(var(--popover))",
@@ -75,6 +92,20 @@ export default {
       boxShadow: {
         'glow-primary': 'var(--glow-primary)',
         'glow-accent': 'var(--glow-accent)',
+        'premium': 'var(--button-shadow-premium)',
+        'premium-hover': 'var(--button-shadow-premium-hover)',
+        'button-glow': 'var(--button-glow)',
+      },
+      spacing: {
+        '4': '1rem',
+        '8': '2rem',
+        '12': '3rem',
+        '16': '4rem',
+        '24': '6rem',
+        '32': '8rem',
+        '48': '12rem',
+        '64': '16rem',
+        '96': '24rem',
       },
       borderRadius: {
         lg: "var(--radius)",
