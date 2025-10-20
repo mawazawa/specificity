@@ -41,6 +41,35 @@ const getUserMessage = (error: any): string => {
   return 'An unexpected error occurred. Please try again.';
 };
 
+// Validate audio file format by magic bytes
+function validateAudioBlob(binaryData: Uint8Array): { valid: boolean; format?: string; error?: string } {
+  const magic = binaryData.slice(0, 12);
+  
+  // WebM: 0x1A 0x45 0xDF 0xA3
+  if (magic[0] === 0x1A && magic[1] === 0x45 && magic[2] === 0xDF && magic[3] === 0xA3) {
+    return { valid: true, format: 'webm' };
+  }
+  
+  // WAV: 'RIFF' ... 'WAVE'
+  if (magic[0] === 0x52 && magic[1] === 0x49 && magic[2] === 0x46 && magic[3] === 0x46 &&
+      magic[8] === 0x57 && magic[9] === 0x41 && magic[10] === 0x56 && magic[11] === 0x45) {
+    return { valid: true, format: 'wav' };
+  }
+  
+  // MP3: 0xFF 0xFB or ID3
+  if ((magic[0] === 0xFF && (magic[1] & 0xE0) === 0xE0) ||
+      (magic[0] === 0x49 && magic[1] === 0x44 && magic[2] === 0x33)) {
+    return { valid: true, format: 'mp3' };
+  }
+  
+  // OGG: 'OggS'
+  if (magic[0] === 0x4F && magic[1] === 0x67 && magic[2] === 0x67 && magic[3] === 0x53) {
+    return { valid: true, format: 'ogg' };
+  }
+  
+  return { valid: false, error: 'Invalid audio format. Supported: WebM, WAV, MP3, OGG' };
+}
+
 // Atomic rate limiting function
 async function checkRateLimit(userId: string, endpoint: string, maxRequests: number = 5): Promise<{ allowed: boolean; remaining: number }> {
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -145,10 +174,29 @@ serve(async (req) => {
     // Convert base64 to binary
     const binaryAudio = Uint8Array.from(atob(audio), c => c.charCodeAt(0));
     
-    // Create form data
+    // Validate audio format by magic bytes
+    const validation = validateAudioBlob(binaryAudio);
+    if (!validation.valid) {
+      console.warn('Invalid audio format:', { type: 'invalid_format', user_id: user.id });
+      return new Response(
+        JSON.stringify({ error: validation.error }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // MIME type mapping
+    const mimeTypes: Record<string, string> = {
+      webm: 'audio/webm',
+      wav: 'audio/wav',
+      mp3: 'audio/mpeg',
+      ogg: 'audio/ogg'
+    };
+    
+    // Create form data with correct MIME type
     const formData = new FormData();
-    const blob = new Blob([binaryAudio], { type: 'audio/webm' });
-    formData.append('file', blob, 'audio.webm');
+    const blob = new Blob([binaryAudio], { type: mimeTypes[validation.format!] });
+    const extension = validation.format === 'mp3' ? 'mp3' : validation.format === 'wav' ? 'wav' : validation.format === 'ogg' ? 'ogg' : 'webm';
+    formData.append('file', blob, `audio.${extension}`);
     formData.append('model', 'whisper-large-v3-turbo');
     formData.append('language', 'en');
     formData.append('response_format', 'json');

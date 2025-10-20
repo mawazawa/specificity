@@ -93,6 +93,20 @@ const Index = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
+  // Periodic session verification
+  useEffect(() => {
+    const verifySession = async () => {
+      const { data, error } = await supabase.auth.getSession();
+      if (error || !data.session) {
+        await supabase.auth.signOut();
+        navigate('/auth');
+      }
+    };
+
+    const interval = setInterval(verifySession, 60000); // Every minute
+    return () => clearInterval(interval);
+  }, [navigate]);
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate('/auth');
