@@ -34,17 +34,17 @@ export const LandingHero = () => {
       <div className="relative min-h-[70vh] flex items-center justify-center overflow-hidden bg-gradient-to-b from-background via-background/95 to-background">
         <DottedGlowBackground
           className="pointer-events-none"
-          opacity={0.8}
-          gap={12}
-          radius={1.8}
+          opacity={0.85}
+          gap={16}
+          radius={2.2}
           colorLightVar="--foreground"
           glowColorLightVar="--accent"
           colorDarkVar="--foreground"
           glowColorDarkVar="--accent"
-          backgroundOpacity={0.05}
-          speedMin={0.2}
-          speedMax={1.2}
-          speedScale={1}
+          backgroundOpacity={0.08}
+          speedMin={0.25}
+          speedMax={0.85}
+          speedScale={1.3}
         />
         
         <motion.div
@@ -287,29 +287,10 @@ export const LandingHero = () => {
         </Card>
       </div>
 
-      {/* Scrolling Text Section */}
+      {/* Scrolling Text Section with "Ship" finale */}
       <ScrollingTextSection />
 
-      {/* Final "Ship." with lighting effect */}
-      <div className="flex items-center justify-center min-h-[60vh] relative">
-        <div className="relative group">
-          <div className="absolute -inset-8 bg-accent/20 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          <h2 
-            className="text-[15vw] md:text-[12vw] font-bold relative"
-            style={{
-              background: "linear-gradient(135deg, hsl(var(--foreground)), hsl(var(--accent)))",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-              filter: "drop-shadow(0 0 40px hsl(var(--accent) / 0.3))"
-            }}
-          >
-            Ship.
-          </h2>
-        </div>
-      </div>
-
-      {/* Footer */}
+      {/* Footer - at the very end */}
       <Footer />
     </div>
   );

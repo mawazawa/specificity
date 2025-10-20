@@ -13,7 +13,7 @@ export const Footer = () => {
           {/* Brand */}
           <div className="space-y-4">
             <h3 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-              SpecForge AI
+              Specificity AI
             </h3>
             <p className="text-sm text-muted-foreground max-w-xs leading-relaxed">
               Production-grade technical specifications powered by multi-agent AI collaboration.
@@ -87,7 +87,7 @@ export const Footer = () => {
                 <Github className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
               </a>
               <a
-                href="mailto:contact@specforge.ai"
+                href="mailto:contact@specificity.ai"
                 className="group p-2.5 rounded-lg bg-secondary/40 hover:bg-secondary/60 border border-border/20 hover:border-primary/30 transition-all duration-200"
                 aria-label="Email"
               >
@@ -100,7 +100,7 @@ export const Footer = () => {
         {/* Bottom bar */}
         <div className="pt-8 border-t border-border/30 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-xs text-muted-foreground">
-            © {currentYear} SpecForge AI. All rights reserved.
+            © {currentYear} Specificity AI. All rights reserved.
           </p>
           <div className="flex gap-6">
             <a 

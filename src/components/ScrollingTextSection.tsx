@@ -1,18 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 
+// Curated power words that build momentum
 const words = [
-  "design", "prototype", "solve", "build", "develop", "debug", "learn", "ship",
-  "prompt", "collaborate", "create", "inspire", "innovate", "test", "optimize",
-  "visualize", "transform", "scale", "deliver", "dream", "code", "refactor",
-  "deploy", "architect", "research", "iterate", "validate", "measure", "improve",
-  "automate", "integrate", "discover", "experiment", "achieve", "execute",
-  "strategize", "analyze", "synthesize", "implement", "launch", "evolve"
+  "design", "prototype", "innovate", "build", 
+  "test", "iterate", "scale", "launch", "ship"
 ];
 
 export const ScrollingTextSection = () => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [currentStickyWord, setCurrentStickyWord] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(0);
   
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -22,19 +19,20 @@ export const ScrollingTextSection = () => {
   useEffect(() => {
     const unsubscribe = scrollYProgress.on("change", (latest) => {
       const wordIndex = Math.floor(latest * words.length);
-      setCurrentStickyWord(Math.min(wordIndex, words.length - 1));
+      setCurrentIndex(Math.min(wordIndex, words.length - 1));
     });
     
     return () => unsubscribe();
   }, [scrollYProgress]);
 
-  const stickyWord = words[currentStickyWord];
+  const currentWord = words[currentIndex];
+  const isShip = currentWord === "ship";
 
   return (
-    <section ref={containerRef} className="relative w-full py-32">
-      {/* Visible grid overlay */}
+    <section ref={containerRef} className="relative w-full">
+      {/* Subtle grid overlay */}
       <div 
-        className="absolute inset-0 pointer-events-none opacity-20"
+        className="absolute inset-0 pointer-events-none opacity-10"
         style={{
           backgroundImage: `
             linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px),
@@ -44,63 +42,80 @@ export const ScrollingTextSection = () => {
         }}
       />
 
-      {/* Intro text + Sticky large word */}
-      <div className="sticky top-1/2 -translate-y-1/2 z-10 pointer-events-none mb-32">
+      {/* Sticky word container */}
+      <div className="sticky top-1/2 -translate-y-1/2 z-10 pointer-events-none h-screen flex items-center justify-center">
         <div className="container mx-auto px-4">
-          <div className="text-center space-y-4">
+          <div className="text-center space-y-6">
             {/* Intro text */}
-            <p className="text-2xl md:text-3xl font-light text-foreground/40 tracking-wide">
-              you can
-            </p>
-            
-            {/* Sticky word with gentler animation */}
-            <motion.h2 
-              key={stickyWord}
-              initial={{ opacity: 0, scale: 0.95, filter: "blur(8px)" }}
-              animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-              transition={{ 
-                duration: 0.8,
-                type: "spring",
-                stiffness: 60,
-                damping: 25
-              }}
-              className="text-[18vw] md:text-[14vw] font-bold leading-none"
-              style={{
-                background: "linear-gradient(135deg, hsl(var(--foreground)), hsl(var(--foreground) / 0.5))",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
+            <motion.p 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-2xl md:text-3xl font-light text-foreground/40 tracking-wide"
             >
-              {stickyWord}.
-            </motion.h2>
+              you can
+            </motion.p>
+            
+            {/* Main word with enhanced ship effect */}
+            <motion.div
+              key={currentWord}
+              initial={{ opacity: 0, scale: 0.9, filter: "blur(12px)" }}
+              animate={{ 
+                opacity: 1, 
+                scale: isShip ? 1.05 : 1, 
+                filter: "blur(0px)" 
+              }}
+              transition={{ 
+                duration: isShip ? 1.2 : 0.6,
+                type: "spring",
+                stiffness: isShip ? 40 : 60,
+                damping: isShip ? 20 : 25
+              }}
+              className={`relative ${isShip ? 'mb-8' : ''}`}
+            >
+              {isShip && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{ opacity: 0.3, scale: 2 }}
+                  transition={{ duration: 1.5, ease: "easeOut" }}
+                  className="absolute inset-0 bg-accent/20 rounded-full blur-[100px]"
+                />
+              )}
+              
+              <h2 
+                className="text-[18vw] md:text-[14vw] font-bold leading-none relative"
+                style={{
+                  background: isShip 
+                    ? "linear-gradient(135deg, hsl(var(--accent)), hsl(var(--foreground)))"
+                    : "linear-gradient(135deg, hsl(var(--foreground)), hsl(var(--foreground) / 0.5))",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                  filter: isShip 
+                    ? "drop-shadow(0 0 60px hsl(var(--accent) / 0.6))"
+                    : "none"
+                }}
+              >
+                {currentWord}.
+              </h2>
+            </motion.div>
+
+            {/* Ship landing message */}
+            {isShip && (
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8, duration: 0.8 }}
+                className="text-lg md:text-xl font-light text-foreground/60 tracking-wide"
+              >
+                that's what you're here for.
+              </motion.p>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Scrolling background words */}
-      <div className="absolute inset-0 overflow-hidden opacity-15">
-        <div className="space-y-8 py-32">
-          {[...Array(3)].map((_, groupIndex) => (
-            <div key={groupIndex} className="space-y-4">
-              {words.map((word, i) => (
-                <motion.div
-                  key={`${groupIndex}-${i}`}
-                  className="text-7xl md:text-9xl font-bold text-foreground/40 whitespace-nowrap"
-                  style={{
-                    marginLeft: `${(i * 15) % 100}%`,
-                  }}
-                >
-                  {word}.
-                </motion.div>
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Spacer for scroll */}
-      <div style={{ height: `${words.length * 100}vh` }} />
+      {/* Spacer for scroll - reduced from 100vh to 60vh per word */}
+      <div style={{ height: `${words.length * 60}vh` }} />
     </section>
   );
 };

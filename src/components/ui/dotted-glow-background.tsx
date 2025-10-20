@@ -38,21 +38,21 @@ type DottedGlowBackgroundProps = {
 
 export function DottedGlowBackground({
   className,
-  gap = 12,
-  radius = 2,
+  gap = 16,
+  radius = 2.2,
   color = "rgba(0,0,0,0.7)",
   darkColor,
-  glowColor = "rgba(0, 170, 255, 0.85)",
+  glowColor = "rgba(0, 170, 255, 0.95)",
   darkGlowColor,
   colorLightVar,
   colorDarkVar,
   glowColorLightVar,
   glowColorDarkVar,
-  opacity = 0.6,
+  opacity = 0.75,
   backgroundOpacity = 0,
-  speedMin = 0.4,
-  speedMax = 1.3,
-  speedScale = 1,
+  speedMin = 0.3,
+  speedMax = 0.9,
+  speedScale = 1.2,
 }: DottedGlowBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -232,10 +232,10 @@ export function DottedGlowBackground({
         const lin = mod < 1 ? mod : 2 - mod;
         const a = 0.25 + 0.55 * lin;
 
-        if (a > 0.6) {
-          const glow = (a - 0.6) / 0.4;
+        if (a > 0.55) {
+          const glow = (a - 0.55) / 0.45;
           ctx.shadowColor = resolvedGlowColor;
-          ctx.shadowBlur = 6 * glow;
+          ctx.shadowBlur = 12 * glow;
         } else {
           ctx.shadowColor = "transparent";
           ctx.shadowBlur = 0;
