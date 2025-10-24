@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input";
@@ -8,13 +8,21 @@ import { toast } from "@/hooks/use-toast";
 interface SpecInputProps {
   onSubmit: (input: string) => void;
   isLoading: boolean;
+  defaultValue?: string;
 }
 
-export const SpecInput = ({ onSubmit, isLoading }: SpecInputProps) => {
-  const [input, setInput] = useState("");
+export const SpecInput = ({ onSubmit, isLoading, defaultValue }: SpecInputProps) => {
+  const [input, setInput] = useState(defaultValue || "");
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+
+  // Update input when defaultValue changes
+  useEffect(() => {
+    if (defaultValue) {
+      setInput(defaultValue);
+    }
+  }, [defaultValue]);
 
   const handleSubmit = () => {
     const trimmed = input.trim();

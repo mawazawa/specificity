@@ -16,6 +16,7 @@ import { ProcessViewer } from "@/components/ProcessViewer";
 import { VoteTally } from "@/components/VoteTally";
 import { DialoguePanel, DialogueEntry } from "@/components/DialoguePanel";
 import { LandingHero } from "@/components/LandingHero";
+import { SampleSpecGallery } from "@/components/SampleSpecGallery";
 import { AgentConfig, SessionState, Round } from "@/types/spec";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -106,6 +107,50 @@ const Index = () => {
     const interval = setInterval(verifySession, 60000); // Every minute
     return () => clearInterval(interval);
   }, [navigate]);
+
+  // Auto-save session to localStorage
+  useEffect(() => {
+    if (user && (generatedSpec || dialogueEntries.length > 0 || sessionState.rounds.length > 0)) {
+      const sessionData = {
+        generatedSpec,
+        dialogueEntries,
+        sessionState,
+        timestamp: new Date().toISOString()
+      };
+      localStorage.setItem(`specificity-session-${user.id}`, JSON.stringify(sessionData));
+    }
+  }, [user, generatedSpec, dialogueEntries, sessionState]);
+
+  // Restore session on mount (after auth)
+  useEffect(() => {
+    if (user) {
+      const savedSession = localStorage.getItem(`specificity-session-${user.id}`);
+      if (savedSession) {
+        try {
+          const { generatedSpec: savedSpec, dialogueEntries: savedDialogue, sessionState: savedState, timestamp } = JSON.parse(savedSession);
+
+          // Only restore if session is less than 24 hours old
+          const sessionAge = Date.now() - new Date(timestamp).getTime();
+          const maxAge = 24 * 60 * 60 * 1000; // 24 hours
+
+          if (sessionAge < maxAge) {
+            if (savedSpec) setGeneratedSpec(savedSpec);
+            if (savedDialogue && savedDialogue.length > 0) setDialogueEntries(savedDialogue);
+            if (savedState && savedState.rounds.length > 0) setSessionState(savedState);
+            toast({
+              title: "Session Restored",
+              description: "Your previous work has been recovered",
+            });
+          } else {
+            // Clear old session
+            localStorage.removeItem(`specificity-session-${user.id}`);
+          }
+        } catch (error) {
+          console.error('Failed to restore session:', error);
+        }
+      }
+    }
+  }, [user, toast]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -527,7 +572,17 @@ const Index = () => {
               
               {/* CTA First-Person Psychology: "Get MY spec" */}
               <SpecInput onSubmit={handleSubmit} isLoading={isProcessing} />
-              
+
+              {/* Sample Spec Gallery */}
+              <div className="py-8">
+                <SampleSpecGallery
+                  onSelectSample={(sampleInput) => {
+                    // Create a custom event to trigger the input update
+                    handleSubmit(sampleInput);
+                  }}
+                />
+              </div>
+
               {/* Advisory Panel Preview - Social Proof */}
               <div className="space-y-4">
                 <h3 className="text-center text-sm font-medium text-muted-foreground uppercase tracking-wider">

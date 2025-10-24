@@ -10,8 +10,23 @@ const corsHeaders = {
 
 const GROQ_API_KEY = Deno.env.get('GROQ_API_KEY');
 const EXA_API_KEY = Deno.env.get('EXA_API_KEY');
-const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+// Validate required environment variables
+const validateEnv = () => {
+  const missing = [];
+  if (!GROQ_API_KEY) missing.push('GROQ_API_KEY');
+  if (!EXA_API_KEY) missing.push('EXA_API_KEY');
+  if (!SUPABASE_URL) missing.push('SUPABASE_URL');
+  if (!SUPABASE_SERVICE_ROLE_KEY) missing.push('SUPABASE_SERVICE_ROLE_KEY');
+
+  if (missing.length > 0) {
+    console.error('Missing environment variables:', missing.join(', '));
+    return false;
+  }
+  return true;
+};
 
 // Input validation schemas
 const agentConfigSchema = z.object({
@@ -193,6 +208,17 @@ serve(async (req) => {
   }
 
   try {
+    // Check environment variables
+    if (!validateEnv()) {
+      console.error('Configuration error:', { type: 'missing_env_vars' });
+      return new Response(
+        JSON.stringify({
+          error: 'Service configuration error. Please contact support.',
+          code: 'CONFIG_ERROR'
+        }),
+        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
     // Verify authentication
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {

@@ -146,11 +146,109 @@ export const SpecOutput = ({ spec, onApprove, onRefine }: SpecOutputProps) => {
   };
 
   const downloadPDF = () => {
-    const doc = new jsPDF();
-    const lines = doc.splitTextToSize(spec, 180);
-    doc.text(lines, 15, 15);
-    doc.save(`specification-${new Date().toISOString().split('T')[0]}.pdf`);
-    toast({ title: "Downloaded", description: "Specification saved as PDF" });
+    try {
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const margin = 20;
+      const maxWidth = pageWidth - (margin * 2);
+      let yPosition = margin;
+
+      // Add header
+      doc.setFontSize(20);
+      doc.setFont(undefined, 'bold');
+      doc.text('Technical Specification', margin, yPosition);
+      yPosition += 10;
+
+      doc.setFontSize(10);
+      doc.setFont(undefined, 'normal');
+      doc.setTextColor(128, 128, 128);
+      doc.text(`Generated: ${new Date().toLocaleDateString()}`, margin, yPosition);
+      yPosition += 15;
+
+      // Reset text color
+      doc.setTextColor(0, 0, 0);
+
+      // Process spec content
+      const sections = spec.split('\n');
+      doc.setFontSize(10);
+
+      sections.forEach((line) => {
+        // Check for page break
+        if (yPosition > pageHeight - margin) {
+          doc.addPage();
+          yPosition = margin;
+        }
+
+        // Handle headings
+        if (line.startsWith('# ')) {
+          doc.setFontSize(16);
+          doc.setFont(undefined, 'bold');
+          const text = line.replace('# ', '');
+          doc.text(text, margin, yPosition);
+          yPosition += 8;
+          doc.setFontSize(10);
+          doc.setFont(undefined, 'normal');
+        } else if (line.startsWith('## ')) {
+          doc.setFontSize(14);
+          doc.setFont(undefined, 'bold');
+          const text = line.replace('## ', '');
+          doc.text(text, margin, yPosition);
+          yPosition += 7;
+          doc.setFontSize(10);
+          doc.setFont(undefined, 'normal');
+        } else if (line.startsWith('### ')) {
+          doc.setFontSize(12);
+          doc.setFont(undefined, 'bold');
+          const text = line.replace('### ', '');
+          doc.text(text, margin, yPosition);
+          yPosition += 6;
+          doc.setFontSize(10);
+          doc.setFont(undefined, 'normal');
+        } else if (line.trim()) {
+          // Regular text with word wrap
+          const cleanLine = line.replace(/[*_`]/g, ''); // Remove markdown formatting
+          const lines = doc.splitTextToSize(cleanLine, maxWidth);
+          lines.forEach((splitLine: string) => {
+            if (yPosition > pageHeight - margin) {
+              doc.addPage();
+              yPosition = margin;
+            }
+            doc.text(splitLine, margin, yPosition);
+            yPosition += 5;
+          });
+        } else {
+          yPosition += 3; // Empty line spacing
+        }
+      });
+
+      // Add footer with page numbers
+      const totalPages = doc.internal.pages.length - 1; // Subtract 1 for internal page
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(128, 128, 128);
+        doc.text(
+          `Page ${i} of ${totalPages}`,
+          pageWidth / 2,
+          pageHeight - 10,
+          { align: 'center' }
+        );
+      }
+
+      doc.save(`specification-${new Date().toISOString().split('T')[0]}.pdf`);
+      toast({
+        title: "PDF Downloaded",
+        description: "Specification saved with professional formatting"
+      });
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      toast({
+        title: "Export Failed",
+        description: "Could not generate PDF. Try downloading as Markdown instead.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleRefine = () => {
