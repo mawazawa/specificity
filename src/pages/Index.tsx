@@ -66,6 +66,7 @@ const Index = () => {
   const [dialogueEntries, setDialogueEntries] = useState<DialogueEntry[]>([]);
   const [isDialogueOpen, setIsDialogueOpen] = useState(true);
   const [viewMode, setViewMode] = useState<'chat' | 'panels'>('chat');
+  const [inputValue, setInputValue] = useState<string>("");  // NEW: State for input value
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -544,51 +545,69 @@ const Index = () => {
           <div className="space-y-12">
             <LandingHero />
             
-            {/* CTA Section - White Space = Focus, above the fold */}
-            <div className="max-w-3xl mx-auto space-y-8">
-              <div className="text-center space-y-6">
-                <h2 className="text-3xl md:text-4xl font-bold">
-                  Start Your Free Spec in 2 Minutes
+            {/* Optimized Conversion Flow */}
+            <div className="max-w-5xl mx-auto space-y-16">
+
+              {/* Step 1: Clear Value Proposition */}
+              <div className="text-center space-y-4 max-w-3xl mx-auto">
+                <h2 className="text-3xl md:text-5xl font-bold leading-tight">
+                  Get Your Production-Ready Spec in 30 Minutes
                 </h2>
-                <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                  Describe your product idea below. Our AI panel will analyze it, research the tech, 
-                  and deliver a complete battle-tested specification.
+                <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
+                  8 AI expert advisors analyze your idea, research the latest tech, debate architecture decisions,
+                  and deliver a <span className="font-semibold text-foreground">15-section specification</span> with anti-drift controls.
                 </p>
-                <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground/70">
+                <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 text-sm text-muted-foreground pt-4">
                   <span className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-accent" />
-                    No credit card
+                    <CheckCircle2 className="w-4 h-4 text-green-500" />
+                    <span className="font-medium text-foreground">$20 flat fee</span>
                   </span>
                   <span className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-accent" />
-                    2-minute setup
+                    <CheckCircle2 className="w-4 h-4 text-green-500" />
+                    <span className="font-medium text-foreground">30-min delivery</span>
                   </span>
                   <span className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-accent" />
-                    Export to PDF
+                    <CheckCircle2 className="w-4 h-4 text-green-500" />
+                    <span className="font-medium text-foreground">Money-back guarantee</span>
                   </span>
                 </div>
               </div>
-              
-              {/* CTA First-Person Psychology: "Get MY spec" */}
-              <SpecInput onSubmit={handleSubmit} isLoading={isProcessing} />
 
-              {/* Sample Spec Gallery */}
-              <div className="py-8">
+              {/* Step 2: Sample Gallery FIRST (Inspiration) */}
+              <div>
                 <SampleSpecGallery
                   onSelectSample={(sampleInput) => {
-                    // Create a custom event to trigger the input update
-                    handleSubmit(sampleInput);
+                    setInputValue(sampleInput);
                   }}
                 />
               </div>
 
-              {/* Advisory Panel Preview - Social Proof */}
-              <div className="space-y-4">
-                <h3 className="text-center text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                  Your Expert Advisory Panel
-                </h3>
-                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 gap-3">
+              {/* Step 3: Simple, Clear Input */}
+              <div className="space-y-6">
+                <div className="text-center space-y-2">
+                  <h3 className="text-2xl font-semibold">Describe Your Product Idea</h3>
+                  <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
+                    Use one of the examples above or write your own. The more details you provide, the better your spec will be.
+                  </p>
+                </div>
+
+                <SimpleSpecInput
+                  onSubmit={handleSubmit}
+                  isLoading={isProcessing}
+                  defaultValue={inputValue}
+                  key={inputValue}
+                />
+              </div>
+
+              {/* Step 4: Social Proof - Who Reviews Your Spec */}
+              <div className="space-y-6 border-t border-border/30 pt-12">
+                <div className="text-center space-y-2">
+                  <h3 className="text-xl font-semibold">Your 8-Person AI Advisory Board</h3>
+                  <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
+                    Each advisor brings authentic expertise trained on their complete corpus of public work
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 gap-3 max-w-4xl mx-auto">
                   {agentConfigs.slice(0, 8).map((config) => (
                     <AgentCard
                       key={config.agent}
@@ -601,6 +620,40 @@ const Index = () => {
                       }}
                     />
                   ))}
+                </div>
+              </div>
+
+              {/* Step 5: What Happens Next Preview */}
+              <div className="bg-card/30 border border-border/30 rounded-2xl p-8 space-y-6">
+                <h3 className="text-xl font-semibold text-center">What Happens Next</h3>
+                <div className="grid md:grid-cols-3 gap-6">
+                  <div className="text-center space-y-2">
+                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                      <span className="text-2xl font-bold text-primary">1</span>
+                    </div>
+                    <h4 className="font-medium">AI Panel Debates</h4>
+                    <p className="text-xs text-muted-foreground">
+                      8 expert AIs analyze your idea from different angles - design, tech, legal, business
+                    </p>
+                  </div>
+                  <div className="text-center space-y-2">
+                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                      <span className="text-2xl font-bold text-primary">2</span>
+                    </div>
+                    <h4 className="font-medium">Real-Time Research</h4>
+                    <p className="text-xs text-muted-foreground">
+                      Every decision validated against latest frameworks, security practices, and tech trends
+                    </p>
+                  </div>
+                  <div className="text-center space-y-2">
+                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                      <span className="text-2xl font-bold text-primary">3</span>
+                    </div>
+                    <h4 className="font-medium">15-Section Spec</h4>
+                    <p className="text-xs text-muted-foreground">
+                      Production-ready specification with architecture, security, testing, and deployment plans
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>

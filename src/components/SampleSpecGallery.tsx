@@ -53,14 +53,28 @@ interface SampleSpecGalleryProps {
 }
 
 export const SampleSpecGallery = ({ onSelectSample }: SampleSpecGalleryProps) => {
+  const handleSampleClick = (input: string) => {
+    // Populate input and scroll to it - don't submit
+    onSelectSample(input);
+
+    // Scroll to input so user can review/edit
+    setTimeout(() => {
+      const inputElement = document.querySelector('[data-spec-input]') as HTMLInputElement;
+      if (inputElement) {
+        inputElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        inputElement.focus();
+      }
+    }, 100);
+  };
+
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
         <h3 className="text-lg font-semibold text-foreground">
-          Not sure where to start?
+          Start with an Example
         </h3>
         <p className="text-sm text-muted-foreground">
-          Try one of these example projects to see how it works
+          Click any example below to populate the input - review and customize before generating
         </p>
       </div>
 
@@ -73,7 +87,7 @@ export const SampleSpecGallery = ({ onSelectSample }: SampleSpecGalleryProps) =>
             transition={{ delay: index * 0.1 }}
           >
             <Card className="p-5 hover:border-primary/50 transition-all duration-300 hover:shadow-lg group cursor-pointer h-full flex flex-col"
-              onClick={() => onSelectSample(sample.input)}
+              onClick={() => handleSampleClick(sample.input)}
             >
               <div className="flex items-start gap-4 mb-3">
                 <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -104,10 +118,10 @@ export const SampleSpecGallery = ({ onSelectSample }: SampleSpecGalleryProps) =>
                   className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
                   onClick={(e) => {
                     e.stopPropagation();
-                    onSelectSample(sample.input);
+                    handleSampleClick(sample.input);
                   }}
                 >
-                  Try This Example
+                  Use This Template →
                 </Button>
               </div>
             </Card>
@@ -117,7 +131,7 @@ export const SampleSpecGallery = ({ onSelectSample }: SampleSpecGalleryProps) =>
 
       <div className="text-center">
         <p className="text-xs text-muted-foreground">
-          Click any example to populate the input field, then hit "Generate Spec" to see the magic happen
+          💡 Click an example to populate the input above • Review and customize • Then generate your spec
         </p>
       </div>
     </div>
