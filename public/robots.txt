@@ -1,14 +1,25 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+# Crawl-delay to be polite
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://specificity.ai/sitemap.xml
+
+# Block admin and API endpoints
+Disallow: /api/
+Disallow: /admin/
+Disallow: /_app/
+Disallow: /.well-known/
+
+# Allow specific bots
 User-agent: Googlebot
 Allow: /
 
 User-agent: Bingbot
 Allow: /
 
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
-User-agent: *
+User-agent: Slurp
 Allow: /
