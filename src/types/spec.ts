@@ -94,8 +94,14 @@ export interface SessionState {
   history: HistoryEntry[];
 }
 
+export type HistoryEntryData =
+  | { type: 'vote'; data: Vote }
+  | { type: 'output'; data: AgentPerspective }
+  | { type: 'spec'; data: string }
+  | { type: 'user-comment'; data: string };
+
 export interface HistoryEntry {
   timestamp: string;
   type: 'vote' | 'output' | 'spec' | 'user-comment';
-  data: any;
+  data: Vote | AgentPerspective | string;
 }

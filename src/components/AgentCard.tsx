@@ -6,13 +6,13 @@ import { Label } from "@/components/ui/label";
 import { AgentConfig } from "@/types/spec";
 import { ChevronDown, ChevronUp, Settings, Sparkles } from "lucide-react";
 import { NeumorphicSlider } from "./NeumorphicSlider";
-import steveJobsAvatar from "@/assets/steve-jobs-nobg.png";
-import oprahAvatar from "@/assets/oprah-nobg.png";
-import stevenBartlettAvatar from "@/assets/steven-bartlett-nobg.png";
-import jonyIveAvatar from "@/assets/jony-ive-nobg.png";
-import amalClooneyAvatar from "@/assets/amal-clooney-nobg.png";
-import elonMuskAvatar from "@/assets/elon-musk-nobg.png";
-import agentPlaceholder from "@/assets/agent-placeholder.png";
+import steveJobsAvatar from "@/assets/optimized/steve-jobs-nobg.webp";
+import oprahAvatar from "@/assets/optimized/oprah-nobg.webp";
+import stevenBartlettAvatar from "@/assets/optimized/steven-bartlett-nobg.webp";
+import jonyIveAvatar from "@/assets/optimized/jony-ive-nobg.webp";
+import amalClooneyAvatar from "@/assets/optimized/amal-clooney-nobg.webp";
+import elonMuskAvatar from "@/assets/optimized/elon-musk-nobg.webp";
+import agentPlaceholder from "@/assets/optimized/agent-placeholder.webp";
 
 const agentInfo = {
   elon: { name: "Elon Musk", role: "First Principles", color: "from-purple-500 via-fuchsia-500 to-pink-500", avatar: elonMuskAvatar },

@@ -7,12 +7,12 @@ import { AgentPerspective, AgentType } from "@/types/spec";
 import { toast } from "@/hooks/use-toast";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-import steveJobsAvatar from "@/assets/steve-jobs.png";
-import oprahAvatar from "@/assets/oprah.png";
-import stevenBartlettAvatar from "@/assets/steven-bartlett.png";
-import jonyIveAvatar from "@/assets/jony-ive.png";
-import amalClooneyAvatar from "@/assets/amal-clooney.png";
-import elonMuskAvatar from "@/assets/elon-musk.png";
+import steveJobsAvatar from "@/assets/optimized/steve-jobs.webp";
+import oprahAvatar from "@/assets/optimized/oprah.webp";
+import stevenBartlettAvatar from "@/assets/optimized/steven-bartlett.webp";
+import jonyIveAvatar from "@/assets/optimized/jony-ive.webp";
+import amalClooneyAvatar from "@/assets/optimized/amal-clooney.webp";
+import elonMuskAvatar from "@/assets/optimized/elon-musk.webp";
 
 const agentConfig: Record<AgentType, { name: string; role: string; avatar: string; color: string }> = {
   elon: { name: "Elon", role: "Scale & Innovation", avatar: elonMuskAvatar, color: "from-purple-500/20 to-blue-500/20" },

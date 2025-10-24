@@ -34,7 +34,26 @@ interface Task {
   description: string;
   status: 'pending' | 'running' | 'complete';
   duration?: number;
-  result?: any;
+  result?: unknown;
+}
+
+// API Response interfaces
+interface DialogueTurn {
+  agent: AgentType;
+  message: string;
+  timestamp: string;
+}
+
+interface ResearchItem {
+  title?: string;
+  url?: string;
+  snippet?: string;
+  relevance?: number;
+}
+
+interface SynthesisItem {
+  agent: AgentType;
+  analysis: string;
 }
 
 // DialogueEntry is now imported from DialoguePanel
@@ -169,7 +188,7 @@ const Index = () => {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
   };
 
-  const addHistoryEntry = (type: 'vote' | 'output' | 'spec' | 'user-comment', data: any) => {
+  const addHistoryEntry = (type: 'vote' | 'output' | 'spec' | 'user-comment', data: Vote | AgentPerspective | string) => {
     setSessionState(prev => ({
       ...prev,
       history: [...prev.history, { timestamp: new Date().toISOString(), type, data }]
@@ -220,7 +239,7 @@ const Index = () => {
       
       // Add dialogue entries with scores
       if (discussionData.dialogue) {
-        discussionData.dialogue.forEach((turn: any) => {
+        discussionData.dialogue.forEach((turn: DialogueTurn) => {
           setDialogueEntries(prev => [...prev, {
             agent: turn.agent,
             message: turn.message,
@@ -265,7 +284,7 @@ const Index = () => {
       const researchDuration = Date.now() - researchStartTime;
       researchTaskIds.forEach(id => updateTask(id, { status: 'complete', duration: researchDuration / researchTaskIds.length }));
       
-      round.research = researchData.research.map((r: any) => ({
+      round.research = researchData.research.map((r: ResearchItem) => ({
         title: r.title || 'Research',
         url: r.url || '',
         snippet: r.text || r.snippet || '',
@@ -304,7 +323,7 @@ const Index = () => {
       addHistoryEntry('output', { stage: 'synthesis', syntheses: round.answers });
       
       // Add syntheses to dialogue
-      synthesisData.syntheses?.forEach((s: any) => {
+      synthesisData.syntheses?.forEach((s: SynthesisItem) => {
         setDialogueEntries(prev => [...prev, {
           agent: s.agent,
           message: s.synthesis,
@@ -429,19 +448,21 @@ const Index = () => {
           await runRound(input, roundNumber + 1);
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Round error:', error);
-      
+
       let errorMsg = "An error occurred during processing";
       let errorTitle = "Error";
-      
-      if (error.message?.includes('RATE_LIMIT') || error.message?.includes('429') || error.message?.includes('rate limit')) {
+
+      const errMessage = error instanceof Error ? error.message : '';
+
+      if (errMessage.includes('RATE_LIMIT') || errMessage.includes('429') || errMessage.includes('rate limit')) {
         errorTitle = "⚠️ Groq Rate Limit";
-        errorMsg = error.message?.includes('daily') 
+        errorMsg = errMessage.includes('daily')
           ? "Daily token limit reached. Resets at midnight UTC. Consider upgrading your Groq account for higher limits."
           : "Too many requests. Groq limits: 30 req/min, 14,400 req/day. Wait 1-2 minutes and retry.";
       } else {
-        errorMsg = error.message || errorMsg;
+        errorMsg = errMessage || errorMsg;
       }
       
       toast({ title: errorTitle, description: errorMsg, variant: "destructive", duration: 8000 });

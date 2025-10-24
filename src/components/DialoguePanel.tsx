@@ -8,13 +8,13 @@ import { MessageSquare, X, Sparkles, HelpCircle, Lightbulb, CheckCircle, Brain }
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { AgentType } from "@/types/spec";
-import elonAvatar from "@/assets/elon-musk.png";
-import steveAvatar from "@/assets/steve-jobs.png";
-import oprahAvatar from "@/assets/oprah.png";
-import zahaAvatar from "@/assets/agent-placeholder.png";
-import jonyAvatar from "@/assets/jony-ive.png";
-import bartlettAvatar from "@/assets/steven-bartlett.png";
-import amalAvatar from "@/assets/amal-clooney.png";
+import elonAvatar from "@/assets/optimized/elon-musk.webp";
+import steveAvatar from "@/assets/optimized/steve-jobs.webp";
+import oprahAvatar from "@/assets/optimized/oprah.webp";
+import zahaAvatar from "@/assets/optimized/agent-placeholder.webp";
+import jonyAvatar from "@/assets/optimized/jony-ive.webp";
+import bartlettAvatar from "@/assets/optimized/steven-bartlett.webp";
+import amalAvatar from "@/assets/optimized/amal-clooney.webp";
 
 export interface DialogueEntry {
   agent: AgentType;

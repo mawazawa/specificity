@@ -67,10 +67,10 @@ const Auth = () => {
         // Switch to login tab
         document.querySelector('[value="login"]')?.dispatchEvent(new Event('click', { bubbles: true }));
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Sign Up Error",
-        description: error.message || "Failed to create account",
+        description: error instanceof Error ? error.message : "Failed to create account",
         variant: "destructive",
       });
     } finally {
@@ -121,10 +121,10 @@ const Auth = () => {
         });
         navigate("/");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Sign In Error",
-        description: error.message || "Failed to sign in",
+        description: error instanceof Error ? error.message : "Failed to sign in",
         variant: "destructive",
       });
     } finally {

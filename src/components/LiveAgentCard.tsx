@@ -2,13 +2,13 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MessageSquare, ThumbsUp, ThumbsDown, Sparkles, Brain, Target } from "lucide-react";
 import { motion } from "framer-motion";
-import steveJobsAvatar from "@/assets/steve-jobs.png";
-import oprahAvatar from "@/assets/oprah.png";
-import stevenBartlettAvatar from "@/assets/steven-bartlett.png";
-import jonyIveAvatar from "@/assets/jony-ive.png";
-import amalClooneyAvatar from "@/assets/amal-clooney.png";
-import elonMuskAvatar from "@/assets/elon-musk.png";
-import agentPlaceholder from "@/assets/agent-placeholder.png";
+import steveJobsAvatar from "@/assets/optimized/steve-jobs.webp";
+import oprahAvatar from "@/assets/optimized/oprah.webp";
+import stevenBartlettAvatar from "@/assets/optimized/steven-bartlett.webp";
+import jonyIveAvatar from "@/assets/optimized/jony-ive.webp";
+import amalClooneyAvatar from "@/assets/optimized/amal-clooney.webp";
+import elonMuskAvatar from "@/assets/optimized/elon-musk.webp";
+import agentPlaceholder from "@/assets/optimized/agent-placeholder.webp";
 
 const agentInfo = {
   elon: { name: "Elon", color: "from-purple-500 via-fuchsia-500 to-pink-500", avatar: elonMuskAvatar },
