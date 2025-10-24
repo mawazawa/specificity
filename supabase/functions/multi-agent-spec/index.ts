@@ -175,16 +175,15 @@ async function researchWithExa(query: string) {
 // Atomic rate limiting function - prevents race conditions
 async function checkRateLimit(userId: string, endpoint: string, maxRequests: number = 5): Promise<{ allowed: boolean; remaining: number }> {
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-  
-  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-  
+
   try {
-    // Use atomic database function to prevent concurrent request bypass
+    // Use atomic database function with stable hourly windows
+    // Fixed: Now uses date_trunc('hour', now()) internally for stable window_start
     const { data, error } = await supabase.rpc('check_and_increment_rate_limit', {
       p_user_id: userId,
       p_endpoint: endpoint,
       p_max_requests: maxRequests,
-      p_window_start_cutoff: oneHourAgo
+      p_window_hours: 1  // 1-hour window
     });
 
     if (error) {
@@ -192,9 +191,9 @@ async function checkRateLimit(userId: string, endpoint: string, maxRequests: num
       return { allowed: false, remaining: 0 }; // Fail closed for security
     }
 
-    return { 
-      allowed: data.allowed, 
-      remaining: data.remaining 
+    return {
+      allowed: data.allowed,
+      remaining: data.remaining
     };
   } catch (error) {
     console.error('Rate limit exception:', { type: 'rate_limit_exception', user_id: userId });
