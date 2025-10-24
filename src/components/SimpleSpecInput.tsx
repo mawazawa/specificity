@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { Loader2, Sparkles } from "lucide-react";
+import { ConfirmationDialog } from "./ConfirmationDialog";
 
 interface SimpleSpecInputProps {
   onSubmit: (input: string) => void;
@@ -12,6 +13,7 @@ interface SimpleSpecInputProps {
 
 export const SimpleSpecInput = ({ onSubmit, isLoading, defaultValue }: SimpleSpecInputProps) => {
   const [input, setInput] = useState(defaultValue || "");
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
   // Update input when defaultValue changes
   useEffect(() => {
@@ -34,7 +36,12 @@ export const SimpleSpecInput = ({ onSubmit, isLoading, defaultValue }: SimpleSpe
       toast({ title: "Description too long (maximum 5000 characters)", variant: "destructive" });
       return;
     }
-    onSubmit(trimmed);
+    // Show confirmation dialog before charging
+    setShowConfirmation(true);
+  };
+
+  const handleConfirm = () => {
+    onSubmit(input.trim());
   };
 
   const charCount = input.length;
@@ -43,7 +50,15 @@ export const SimpleSpecInput = ({ onSubmit, isLoading, defaultValue }: SimpleSpe
   const isValid = charCount >= charMin && charCount <= charMax;
 
   return (
-    <div className="w-full max-w-3xl mx-auto space-y-4" data-spec-input>
+    <>
+      <ConfirmationDialog
+        open={showConfirmation}
+        onOpenChange={setShowConfirmation}
+        onConfirm={handleConfirm}
+        inputPreview={input}
+      />
+
+      <div className="w-full max-w-3xl mx-auto space-y-4" data-spec-input>
       {/* Simple Textarea */}
       <div className="relative">
         <Textarea
@@ -113,5 +128,6 @@ Example: Build a mobile fitness app where users can log workouts, track progress
         </span>
       </div>
     </div>
+    </>
   );
 };
