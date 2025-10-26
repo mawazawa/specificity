@@ -564,7 +564,7 @@ const Index = () => {
         {/* Landing Page - Show when nothing is active */}
         {showLanding ? (
           <div className="space-y-12">
-            <LandingHero />
+            <LandingHero onGetStarted={handleGetStarted} />
             
             {/* Optimized Conversion Flow */}
             <div className="max-w-5xl mx-auto space-y-16">

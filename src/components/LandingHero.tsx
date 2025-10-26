@@ -13,21 +13,24 @@ import { CollaborativeFlowDiagram } from "./CollaborativeFlowDiagram";
 import { SkeletonCard, SkeletonText } from "./ui/skeleton-loader";
 import { useState } from "react";
 
-export const LandingHero = () => {
-  const [buttonText, setButtonText] = useState("Get Started");
+interface LandingHeroProps {
+  onGetStarted?: () => void;
+}
+
+export const LandingHero = ({ onGetStarted }: LandingHeroProps) => {
+  const [inputValue, setInputValue] = useState("");
   const [showSkeletons, setShowSkeletons] = useState(false);
 
-  const scrollToInput = () => {
-    const inputElement = document.querySelector('[data-spec-input]');
-    inputElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value);
   };
 
-  const handleButtonClick = () => {
-    setShowSkeletons(true);
-  };
-
-  const handleCursorClick = () => {
-    setButtonText("Spec-ify!");
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && inputValue.trim()) {
+      if (onGetStarted) {
+        onGetStarted();
+      }
+    }
   };
 
   return (
@@ -118,27 +121,38 @@ export const LandingHero = () => {
             </div>
           </div>
 
-          {/* Blinking Cursor and CTA */}
+          {/* Interactive Input with Blinking Cursor */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5, duration: 0.8 }}
             className="space-y-8"
           >
-            <div className="flex justify-center items-center gap-2">
-              <div className="relative inline-block">
+            <div className="max-w-2xl mx-auto">
+              <div className="relative flex items-center justify-start bg-background/50 border-2 border-border/50 rounded-xl px-6 py-4 hover:border-accent/50 transition-all duration-300 focus-within:border-accent focus-within:shadow-lg focus-within:shadow-accent/20">
                 <input
                   type="text"
-                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                  onClick={handleCursorClick}
-                  aria-label="Click to activate"
+                  value={inputValue}
+                  onChange={handleInputChange}
+                  onKeyDown={handleInputKeyDown}
+                  placeholder="Describe your product idea..."
+                  className="flex-1 bg-transparent border-none outline-none text-lg text-foreground placeholder:text-muted-foreground/50 font-light"
+                  style={{ caretColor: 'hsl(var(--accent))' }}
                 />
-                <div className="w-1 h-12 bg-foreground" style={{animation: 'blinking-cursor 1s infinite'}} />
+                {!inputValue && (
+                  <div
+                    className="w-0.5 h-6 bg-accent animate-pulse ml-1"
+                    style={{ animation: 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}
+                  />
+                )}
               </div>
+              <p className="text-xs text-muted-foreground/60 mt-2 text-center">
+                Press Enter or click below to get started
+              </p>
             </div>
 
-            <AnimatedButton onClick={scrollToInput} className="text-lg px-12 py-6">
-              {buttonText}
+            <AnimatedButton onClick={onGetStarted} className="text-lg px-12 py-6">
+              Get Started
             </AnimatedButton>
             <p className="text-xs text-muted-foreground/60">$20 per spec • Money back guarantee</p>
           </motion.div>
@@ -154,7 +168,7 @@ export const LandingHero = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-6 gap-6">
+        <div className="grid md:grid-cols-3 gap-6">
           {[
             { 
               phase: "1. Constitution", 
@@ -309,7 +323,7 @@ export const LandingHero = () => {
         </div>
 
         {/* Expert Cards Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8 lg:gap-10">
           {EXPERTS.map((expert, index) => (
             <ExpertCard key={expert.id} expert={expert} index={index} />
           ))}
@@ -455,7 +469,7 @@ export const LandingHero = () => {
               <p className="text-xs text-foreground/60">Money back guarantee</p>
               <p className="text-xs text-foreground/60">No trial, no subscription</p>
             </div>
-            <AnimatedButton onClick={scrollToInput} className="text-base px-10 py-5">
+            <AnimatedButton onClick={onGetStarted} className="text-base px-10 py-5">
               Get Started
             </AnimatedButton>
           </div>
