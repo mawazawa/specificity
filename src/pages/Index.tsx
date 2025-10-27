@@ -533,51 +533,87 @@ const Index = () => {
   }
 
   const testWorkflow = async () => {
-    if (process.env.NODE_ENV !== 'development') return;
+    if (import.meta.env.MODE !== 'development') return;
     
     try {
-      let currentData = { userInput: 'Test product: AI spec generator', stage: 'discussion' as const };
-      const stages = ['discussion', 'research', 'synthesis', 'voting', 'spec'];
-      let attempts = 0;
+      toast({ title: "Workflow Test", description: "Testing full spec generation workflow..." });
+      
+      const testInput = 'AI-powered collaborative project management tool for remote teams';
+      let roundData: any = {};
+      const stages: Array<'discussion' | 'research' | 'synthesis' | 'voting' | 'spec'> = 
+        ['discussion', 'research', 'synthesis', 'voting', 'spec'];
       
       for (const stage of stages) {
+        let attempts = 0;
         let success = false;
+        
         while (attempts < 2 && !success) {
-          const response = await fetch('https://your-supabase-url/functions/v1/multi-agent-spec', {  // Use actual URL
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${session?.access_token}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ ...currentData, stage }),
-          });
-          
-          if (response.ok) {
-            const result = await response.json();
-            currentData = { ...currentData, roundData: result, stage: stage as const };
+          try {
+            const { data, error } = await supabase.functions.invoke('multi-agent-spec', {
+              body: { 
+                userInput: testInput,
+                stage,
+                roundData,
+                agentConfigs: agentConfigs,
+                discussionTurns: 8
+              }
+            });
+            
+            if (error) throw error;
+            
+            roundData = { ...roundData, ...data };
             success = true;
-            attempts = 0;
+            
+            console.log(`✅ Stage ${stage} completed:`, data);
             
             if (stage === 'spec') {
-              const spec = result.spec || '';
-              const hasSections = /Executive Summary|Technical Architecture|Implementation Phases/i.test(spec);
+              const spec = data.spec || '';
+              const requiredSections = [
+                'Executive Summary',
+                'Technical Architecture', 
+                'Implementation Phases',
+                'Core Requirements'
+              ];
+              const hasSections = requiredSections.every(section => 
+                new RegExp(section, 'i').test(spec)
+              );
+              
               if (!hasSections || spec.length < 1000) {
-                console.warn('Incomplete spec generated, retrying or fallback needed');
-                // Optional: Trigger fallback synthesis
+                console.warn('⚠️ Incomplete spec generated:', {
+                  length: spec.length,
+                  hasSections,
+                  spec: spec.slice(0, 200)
+                });
+                toast({ 
+                  title: "Workflow Test Warning", 
+                  description: "Spec may be incomplete",
+                  variant: "destructive"
+                });
               } else {
-                console.log('Full workflow complete:', result);
+                console.log('✅ Full workflow complete with valid spec!');
+                toast({ 
+                  title: "Workflow Test Success", 
+                  description: `Generated ${spec.length} char spec with all sections`
+                });
               }
             }
-          } else {
+          } catch (err) {
             attempts++;
-            console.warn(`Stage ${stage} failed (attempt ${attempts}), retrying...`);
-            await new Promise(resolve => setTimeout(resolve, 1000 * attempts)); // Exponential backoff
+            console.warn(`❌ Stage ${stage} failed (attempt ${attempts}):`, err);
+            if (attempts >= 2) throw err;
+            await new Promise(resolve => setTimeout(resolve, 1000 * attempts));
           }
         }
-        if (!success) throw new Error(`Stage ${stage} failed after retries`);
+        
+        if (!success) throw new Error(`Stage ${stage} failed after ${attempts} retries`);
       }
     } catch (error) {
-      console.error('Workflow test failed:', error);
+      console.error('❌ Workflow test failed:', error);
+      toast({ 
+        title: "Workflow Test Failed", 
+        description: error instanceof Error ? error.message : 'Unknown error',
+        variant: "destructive"
+      });
     }
   };
 
