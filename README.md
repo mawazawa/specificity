@@ -75,6 +75,60 @@ Specificity AI solves the **$50K problem**: Bad specs cost companies thousands i
 - **Terser** - Production minification
 - **Sharp** - Image optimization pipeline
 
+## 🚀 Production Deployment
+
+**Status:** ✅ **PRODUCTION READY** - [See full deployment summary](./PRODUCTION_READY_SUMMARY.md)
+
+### Quick Deploy
+
+1. **Set API Keys** (Required):
+   - Go to [Supabase Dashboard → Edge Functions → Secrets](https://supabase.com/dashboard/project/kxrdxiznaudatxyfrbxe/settings/edge-functions)
+   - Add:
+     - `GROQ_API_KEY` (from https://console.groq.com)
+     - `EXA_API_KEY` (from https://exa.ai)
+
+2. **Deploy Edge Functions**:
+   ```bash
+   # Option A: GitHub Actions (automated)
+   # Set SUPABASE_ACCESS_TOKEN in GitHub Secrets, push to main
+   
+   # Option B: Manual CLI
+   supabase login
+   supabase functions deploy multi-agent-spec --project-ref kxrdxiznaudatxyfrbxe --use-api
+   supabase functions deploy voice-to-text --project-ref kxrdxiznaudatxyfrbxe --use-api
+   ```
+
+3. **Verify Deployment**:
+   ```bash
+   # Set your anon key
+   export SUPABASE_ANON_KEY="your_anon_key"
+   
+   # Run verification
+   ./scripts/verify-production.sh
+   ```
+
+4. **Run Tests**:
+   ```bash
+   # Test edge functions
+   ./scripts/test-edge-functions.sh
+   
+   # Or test in dev mode
+   npm run dev
+   # Click "Test Workflow" button (bottom-right)
+   ```
+
+### Production URLs
+- **Dashboard:** https://supabase.com/dashboard/project/kxrdxiznaudatxyfrbxe
+- **API Base:** https://kxrdxiznaudatxyfrbxe.supabase.co
+- **Edge Functions:** https://kxrdxiznaudatxyfrbxe.supabase.co/functions/v1/
+
+### Documentation
+- **Deployment Checklist:** [PRODUCTION_DEPLOYMENT_CHECKLIST.md](./PRODUCTION_DEPLOYMENT_CHECKLIST.md)
+- **Production Summary:** [PRODUCTION_READY_SUMMARY.md](./PRODUCTION_READY_SUMMARY.md)
+- **GitHub Actions:** [.github/workflows/deploy-functions.yml](./.github/workflows/deploy-functions.yml)
+
+---
+
 ## 📦 Installation
 
 ### Prerequisites
