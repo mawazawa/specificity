@@ -532,6 +532,55 @@ const Index = () => {
     return null;
   }
 
+  const testWorkflow = async () => {
+    if (process.env.NODE_ENV !== 'development') return;
+    
+    try {
+      let currentData = { userInput: 'Test product: AI spec generator', stage: 'discussion' as const };
+      const stages = ['discussion', 'research', 'synthesis', 'voting', 'spec'];
+      let attempts = 0;
+      
+      for (const stage of stages) {
+        let success = false;
+        while (attempts < 2 && !success) {
+          const response = await fetch('https://your-supabase-url/functions/v1/multi-agent-spec', {  // Use actual URL
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${session?.access_token}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ ...currentData, stage }),
+          });
+          
+          if (response.ok) {
+            const result = await response.json();
+            currentData = { ...currentData, roundData: result, stage: stage as const };
+            success = true;
+            attempts = 0;
+            
+            if (stage === 'spec') {
+              const spec = result.spec || '';
+              const hasSections = /Executive Summary|Technical Architecture|Implementation Phases/i.test(spec);
+              if (!hasSections || spec.length < 1000) {
+                console.warn('Incomplete spec generated, retrying or fallback needed');
+                // Optional: Trigger fallback synthesis
+              } else {
+                console.log('Full workflow complete:', result);
+              }
+            }
+          } else {
+            attempts++;
+            console.warn(`Stage ${stage} failed (attempt ${attempts}), retrying...`);
+            await new Promise(resolve => setTimeout(resolve, 1000 * attempts)); // Exponential backoff
+          }
+        }
+        if (!success) throw new Error(`Stage ${stage} failed after retries`);
+      }
+    } catch (error) {
+      console.error('Workflow test failed:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background grid-background">
       {/* Sign Out Button */}
@@ -860,6 +909,9 @@ const Index = () => {
           isOpen={isDialogueOpen}
           onToggle={() => setIsDialogueOpen(!isDialogueOpen)}
         />
+      )}
+      {process.env.NODE_ENV === 'development' && (
+        <button onClick={testWorkflow} className="fixed bottom-4 right-4 bg-blue-500 text-white p-2 rounded">Test Workflow</button>
       )}
     </div>
   );

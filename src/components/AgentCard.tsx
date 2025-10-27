@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { motion, useMotionValue, useSpring } from "framer-motion";
 import { AgentConfig } from "@/types/spec";
 import { ChevronDown, ChevronUp, Settings, Sparkles } from "lucide-react";
 import { NeumorphicSlider } from "./NeumorphicSlider";
@@ -32,16 +33,66 @@ interface AgentCardProps {
 export const AgentCard = ({ config, onChange }: AgentCardProps) => {
   const agent = agentInfo[config.agent as keyof typeof agentInfo];
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const ref = React.useRef<HTMLDivElement>(null);
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const mouseX = useSpring(x, { 
+    stiffness: 300, 
+    damping: 40 
+  });
+  const mouseY = useSpring(y, { 
+    stiffness: 300, 
+    damping: 40 
+  });
+
+  React.useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+
+    const updateTilt = (e: MouseEvent) => {
+      const rect = element.getBoundingClientRect();
+      const { clientX, clientY } = e;
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const deltaX = (clientX - centerX) / (rect.width / 2);
+      const deltaY = (clientY - centerY) / (rect.height / 2);
+      x.set(deltaX * 8); // Tilt degrees
+      y.set(-deltaY * 8);
+    };
+
+    const handleMouseEnter = () => element.addEventListener("mousemove", updateTilt);
+    const handleMouseLeave = () => {
+      element.removeEventListener("mousemove", updateTilt);
+      x.set(0);
+      y.set(0);
+    };
+
+    element.addEventListener("mouseenter", handleMouseEnter);
+    element.addEventListener("mouseleave", handleMouseLeave);
+
+    return () => {
+      element.removeEventListener("mouseenter", handleMouseEnter);
+      element.removeEventListener("mouseleave", handleMouseLeave);
+    };
+  }, [x, y]);
 
   return (
-    <Card className="group relative overflow-hidden bg-gradient-to-br from-card/90 via-card/70 to-card/50 backdrop-blur-xl border border-border/30 hover:border-primary/40 transition-all duration-700 hover:shadow-[0_20px_60px_rgba(0,0,0,0.3)] hover:shadow-primary/10">
+    <motion.div
+      ref={ref}
+      style={{
+        rotateX: mouseY,
+        rotateY: mouseX,
+        transformPerspective: 1000,
+      }}
+      className="group relative overflow-hidden rounded-2xl bg-card/40 backdrop-blur-xl border border-white/10 dark:border-white/5 shadow-[0_8px_32px_rgba(0,0,0,0.12)] hover:shadow-[0_20px_60px_rgba(0,0,0,0.2)] transition-all duration-700 hover:border-primary/30"
+    >
       {/* Animated gradient overlay */}
       <div className={`absolute inset-0 bg-gradient-to-br ${agent.color} opacity-0 group-hover:opacity-10 transition-opacity duration-700`} />
       
       {/* Subtle glow effect */}
       <div className="absolute -inset-[1px] bg-gradient-to-r from-transparent via-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-sm" />
       
-      <div className="relative p-6 space-y-6">
+      <div className="relative p-6 space-y-6 preserve-3d">
         {/* Header with large avatar */}
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-4 flex-1 min-w-0">
@@ -137,6 +188,6 @@ export const AgentCard = ({ config, onChange }: AgentCardProps) => {
           </div>
         )}
       </div>
-    </Card>
+    </motion.div>
   );
 };

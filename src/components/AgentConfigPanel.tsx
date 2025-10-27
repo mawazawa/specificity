@@ -3,6 +3,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { motion } from "framer-motion";
 import { AgentConfig, AgentType } from "@/types/spec";
 import { Settings2 } from "lucide-react";
 
@@ -73,6 +74,29 @@ export const AgentConfigPanel = ({ configs, onChange }: AgentConfigPanelProps) =
     onChange(newConfigs);
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 40,
+      },
+    },
+  };
+
   return (
     <Card className="p-8 bg-gradient-card backdrop-blur-xl border-border/20 rounded-fluid">
       <div className="space-y-6">
@@ -83,49 +107,56 @@ export const AgentConfigPanel = ({ configs, onChange }: AgentConfigPanelProps) =
           </h2>
         </div>
 
-        <div className="grid gap-6">
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="grid gap-6"
+        >
           {configs.map((config, index) => (
-            <Card key={config.agent} className="p-6 bg-background/20 border-border/10 rounded-fluid">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-light uppercase tracking-wider text-foreground/70">
-                    {agentNames[config.agent]}
-                  </h3>
-                  <div className="flex items-center gap-2">
-                    <Label className="text-xs text-muted-foreground">Enabled</Label>
-                    <Switch
-                      checked={config.enabled}
-                      onCheckedChange={(enabled) => updateConfig(index, { enabled })}
+            <motion.div key={config.agent} variants={cardVariants}>
+              <Card className="p-6 bg-background/20 border-border/10 rounded-fluid">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-light uppercase tracking-wider text-foreground/70">
+                      {agentNames[config.agent]}
+                    </h3>
+                    <div className="flex items-center gap-2">
+                      <Label className="text-xs text-muted-foreground">Enabled</Label>
+                      <Switch
+                        checked={config.enabled}
+                        onCheckedChange={(enabled) => updateConfig(index, { enabled })}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground">
+                      Temperature: {config.temperature.toFixed(2)}
+                    </Label>
+                    <Slider
+                      value={[config.temperature]}
+                      onValueChange={([temperature]) => updateConfig(index, { temperature })}
+                      min={0}
+                      max={2}
+                      step={0.1}
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground">System Prompt</Label>
+                    <Textarea
+                      value={config.systemPrompt}
+                      onChange={(e) => updateConfig(index, { systemPrompt: e.target.value })}
+                      className="min-h-[100px] bg-background/30 border-border/20 text-xs font-mono resize-none rounded-fluid"
                     />
                   </div>
                 </div>
-
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">
-                    Temperature: {config.temperature.toFixed(2)}
-                  </Label>
-                  <Slider
-                    value={[config.temperature]}
-                    onValueChange={([temperature]) => updateConfig(index, { temperature })}
-                    min={0}
-                    max={2}
-                    step={0.1}
-                    className="w-full"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-xs text-muted-foreground">System Prompt</Label>
-                  <Textarea
-                    value={config.systemPrompt}
-                    onChange={(e) => updateConfig(index, { systemPrompt: e.target.value })}
-                    className="min-h-[100px] bg-background/30 border-border/20 text-xs font-mono resize-none rounded-fluid"
-                  />
-                </div>
-              </div>
-            </Card>
+              </Card>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </Card>
   );
