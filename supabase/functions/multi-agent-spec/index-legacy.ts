@@ -1,26 +1,7 @@
-/**
- * Enhanced Multi-Agent Specification Generator
- * Hybrid architecture combining Make It Heavy's orchestration with Specificity's expertise
- *
- * Features:
- * - Dynamic question generation (GPT-5.1)
- * - Intelligent expert assignment
- * - True parallel execution
- * - Hot-swappable tool system (5 core tools)
- * - Multi-model support via OpenRouter
- */
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.75.1';
-
-// Import new architecture modules
-import { ToolRegistry } from '../tools/registry.ts';
-import { generateDynamicQuestions } from '../lib/question-generator.ts';
-import { assignQuestionsToExperts, balanceWorkload, AgentConfig } from '../lib/expert-matcher.ts';
-import { executeParallelResearch } from '../lib/parallel-executor.ts';
-import { callOpenRouter } from '../lib/openrouter-client.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -29,12 +10,8 @@ const corsHeaders = {
 
 const GROQ_API_KEY = Deno.env.get('GROQ_API_KEY');
 const EXA_API_KEY = Deno.env.get('EXA_API_KEY');
-const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-
-// Initialize tool registry
-const tools = new ToolRegistry();
 
 // Validate required environment variables
 const validateEnv = () => {
@@ -43,11 +20,6 @@ const validateEnv = () => {
   if (!EXA_API_KEY) missing.push('EXA_API_KEY');
   if (!SUPABASE_URL) missing.push('SUPABASE_URL');
   if (!SUPABASE_SERVICE_ROLE_KEY) missing.push('SUPABASE_SERVICE_ROLE_KEY');
-
-  // OpenRouter is optional (falls back to Groq)
-  if (!OPENROUTER_API_KEY) {
-    console.warn('[Config] OPENROUTER_API_KEY not set - will fallback to Groq');
-  }
 
   if (missing.length > 0) {
     console.error('Missing environment variables:', missing.join(', '));
@@ -58,7 +30,6 @@ const validateEnv = () => {
 
 // Input validation schemas
 const agentConfigSchema = z.object({
-  id: z.string().optional(),
   agent: z.string().min(1).max(50),
   systemPrompt: z.string().min(1).max(2000),
   temperature: z.number().min(0).max(1),
@@ -70,10 +41,11 @@ const requestSchema = z.object({
     .min(1, 'Input required')
     .max(5000, 'Input too long')
     .optional(),
-  stage: z.enum(['questions', 'research', 'synthesis', 'voting', 'spec']),
+  stage: z.enum(['discussion', 'research', 'synthesis', 'voting', 'spec']),
   userComment: z.string().max(1000).optional(),
   agentConfigs: z.array(agentConfigSchema).optional(),
   roundData: z.any().optional(),
+  discussionTurns: z.number().min(3).max(20).optional(),
 });
 
 // Prompt injection detection
@@ -94,10 +66,15 @@ const detectPromptInjection = (input: string): boolean => {
 // Enhanced input sanitization
 const sanitizeInput = (input: string): string => {
   return input
+    // Remove HTML special chars
     .replace(/[<>"'`]/g, '')
+    // Remove zero-width and invisible characters
     .replace(/[\u200B-\u200D\uFEFF]/g, '')
+    // Remove control characters except newline/tab
     .replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]/g, '')
+    // Remove directional overrides
     .replace(/[\u202A-\u202E]/g, '')
+    // Normalize Unicode (convert homoglyphs to standard forms)
     .normalize('NFKC')
     .slice(0, 2000)
     .trim();
@@ -114,7 +91,7 @@ const sanitizeError = (error: any) => {
 // Utility: Get user-friendly error message
 const getUserMessage = (error: any): string => {
   const message = error instanceof Error ? error.message : String(error);
-
+  
   if (message.includes('RATE_LIMIT') || message.includes('rate limit')) {
     return 'Service temporarily unavailable. Please try again shortly.';
   }
@@ -127,7 +104,13 @@ const getUserMessage = (error: any): string => {
   return 'An unexpected error occurred. Please try again.';
 };
 
-// Legacy Groq fallback for synthesis/voting/spec stages
+interface AgentConfig {
+  agent: string;
+  systemPrompt: string;
+  temperature: number;
+  enabled: boolean;
+}
+
 async function callGroq(systemPrompt: string, userMessage: string, temperature: number = 0.7, maxTokens: number = 800): Promise<string> {
   const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
@@ -148,11 +131,12 @@ async function callGroq(systemPrompt: string, userMessage: string, temperature: 
 
   if (!response.ok) {
     console.error('External API error:', { type: 'api_error', status: response.status });
-
+    
+    // Parse rate limit errors
     if (response.status === 429) {
       throw new Error('RATE_LIMIT: Rate limit exceeded');
     }
-
+    
     throw new Error('API request failed');
   }
 
@@ -164,21 +148,47 @@ async function callGroq(systemPrompt: string, userMessage: string, temperature: 
   return data.choices[0].message.content || 'No response';
 }
 
-// Atomic rate limiting function
+async function researchWithExa(query: string) {
+  try {
+    const response = await fetch('https://api.exa.ai/search', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${EXA_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query,
+        num_results: 8,
+        use_autoprompt: true,
+        type: 'neural',
+      }),
+    });
+
+    const data = await response.json();
+    return data.results || [];
+  } catch (error) {
+    console.error('Search error:', { type: 'search_api_error' });
+    return [];
+  }
+}
+
+// Atomic rate limiting function - prevents race conditions
 async function checkRateLimit(userId: string, endpoint: string, maxRequests: number = 5): Promise<{ allowed: boolean; remaining: number }> {
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
   try {
+    // Use atomic database function with stable hourly windows
+    // Fixed: Now uses date_trunc('hour', now()) internally for stable window_start
     const { data, error } = await supabase.rpc('check_and_increment_rate_limit', {
       p_user_id: userId,
       p_endpoint: endpoint,
       p_max_requests: maxRequests,
-      p_window_hours: 1
+      p_window_hours: 1  // 1-hour window
     });
 
     if (error) {
       console.error('Rate limit error:', { type: 'rate_limit_error', user_id: userId });
-      return { allowed: false, remaining: 0 };
+      return { allowed: false, remaining: 0 }; // Fail closed for security
     }
 
     return {
@@ -187,7 +197,7 @@ async function checkRateLimit(userId: string, endpoint: string, maxRequests: num
     };
   } catch (error) {
     console.error('Rate limit exception:', { type: 'rate_limit_exception', user_id: userId });
-    return { allowed: false, remaining: 0 };
+    return { allowed: false, remaining: 0 }; // Fail closed
   }
 }
 
@@ -208,7 +218,6 @@ serve(async (req) => {
         { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-
     // Verify authentication
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
@@ -222,7 +231,7 @@ serve(async (req) => {
     const token = authHeader.replace('Bearer ', '');
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-
+    
     if (authError || !user) {
       return new Response(
         JSON.stringify({ error: 'Invalid authentication' }),
@@ -230,29 +239,30 @@ serve(async (req) => {
       );
     }
 
-    // Check rate limit
+    // Check rate limit (5 requests per hour per user)
     const rateLimit = await checkRateLimit(user.id, 'multi-agent-spec', 5);
     if (!rateLimit.allowed) {
       return new Response(
-        JSON.stringify({
+        JSON.stringify({ 
           error: 'Rate limit exceeded. You can generate up to 5 specifications per hour. Please try again later.',
-          retryAfter: 3600
+          retryAfter: 3600 
         }),
-        {
-          status: 429,
-          headers: {
-            ...corsHeaders,
+        { 
+          status: 429, 
+          headers: { 
+            ...corsHeaders, 
             'Content-Type': 'application/json',
             'X-RateLimit-Remaining': '0',
             'X-RateLimit-Reset': new Date(Date.now() + 60 * 60 * 1000).toISOString()
-          }
+          } 
         }
       );
     }
 
-    // Parse and validate request
+    // Parse and validate request body
     const rawBody = await req.json();
-
+    
+    // Validate with zod schema
     let validated;
     try {
       validated = requestSchema.parse(rawBody);
@@ -267,9 +277,9 @@ serve(async (req) => {
       throw error;
     }
 
-    const { userInput, stage, agentConfigs, roundData, userComment } = validated;
-
-    // Check for prompt injection
+    const { userInput, stage, agentConfigs, roundData, userComment, discussionTurns = 8 } = validated;
+    
+    // Check for prompt injection in all user-controlled fields
     if (userInput && detectPromptInjection(userInput)) {
       console.warn('Security event:', { type: 'injection_detected', field: 'userInput', user_id: user.id });
       return new Response(
@@ -286,6 +296,7 @@ serve(async (req) => {
       );
     }
 
+    // Validate agent systemPrompts for injection attempts
     if (agentConfigs) {
       for (const config of agentConfigs) {
         if (config.systemPrompt && detectPromptInjection(config.systemPrompt)) {
@@ -301,188 +312,229 @@ serve(async (req) => {
     // Sanitize inputs
     const cleanInput = userInput ? sanitizeInput(userInput) : '';
     const cleanComment = userComment ? sanitizeInput(userComment) : undefined;
+    
+    console.log('Processing:', { stage, hasConfigs: !!agentConfigs, authenticated: true });
 
-    console.log('[Enhanced] Processing:', { stage, userId: user.id });
-
-    // ========================================
-    // STAGE 1: DYNAMIC QUESTION GENERATION
-    // ========================================
-    if (stage === 'questions') {
-      console.log('[Enhanced] Generating dynamic research questions...');
-
-      const questions = await generateDynamicQuestions(cleanInput, {
-        model: 'gpt-5.1',
-        count: 7
-      });
-
-      console.log(`[Enhanced] Generated ${questions.length} questions`);
-
-      return new Response(
-        JSON.stringify({ questions }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // ========================================
-    // STAGE 2: PARALLEL RESEARCH WITH TOOLS
-    // ========================================
-    if (stage === 'research') {
-      console.log('[Enhanced] Starting parallel research with tools...');
-
+    if (stage === 'discussion') {
+      console.log('Running orchestrated roundtable discussion...');
+      
       if (!agentConfigs) {
         return new Response(
           JSON.stringify({ error: 'Agent configurations required' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
+      
+      const activeAgents = agentConfigs.filter((c: AgentConfig) => c.enabled);
+      const dialogue = [];
+      const agentScores: Record<string, { agreements: number; contributions: number; insights: string[] }> = {};
+      
+      activeAgents.forEach(a => {
+        agentScores[a.agent] = { agreements: 0, contributions: 0, insights: [] };
+      });
 
-      const questions = roundData?.questions || [];
-      if (questions.length === 0) {
-        return new Response(
-          JSON.stringify({ error: 'No questions provided for research' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
+      // Orchestrator moderates the discussion
+      const orchestratorPrompt = `You are an expert panel moderator. Topic: ${cleanInput}
 
-      // Add IDs to agent configs
-      const configsWithIds: AgentConfig[] = agentConfigs.map((config, idx) => ({
-        id: config.id || config.agent.toLowerCase().replace(/\s+/g, '_'),
-        agent: config.agent,
-        systemPrompt: config.systemPrompt,
-        temperature: config.temperature,
-        enabled: config.enabled
-      }));
+Your panel: ${activeAgents.map(a => `${a.agent} (${a.systemPrompt.split('.')[0]})`).join(', ')}
 
-      // Assign questions to experts
-      const assignments = assignQuestionsToExperts(questions, configsWithIds);
-      const balancedAssignments = balanceWorkload(assignments);
+For each turn, select which panelist should speak based on:
+- Their domain expertise relevance to the current topic
+- Building on previous points made
+- Ensuring diverse perspectives
+- Creating productive debate
 
-      console.log(`[Enhanced] Assigned questions to ${balancedAssignments.length} experts`);
+Return JSON with turns: [{"speaker": "agent_name", "prompt": "what they should address", "reasoning": "why them"}]
+Generate ${discussionTurns} turns.`;
 
-      // Execute parallel research
-      const researchResults = await executeParallelResearch(
-        balancedAssignments,
-        tools,
-        {
-          userInput: cleanInput,
-          roundNumber: roundData?.roundNumber || 1
-        }
+      const orchestratorResponse = await callGroq(
+        "You are a world-class panel moderator who orchestrates insightful discussions.",
+        orchestratorPrompt,
+        0.7,
+        1500
       );
 
-      // Calculate total cost and tokens
-      const totalCost = researchResults.reduce((sum, r) => sum + r.cost, 0);
-      const totalTokens = researchResults.reduce((sum, r) => sum + r.tokensUsed, 0);
-      const totalTools = researchResults.reduce((sum, r) => sum + r.toolsUsed.length, 0);
+      let turns = [];
+      try {
+        turns = JSON.parse(orchestratorResponse);
+      } catch {
+        // Fallback: round-robin discussion
+        turns = Array.from({ length: discussionTurns }, (_, i) => ({
+          speaker: activeAgents[i % activeAgents.length].agent,
+          prompt: "Share your perspective on this idea",
+          reasoning: "Round-robin turn"
+        }));
+      }
 
-      console.log(`[Enhanced] Research complete - Cost: $${totalCost.toFixed(4)}, Tokens: ${totalTokens}, Tools: ${totalTools}`);
+      // Execute discussion turns
+      for (const turn of turns) {
+        const speakerConfig = activeAgents.find(a => a.agent === turn.speaker);
+        if (!speakerConfig) continue;
+
+        const context = dialogue.slice(-3).map(d => `${d.agent}: ${d.message}`).join('\n');
+        const userGuidance = cleanComment ? `\nUser guidance: ${cleanComment}` : '';
+        
+        const turnPrompt = `Topic: ${cleanInput}${userGuidance}
+
+Recent discussion:
+${context}
+
+Moderator asks you: ${turn.prompt}
+
+Respond with your expert perspective. Be specific, opinionated, and build on or challenge previous points. Keep to 2-3 sentences.`;
+
+        const response = await callGroq(speakerConfig.systemPrompt, turnPrompt, speakerConfig.temperature, 300);
+        
+        agentScores[speakerConfig.agent].contributions++;
+        agentScores[speakerConfig.agent].insights.push(response);
+
+        dialogue.push({
+          agent: speakerConfig.agent,
+          message: response,
+          timestamp: new Date().toISOString(),
+          type: 'discussion',
+          turnNumber: dialogue.length + 1,
+          moderatorNote: turn.reasoning
+        });
+
+        // Calculate agreement scores (simple keyword matching)
+        if (dialogue.length > 1) {
+          const prev = dialogue[dialogue.length - 2];
+          const agreeWords = ['agree', 'yes', 'exactly', 'right', 'correct', 'absolutely'];
+          const disagreeWords = ['but', 'however', 'disagree', 'no', 'actually', 'wrong'];
+          
+          const hasAgreement = agreeWords.some(w => response.toLowerCase().includes(w));
+          const hasDisagreement = disagreeWords.some(w => response.toLowerCase().includes(w));
+          
+          if (hasAgreement) {
+            agentScores[speakerConfig.agent].agreements++;
+            agentScores[prev.agent].agreements++;
+          }
+        }
+      }
+
+      // Generate consensus summary
+      const summaryPrompt = `Discussion transcript:
+${dialogue.map(d => `${d.agent}: ${d.message}`).join('\n\n')}
+
+Synthesize: 1) Key consensus points 2) Major disagreements 3) Top 3 insights
+Be concise.`;
+
+      const summary = await callGroq(
+        "You synthesize panel discussions into actionable insights.",
+        summaryPrompt,
+        0.5,
+        500
+      );
 
       return new Response(
-        JSON.stringify({
-          researchResults,
-          assignments: balancedAssignments,
-          metadata: {
-            totalCost,
-            totalTokens,
-            totalToolsUsed: totalTools,
-            duration: Math.max(...researchResults.map(r => r.duration))
-          }
+        JSON.stringify({ 
+          dialogue, 
+          agentScores,
+          summary,
+          totalTurns: dialogue.length 
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // ========================================
-    // STAGE 3: SYNTHESIS (ENHANCED)
-    // ========================================
-    if (stage === 'synthesis') {
-      console.log('[Enhanced] Synthesizing research findings...');
-
-      const researchResults = roundData?.researchResults || [];
-
-      if (researchResults.length === 0) {
-        return new Response(
-          JSON.stringify({ error: 'No research results to synthesize' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+    if (stage === 'research') {
+      console.log('Researching with Exa...');
+      const questions = roundData.questions || [];
+      const allResults = [];
+      
+      for (const q of questions.slice(0, 5)) {
+        const results = await researchWithExa(q.question);
+        allResults.push(...results);
       }
-
-      // Each expert synthesizes their findings
-      const synthesisPromises = researchResults.map(async (result: any) => {
-        const toolsContext = result.toolsUsed.length > 0
-          ? `\n\nTools used: ${result.toolsUsed.map((t: any) => t.tool).join(', ')}`
-          : '';
-
-        const userGuidance = cleanComment ? `\nUser guidance: ${cleanComment}` : '';
-
-        const prompt = `Your research findings:
-${result.findings}${toolsContext}${userGuidance}
-
-Synthesize your final recommendations:
-1. What are the 3 most critical requirements?
-2. What specific technologies/approaches should be used? (November 2025 bleeding-edge)
-3. What are the key risks or challenges?
-
-Be specific, actionable, and cite sources when relevant.`;
-
-        const response = await callGroq(
-          `You are ${result.expertName}, a world-class expert. Provide your synthesis.`,
-          prompt,
-          0.7,
-          800
-        );
-
-        return {
-          expertId: result.expertId,
-          expertName: result.expertName,
-          synthesis: response,
-          timestamp: new Date().toISOString(),
-          researchQuality: {
-            toolsUsed: result.toolsUsed.length,
-            cost: result.cost,
-            duration: result.duration
-          }
-        };
-      });
-
-      const syntheses = await Promise.all(synthesisPromises);
-
-      console.log(`[Enhanced] Synthesized ${syntheses.length} expert recommendations`);
-
+      
       return new Response(
-        JSON.stringify({ syntheses }),
+        JSON.stringify({ research: allResults }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // ========================================
-    // STAGE 4: VOTING (UNCHANGED)
-    // ========================================
-    if (stage === 'voting') {
-      console.log('[Enhanced] Collecting consensus votes...');
+    if (stage === 'synthesis') {
+      console.log('Synthesizing insights from discussion...');
+      
+      if (!agentConfigs) {
+        return new Response(
+          JSON.stringify({ error: 'Agent configurations required' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      const activeAgents = agentConfigs.filter((c: AgentConfig) => c.enabled);
+      const dialogue = roundData.dialogue || [];
+      const research = roundData.research || [];
+      
+      const synthesisPromises = activeAgents.map(async (config: AgentConfig) => {
+        const discussionContext = dialogue.slice(0, 10).map((d: any) => 
+          `${d.agent}: ${d.message}`
+        ).join('\n');
+        
+        const researchContext = research.slice(0, 3).map((r: any) => 
+          `- ${r.title}: ${r.snippet || r.text || ''}`
+        ).join('\n');
+        
+        const context = cleanComment ? `User guidance: ${cleanComment}\n\n` : '';
+        
+        const prompt = `${context}Discussion:
+${discussionContext}
 
+Research:
+${researchContext}
+
+Provide your final synthesis: What are the 3 most critical requirements/decisions from your perspective? Be specific and actionable.`;
+        
+        const response = await callGroq(config.systemPrompt, prompt, config.temperature, 600);
+        
+        return {
+          agent: config.agent,
+          synthesis: response,
+          timestamp: new Date().toISOString()
+        };
+      });
+
+      const allSyntheses = await Promise.all(synthesisPromises);
+      
+      return new Response(
+        JSON.stringify({ syntheses: allSyntheses }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (stage === 'voting') {
+      console.log('Collecting votes...');
+      
       if (!agentConfigs) {
         return new Response(
           JSON.stringify({ error: 'Agent configurations required for voting stage' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-
-      const activeAgents = agentConfigs.filter((c: any) => c.enabled);
+      
+      const activeAgents = agentConfigs.filter((c: AgentConfig) => c.enabled);
       const syntheses = roundData.syntheses || [];
-
-      const votePromises = activeAgents.map(async (config: any) => {
-        const synthesesSummary = syntheses.map((s: any) =>
-          `${s.expertName}: ${s.synthesis.slice(0, 300)}...`
+      const agentScores = roundData.agentScores || {};
+      
+      const votePromises = activeAgents.map(async (config: AgentConfig) => {
+        const synthesesSummary = syntheses.map((s: any) => 
+          `${s.agent}: ${s.synthesis.slice(0, 250)}...`
         ).join('\n\n');
+        
+        const scoreContext = agentScores[config.agent] 
+          ? `\nYour contributions: ${agentScores[config.agent].contributions} turns, ${agentScores[config.agent].agreements} agreements`
+          : '';
+        
+        const votePrompt = `Panel syntheses:
+${synthesesSummary}${scoreContext}
 
-        const votePrompt = `Expert syntheses:
-${synthesesSummary}
-
-Based on the research depth and consensus level, vote YES (proceed to spec) or NO (needs another round).
+Based on the discussion and consensus level, vote YES (proceed to spec) or NO (needs another round).
 Return JSON: {"approved": true/false, "confidence": 0-100, "reasoning": "why", "keyRequirements": ["req1", "req2"]}`;
 
         const response = await callGroq(config.systemPrompt, votePrompt, config.temperature, 300);
-
+        
         try {
           const vote = JSON.parse(response);
           return {
@@ -494,7 +546,7 @@ Return JSON: {"approved": true/false, "confidence": 0-100, "reasoning": "why", "
             timestamp: new Date().toISOString()
           };
         } catch {
-          const approved = response.toLowerCase().includes('yes') ||
+          const approved = response.toLowerCase().includes('yes') || 
                           response.toLowerCase().includes('approve');
           return {
             agent: config.agent,
@@ -508,67 +560,54 @@ Return JSON: {"approved": true/false, "confidence": 0-100, "reasoning": "why", "
       });
 
       const votes = await Promise.all(votePromises);
-
+      
       return new Response(
         JSON.stringify({ votes }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // ========================================
-    // STAGE 5: SPEC GENERATION (ENHANCED)
-    // ========================================
     if (stage === 'spec') {
-      console.log('[Enhanced] Generating final specification...');
-
+      console.log('Generating final spec...');
+      
       const syntheses = roundData.syntheses || [];
       const votes = roundData.votes || [];
-      const researchResults = roundData.researchResults || [];
-
-      // Calculate research quality scores
-      const avgToolsUsed = researchResults.reduce((sum: number, r: any) =>
-        sum + (r.toolsUsed?.length || 0), 0) / researchResults.length;
-
+      const dialogue = roundData.dialogue || [];
+      const agentScores = roundData.agentScores || {};
+      
+      // Weight syntheses by agreement scores
       const weightedContext = syntheses.map((s: any) => {
-        const quality = s.researchQuality || {};
-        const researchDepth = (quality.toolsUsed || 0) / Math.max(avgToolsUsed, 1);
-        const weight = Math.min(researchDepth * 100, 100);
-        return `${s.expertName} (research depth: ${weight.toFixed(0)}%):\n${s.synthesis}`;
+        const score = agentScores[s.agent];
+        const weight = score ? (score.agreements / Math.max(score.contributions, 1)) : 0.5;
+        return `${s.agent} (consensus weight: ${(weight * 100).toFixed(0)}%):\n${s.synthesis}`;
       }).join('\n\n');
-
+      
       const keyRequirements = votes.flatMap((v: any) => v.keyRequirements || []);
+      
+      const specPrompt = `Based on this expert roundtable discussion, create a comprehensive technical specification.
 
-      const specPrompt = `Based on deep expert research with contemporaneous web verification, create a comprehensive technical specification.
-
-EXPERT SYNTHESES (with research depth scores):
+WEIGHTED EXPERT SYNTHESES:
 ${weightedContext}
 
-KEY REQUIREMENTS (from consensus voting):
+KEY REQUIREMENTS (from voting):
 ${keyRequirements.join('\n')}
 
-Generate a production-ready spec with:
+Generate a spec with:
 # Executive Summary
-# Core Requirements (prioritized by consensus & research depth)
-# Technical Architecture (specific frameworks/versions - November 2025)
-# Implementation Phases (concrete milestones)
-# Technology Stack (bleeding-edge, verified current)
-# Dependencies & Third-Party Services
-# Security & Compliance
-# Scalability Considerations
-# Risk Analysis (technical & business)
-# Success Metrics (measurable KPIs)
-# Cost Estimates
-# Timeline & Resource Requirements
+# Core Requirements (prioritized by consensus)
+# Technical Architecture
+# Implementation Phases
+# Dependencies & Stack
+# Risk Analysis
+# Success Metrics
 
-CRITICAL: Include specific technology versions, frameworks, and tools verified as current in November 2025. Cite sources where relevant.
-
-Use markdown. Be extraordinarily specific and actionable.`;
+Use markdown. Be specific and actionable.`;
 
       const spec = await callGroq(
-        "You are a senior technical architect creating production-ready specifications from expert research.",
+        "You are a senior technical architect synthesizing expert panel insights into executable specifications.",
         specPrompt,
         0.4,
-        2500
+        2000
       );
 
       const approvedBy = votes.filter((v: any) => v.approved).map((v: any) => v.agent);
@@ -576,15 +615,12 @@ Use markdown. Be extraordinarily specific and actionable.`;
       const avgConfidence = votes.reduce((sum: number, v: any) => sum + (v.confidence || 0), 0) / votes.length;
 
       return new Response(
-        JSON.stringify({
+        JSON.stringify({ 
           spec,
           approvedBy,
           dissentedBy,
           consensusScore: avgConfidence,
-          metadata: {
-            researchDepth: `${avgToolsUsed.toFixed(1)} tools per expert`,
-            totalExperts: syntheses.length
-          }
+          agentScores
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
