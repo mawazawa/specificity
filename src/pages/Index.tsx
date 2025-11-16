@@ -195,7 +195,7 @@ const Index = () => {
     }));
   };
 
-  const runRound = async (input: string, roundNumber: number, userComment?: string, discussionTurns = 12) => {
+  const runRound = async (input: string, roundNumber: number, userComment?: string) => {
     const round: Round = {
       roundNumber,
       stage: 'questions',
@@ -216,172 +216,235 @@ const Index = () => {
     try {
       const activeAgents = agentConfigs.filter(c => c.enabled);
 
-      // Stage 1: Orchestrated Roundtable Discussion
+      // ========================================
+      // STAGE 1: DYNAMIC QUESTION GENERATION
+      // ========================================
       round.stage = 'questions';
-      setCurrentStage(`Round ${roundNumber}: Roundtable Discussion`);
-      toast({ 
-        title: "🎙️ Roundtable Started", 
-        description: `Orchestrating ${discussionTurns}-turn panel discussion...`
+      setCurrentStage(`Round ${roundNumber}: AI Question Generation`);
+      toast({
+        title: "🧠 Generating Research Questions",
+        description: "AI analyzing your idea to create targeted questions..."
       });
 
-      const discussionStartTime = Date.now();
-      const { data: discussionData, error: discussionError } = await supabase.functions.invoke(
+      const questionsStartTime = Date.now();
+      const { data: questionsData, error: questionsError } = await supabase.functions.invoke(
         'multi-agent-spec',
-        { body: { userInput: input, stage: 'discussion', agentConfigs, userComment, discussionTurns } }
+        { body: { userInput: input, stage: 'questions' } }
       );
-      
-      if (discussionError) {
-        console.error('Discussion error:', discussionError);
-        throw new Error(discussionError.message || 'Failed to run discussion');
+
+      if (questionsError) {
+        console.error('Questions error:', questionsError);
+        throw new Error(questionsError.message || 'Failed to generate questions');
       }
-      
-      const discussionDuration = Date.now() - discussionStartTime;
-      
-      // Add dialogue entries with scores
-      if (discussionData.dialogue) {
-        discussionData.dialogue.forEach((turn: DialogueTurn) => {
-          setDialogueEntries(prev => [...prev, {
-            agent: turn.agent,
-            message: turn.message,
-            timestamp: turn.timestamp,
-            type: 'discussion'
-          }]);
-        });
-      }
-      
-      round.questions = discussionData.dialogue || [];
-      addHistoryEntry('output', { 
-        stage: 'discussion', 
-        dialogue: discussionData.dialogue,
-        scores: discussionData.agentScores,
-        summary: discussionData.summary
-      });
-      
-      toast({ 
-        title: "Discussion Complete", 
-        description: `${discussionData.totalTurns} turns in ${(discussionDuration/1000).toFixed(1)}s`
+
+      const questionsDuration = Date.now() - questionsStartTime;
+
+      // Store questions in round
+      round.questions = questionsData.questions || [];
+
+      // Add to dialogue
+      const questionsText = round.questions
+        .map((q: any, i: number) => `${i + 1}. [${q.domain}] ${q.question}`)
+        .join('\n');
+
+      setDialogueEntries(prev => [...prev, {
+        agent: 'system' as any,
+        message: `🎯 **Generated ${round.questions.length} Research Questions:**\n\n${questionsText}`,
+        timestamp: new Date().toISOString(),
+        type: 'discussion'
+      }]);
+
+      addHistoryEntry('output', {
+        stage: 'questions',
+        questions: round.questions,
+        count: round.questions.length
       });
 
-      // Stage 2: Research
+      toast({
+        title: "✓ Questions Generated",
+        description: `${round.questions.length} targeted questions in ${(questionsDuration/1000).toFixed(1)}s`
+      });
+
+      // ========================================
+      // STAGE 2: PARALLEL RESEARCH WITH TOOLS
+      // ========================================
       round.stage = 'research';
-      setCurrentStage(`Round ${roundNumber}: Research with Exa`);
-      toast({ 
-        title: "Research Phase", 
-        description: "Conducting deep research on key topics..."
+      setCurrentStage(`Round ${roundNumber}: Parallel Expert Research`);
+      toast({
+        title: "🔬 Deep Research Phase",
+        description: "Experts conducting parallel research with multiple tools..."
       });
-
-      const researchTaskIds = round.questions.slice(0, 5).map((q, i) => 
-        addTask({ type: 'research', description: `Searching: ${q.question.slice(0, 50)}...`, status: 'running' })
-      );
 
       const researchStartTime = Date.now();
       const { data: researchData, error: researchError } = await supabase.functions.invoke(
         'multi-agent-spec',
-        { body: { stage: 'research', roundData: round } }
+        {
+          body: {
+            stage: 'research',
+            agentConfigs,
+            roundData: {
+              questions: round.questions,
+              roundNumber
+            }
+          }
+        }
       );
-      if (researchError) throw researchError;
-      
+
+      if (researchError) {
+        console.error('Research error:', researchError);
+        throw new Error(researchError.message || 'Failed to conduct research');
+      }
+
       const researchDuration = Date.now() - researchStartTime;
-      researchTaskIds.forEach(id => updateTask(id, { status: 'complete', duration: researchDuration / researchTaskIds.length }));
-      
-      round.research = researchData.research.map((r: ResearchItem) => ({
-        title: r.title || 'Research',
-        url: r.url || '',
-        snippet: r.text || r.snippet || '',
-        relevance: r.score || 0.8
-      }));
-      addHistoryEntry('output', { stage: 'research', count: round.research.length });
-      toast({ 
-        title: "Research Complete", 
-        description: `${round.research.length} sources analyzed in ${researchDuration}ms`
+
+      // Store research results
+      round.research = researchData.researchResults || [];
+      const metadata = researchData.metadata || {};
+
+      // Add research summary to dialogue
+      const researchSummary = `📊 **Research Complete:**
+• ${round.research.length} experts analyzed
+• ${metadata.totalToolsUsed || 0} tool calls executed
+• Cost: $${(metadata.totalCost || 0).toFixed(4)}
+• Duration: ${(researchDuration/1000).toFixed(1)}s
+
+**Models Used:** Multi-model (GPT-5.1-Codex, Claude Sonnet 4.5, Gemini 2.5 Flash)`;
+
+      setDialogueEntries(prev => [...prev, {
+        agent: 'system' as any,
+        message: researchSummary,
+        timestamp: new Date().toISOString(),
+        type: 'discussion'
+      }]);
+
+      // Add individual research findings to dialogue
+      round.research.forEach((result: any) => {
+        const toolsList = result.toolsUsed?.map((t: any) => t.tool).join(', ') || 'none';
+        const findingsPreview = result.findings.slice(0, 500);
+
+        setDialogueEntries(prev => [...prev, {
+          agent: result.expertId,
+          message: `🔍 **Research Findings** (${result.model})\n\n${findingsPreview}...\n\n_Tools: ${toolsList} • Cost: $${result.cost.toFixed(4)}_`,
+          timestamp: new Date().toISOString(),
+          type: 'discussion'
+        }]);
       });
 
-      // Stage 3: Synthesis
+      addHistoryEntry('output', {
+        stage: 'research',
+        expertsCount: round.research.length,
+        toolsUsed: metadata.totalToolsUsed,
+        cost: metadata.totalCost,
+        duration: researchDuration
+      });
+
+      toast({
+        title: "✓ Research Complete",
+        description: `${round.research.length} experts • ${metadata.totalToolsUsed} tools • $${(metadata.totalCost || 0).toFixed(4)}`
+      });
+
+      // ========================================
+      // STAGE 3: EXPERT SYNTHESIS
+      // ========================================
       round.stage = 'answers';
       setCurrentStage(`Round ${roundNumber}: Expert Synthesis`);
-      toast({ 
-        title: "Synthesis Phase", 
-        description: "Experts synthesizing key insights..."
+      toast({
+        title: "💡 Synthesis Phase",
+        description: "Experts synthesizing research into actionable recommendations..."
       });
 
       const synthesisStartTime = Date.now();
-      const roundData = {
-        ...round,
-        dialogue: discussionData.dialogue,
-        agentScores: discussionData.agentScores
-      };
-      
       const { data: synthesisData, error: synthesisError } = await supabase.functions.invoke(
         'multi-agent-spec',
-        { body: { stage: 'synthesis', agentConfigs, roundData, userComment } }
+        {
+          body: {
+            stage: 'synthesis',
+            agentConfigs,
+            roundData: {
+              researchResults: round.research,
+              roundNumber
+            },
+            userComment
+          }
+        }
       );
-      if (synthesisError) throw synthesisError;
-      
+
+      if (synthesisError) {
+        console.error('Synthesis error:', synthesisError);
+        throw new Error(synthesisError.message || 'Failed to synthesize research');
+      }
+
       const synthesisDuration = Date.now() - synthesisStartTime;
-      
+
       round.answers = synthesisData.syntheses;
       addHistoryEntry('output', { stage: 'synthesis', syntheses: round.answers });
-      
+
       // Add syntheses to dialogue
-      synthesisData.syntheses?.forEach((s: SynthesisItem) => {
+      synthesisData.syntheses?.forEach((s: any) => {
+        const quality = s.researchQuality || {};
         setDialogueEntries(prev => [...prev, {
-          agent: s.agent,
-          message: s.synthesis,
+          agent: s.expertId,
+          message: `📝 **Final Synthesis:**\n\n${s.synthesis}\n\n_Research depth: ${quality.toolsUsed || 0} tools • $${(quality.cost || 0).toFixed(4)}_`,
           timestamp: s.timestamp,
           type: 'answer'
         }]);
       });
-      
-      toast({ 
-        title: "Synthesis Complete", 
+
+      toast({
+        title: "✓ Synthesis Complete",
         description: `${synthesisData.syntheses?.length || 0} expert syntheses in ${(synthesisDuration/1000).toFixed(1)}s`
       });
 
-      // Stage 4: Voting
+      // ========================================
+      // STAGE 4: CONSENSUS VOTING
+      // ========================================
       round.stage = 'voting';
       setCurrentStage(`Round ${roundNumber}: Consensus Vote`);
-      toast({ 
-        title: "Consensus Vote", 
+      toast({
+        title: "🗳️ Consensus Vote",
         description: "Panel voting on proceeding to specification..."
       });
 
-      const voteTaskIds = activeAgents.map(agent => 
+      const voteTaskIds = activeAgents.map(agent =>
         addTask({ type: 'vote', agent: agent.agent, description: `Casting vote`, status: 'running' })
       );
 
       const votingStartTime = Date.now();
       const votingRoundData = {
-        ...round,
-        syntheses: synthesisData.syntheses,
-        agentScores: discussionData.agentScores
+        syntheses: synthesisData.syntheses
       };
-      
+
       const { data: votesData, error: votesError } = await supabase.functions.invoke(
         'multi-agent-spec',
         { body: { stage: 'voting', agentConfigs, roundData: votingRoundData } }
       );
-      if (votesError) throw votesError;
-      
+
+      if (votesError) {
+        console.error('Voting error:', votesError);
+        throw new Error(votesError.message || 'Failed to collect votes');
+      }
+
       const votingDuration = Date.now() - votingStartTime;
       voteTaskIds.forEach(id => updateTask(id, { status: 'complete', duration: votingDuration / voteTaskIds.length }));
-      
+
       round.votes = votesData.votes;
       round.votes.forEach(vote => addHistoryEntry('vote', vote));
-      
+
       // Add votes to dialogue
       round.votes.forEach(v => {
+        const emoji = v.approved ? '✅' : '❌';
         setDialogueEntries(prev => [...prev, {
           agent: v.agent,
-          message: v.reasoning,
+          message: `${emoji} **Vote:** ${v.approved ? 'APPROVED' : 'NEEDS ANOTHER ROUND'}\n\n${v.reasoning}\n\n_Confidence: ${v.confidence}%_`,
           timestamp: v.timestamp,
           type: 'vote'
         }]);
       });
-      
+
       const approvedCount = round.votes.filter(v => v.approved).length;
-      toast({ 
-        title: "Vote Complete", 
-        description: `${approvedCount}/${round.votes.length} approved in ${votingDuration}ms`
+      toast({
+        title: "✓ Vote Complete",
+        description: `${approvedCount}/${round.votes.length} approved • ${votingDuration}ms`
       });
 
       round.status = 'complete';
@@ -392,35 +455,40 @@ const Index = () => {
       });
 
       const approvalRate = round.votes.filter(v => v.approved).length / round.votes.length;
-      
+
       if (approvalRate >= 0.6 || roundNumber >= 3) {
-        // Generate final spec
+        // ========================================
+        // STAGE 5: FINAL SPECIFICATION GENERATION
+        // ========================================
         round.stage = 'spec';
         setCurrentStage("Generating Final Specification");
-        toast({ 
-          title: "Specification Phase", 
-          description: "Generating comprehensive specification..."
+        toast({
+          title: "📄 Specification Phase",
+          description: "Generating comprehensive production-ready specification..."
         });
 
         const specTaskId = addTask({ type: 'answer', description: 'Synthesizing specification', status: 'running' });
 
         const specStartTime = Date.now();
         const specRoundData = {
-          ...round,
           syntheses: synthesisData.syntheses,
-          dialogue: discussionData.dialogue,
-          agentScores: discussionData.agentScores
+          votes: round.votes,
+          researchResults: round.research
         };
-        
+
         const { data: specData, error: specError } = await supabase.functions.invoke(
           'multi-agent-spec',
           { body: { stage: 'spec', roundData: specRoundData } }
         );
-        if (specError) throw specError;
-        
+
+        if (specError) {
+          console.error('Spec error:', specError);
+          throw new Error(specError.message || 'Failed to generate specification');
+        }
+
         const specDuration = Date.now() - specStartTime;
         updateTask(specTaskId, { status: 'complete', duration: specDuration });
-        
+
         setGeneratedSpec(specData.spec);
         setSessionState(prev => ({
           ...prev,
@@ -437,15 +505,20 @@ const Index = () => {
           }
         }));
         addHistoryEntry('spec', { spec: specData.spec });
-        
-        toast({ title: "Spec Complete", description: `Completed after ${roundNumber} rounds in ${specDuration}ms` });
+
+        const totalCost = round.research.reduce((sum: number, r: any) => sum + (r.cost || 0), 0);
+
+        toast({
+          title: "✅ Specification Complete!",
+          description: `Round ${roundNumber} • ${specDuration}ms • Total cost: $${totalCost.toFixed(4)}`
+        });
       } else {
-        toast({ 
-          title: `Round ${roundNumber} Complete`, 
+        toast({
+          title: `Round ${roundNumber} Complete`,
           description: `${Math.round(approvalRate * 100)}% approval. Starting next round...`
         });
         if (!sessionState.isPaused) {
-          await runRound(input, roundNumber + 1);
+          await runRound(input, roundNumber + 1, userComment);
         }
       }
     } catch (error: unknown) {
@@ -457,18 +530,20 @@ const Index = () => {
       const errMessage = error instanceof Error ? error.message : '';
 
       if (errMessage.includes('RATE_LIMIT') || errMessage.includes('429') || errMessage.includes('rate limit')) {
-        errorTitle = "⚠️ Groq Rate Limit";
-        errorMsg = errMessage.includes('daily')
-          ? "Daily token limit reached. Resets at midnight UTC. Consider upgrading your Groq account for higher limits."
-          : "Too many requests. Groq limits: 30 req/min, 14,400 req/day. Wait 1-2 minutes and retry.";
+        errorTitle = "⚠️ Rate Limit Exceeded";
+        errorMsg = "You've reached the rate limit. Please wait a few minutes and try again.";
+      } else if (errMessage.includes('OPENROUTER') || errMessage.includes('OpenRouter')) {
+        errorTitle = "⚠️ OpenRouter API Issue";
+        errorMsg = "Falling back to Groq. " + errMessage;
       } else {
         errorMsg = errMessage || errorMsg;
       }
-      
+
       toast({ title: errorTitle, description: errorMsg, variant: "destructive", duration: 8000 });
       setIsProcessing(false);
     }
   };
+
 
   const handleSubmit = async (input: string) => {
     setIsProcessing(true);
@@ -534,14 +609,14 @@ const Index = () => {
 
   const testWorkflow = async () => {
     if (import.meta.env.MODE !== 'development') return;
-    
+
     try {
-      toast({ title: "Workflow Test", description: "Testing full spec generation workflow..." });
-      
+      toast({ title: "Workflow Test", description: "Testing enhanced multi-agent workflow..." });
+
       const testInput = 'AI-powered collaborative project management tool for remote teams';
       let roundData: any = {};
-      const stages: Array<'discussion' | 'research' | 'synthesis' | 'voting' | 'spec'> = 
-        ['discussion', 'research', 'synthesis', 'voting', 'spec'];
+      const stages: Array<'questions' | 'research' | 'synthesis' | 'voting' | 'spec'> =
+        ['questions', 'research', 'synthesis', 'voting', 'spec'];
       
       for (const stage of stages) {
         let attempts = 0;
@@ -549,22 +624,44 @@ const Index = () => {
         
         while (attempts < 2 && !success) {
           try {
-            const { data, error } = await supabase.functions.invoke('multi-agent-spec', {
-              body: { 
-                userInput: testInput,
-                stage,
-                roundData,
-                agentConfigs: agentConfigs,
-                discussionTurns: 8
-              }
-            });
-            
+            let body: any = { userInput: testInput, stage };
+
+            // Build stage-specific payload
+            if (stage === 'research') {
+              body.agentConfigs = agentConfigs;
+              body.roundData = { questions: roundData.questions, roundNumber: 1 };
+            } else if (stage === 'synthesis') {
+              body.agentConfigs = agentConfigs;
+              body.roundData = { researchResults: roundData.researchResults, roundNumber: 1 };
+            } else if (stage === 'voting') {
+              body.agentConfigs = agentConfigs;
+              body.roundData = { syntheses: roundData.syntheses };
+            } else if (stage === 'spec') {
+              body.roundData = {
+                syntheses: roundData.syntheses,
+                votes: roundData.votes,
+                researchResults: roundData.researchResults
+              };
+            }
+
+            const { data, error } = await supabase.functions.invoke('multi-agent-spec', { body });
+
             if (error) throw error;
-            
+
+            // Merge data properly
             roundData = { ...roundData, ...data };
             success = true;
-            
+
             console.log(`✅ Stage ${stage} completed:`, data);
+
+            // Log metadata for research stage
+            if (stage === 'research' && data.metadata) {
+              console.log('📊 Research Metadata:', {
+                cost: `$${data.metadata.totalCost.toFixed(4)}`,
+                tools: data.metadata.totalToolsUsed,
+                tokens: data.metadata.totalTokens
+              });
+            }
             
             if (stage === 'spec') {
               const spec = data.spec || '';
