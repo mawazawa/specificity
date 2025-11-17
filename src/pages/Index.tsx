@@ -654,6 +654,13 @@ const Index = () => {
 
     try {
       await runRound(input, 1);
+    } catch (error) {
+      console.error('Spec generation failed:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to generate specification. Please try again.",
+        variant: "destructive"
+      });
     } finally {
       setIsProcessing(false);
       setCurrentStage("");
