@@ -109,6 +109,9 @@ Specificity AI solves the **$50K problem**: Bad specs cost companies thousands i
 
 4. **Run Tests**:
    ```bash
+   # Run Playwright E2E tests
+   npm test
+   
    # Test edge functions
    ./scripts/test-edge-functions.sh
    
@@ -160,6 +163,12 @@ The app will be running at `http://localhost:5173`
 npm run dev              # Start dev server with HMR
 npm run build            # Production build
 npm run preview          # Preview production build
+
+# Testing
+npm test                 # Run Playwright E2E tests
+npm test -- --ui         # Run tests with Playwright UI
+npm test -- --debug      # Run tests in debug mode
+npm test -- --list       # List all available tests
 
 # Code Quality
 npm run typecheck        # TypeScript type checking

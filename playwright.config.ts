@@ -12,7 +12,7 @@ export default defineConfig({
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
-    headless: false, // Run in headed mode so we can see what's happening
+    headless: process.env.CI === 'true' || process.env.HEADLESS === 'true', // Headless in CI, headed locally
   },
 
   projects: [
