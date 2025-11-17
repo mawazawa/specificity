@@ -699,10 +699,10 @@ const Index = () => {
 
   const handleGetStarted = () => {
     scrollToInput();
-    // Focus the input after scrolling
+    // Focus the textarea after scrolling
     setTimeout(() => {
-      const inputElement = document.querySelector('[data-spec-input]') as HTMLInputElement;
-      inputElement?.focus();
+      const textareaElement = document.querySelector('[data-spec-input] textarea') as HTMLTextAreaElement;
+      textareaElement?.focus();
     }, 500);
   };
 
