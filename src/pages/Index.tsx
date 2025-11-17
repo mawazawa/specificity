@@ -344,13 +344,105 @@ const Index = () => {
       });
 
       // ========================================
-      // STAGE 3: EXPERT SYNTHESIS
+      // STAGE 2.5: CHALLENGE/DEBATE (RAY DALIO STYLE)
+      // ========================================
+      round.stage = 'challenge';
+      setCurrentStage(`Round ${roundNumber}: Ray Dalio Productive Conflict`);
+      toast({
+        title: "⚔️ Challenge Phase",
+        description: "Stress-testing ideas with contrarian viewpoints and productive conflict..."
+      });
+
+      const challengeStartTime = Date.now();
+      const { data: challengeData, error: challengeError } = await supabase.functions.invoke(
+        'multi-agent-spec',
+        {
+          body: {
+            stage: 'challenge',
+            agentConfigs,
+            roundData: {
+              researchResults: round.research,
+              roundNumber
+            }
+          }
+        }
+      );
+
+      if (challengeError) {
+        console.error('Challenge error:', challengeError);
+        throw new Error(challengeError.message || 'Failed to execute challenges');
+      }
+
+      const challengeDuration = Date.now() - challengeStartTime;
+
+      // Store challenge data
+      round.challenges = challengeData.challenges || [];
+      round.challengeResponses = challengeData.challengeResponses || [];
+      round.debateResolutions = challengeData.debateResolutions || [];
+      const challengeMetadata = challengeData.metadata || {};
+
+      // Add challenge summary to dialogue
+      const challengeSummary = `⚔️ **Productive Conflict Complete (Ray Dalio Style):**
+• ${challengeMetadata.totalChallenges || 0} contrarian challenges generated
+• ${challengeMetadata.totalResponses || 0} expert debates
+• ${challengeMetadata.debatesResolved || 0} positions battle-tested
+• Avg Risk Score: ${challengeMetadata.avgRiskScore || 0}/10
+• Cost: $${(challengeMetadata.challengeCost || 0).toFixed(4)}
+• Duration: ${(challengeDuration/1000).toFixed(1)}s
+
+**Result:** Ideas stress-tested through thoughtful disagreement`;
+
+      setDialogueEntries(prev => [...prev, {
+        agent: 'system' as any,
+        message: challengeSummary,
+        timestamp: new Date().toISOString(),
+        type: 'discussion'
+      }]);
+
+      // Add individual challenges and responses to dialogue
+      round.challengeResponses?.forEach((response: any) => {
+        const challenge = round.challenges?.find((c: any) => c.id === response.challengeId);
+
+        setDialogueEntries(prev => [...prev, {
+          agent: response.challenger,
+          message: `🎯 **Contrarian Challenge:**\n\n**Question:** ${challenge?.question || 'Challenge'}\n\n**Devil's Advocate Position:**\n${response.challenge}\n\n**Evidence Against:** ${response.evidenceAgainst.join('; ')}\n\n${response.alternativeApproach ? `**Alternative Approach:** ${response.alternativeApproach}\n\n` : ''}_Risk Score: ${response.riskScore}/10 • Cost: $${response.cost.toFixed(4)}_`,
+          timestamp: new Date().toISOString(),
+          type: 'discussion'
+        }]);
+      });
+
+      // Add debate resolutions
+      round.debateResolutions?.forEach((resolution: any) => {
+        setDialogueEntries(prev => [...prev, {
+          agent: 'system' as any,
+          message: `🤝 **Debate Resolution:**\n\n${resolution.resolution}\n\n**Confidence Change:** ${resolution.confidenceChange > 0 ? '+' : ''}${resolution.confidenceChange}%\n**Adopted Alternatives:** ${resolution.adoptedAlternatives.join(', ') || 'None'}`,
+          timestamp: new Date().toISOString(),
+          type: 'discussion'
+        }]);
+      });
+
+      addHistoryEntry('output', {
+        stage: 'challenge',
+        challenges: round.challenges.length,
+        responses: round.challengeResponses.length,
+        resolutions: round.debateResolutions.length,
+        cost: challengeMetadata.challengeCost,
+        duration: challengeDuration
+      });
+
+      toast({
+        title: "✓ Productive Conflict Complete",
+        description: `${challengeMetadata.debatesResolved} positions battle-tested • $${(challengeMetadata.challengeCost || 0).toFixed(4)}`
+      });
+
+      // ========================================
+      // STAGE 3: EXPERT SYNTHESIS (WITH DEBATE RESOLUTIONS)
       // ========================================
       round.stage = 'answers';
       setCurrentStage(`Round ${roundNumber}: Expert Synthesis`);
       toast({
         title: "💡 Synthesis Phase",
-        description: "Experts synthesizing research into actionable recommendations..."
+        description: "Experts synthesizing battle-tested research into actionable recommendations..."
       });
 
       const synthesisStartTime = Date.now();
@@ -362,6 +454,7 @@ const Index = () => {
             agentConfigs,
             roundData: {
               researchResults: round.research,
+              debateResolutions: round.debateResolutions, // Include battle-tested positions
               roundNumber
             },
             userComment
@@ -473,7 +566,8 @@ const Index = () => {
         const specRoundData = {
           syntheses: synthesisData.syntheses,
           votes: round.votes,
-          researchResults: round.research
+          researchResults: round.research,
+          debateResolutions: round.debateResolutions || [] // Include battle-tested positions
         };
 
         const { data: specData, error: specError } = await supabase.functions.invoke(
@@ -615,13 +709,13 @@ const Index = () => {
 
       const testInput = 'AI-powered collaborative project management tool for remote teams';
       let roundData: any = {};
-      const stages: Array<'questions' | 'research' | 'synthesis' | 'voting' | 'spec'> =
-        ['questions', 'research', 'synthesis', 'voting', 'spec'];
-      
+      const stages: Array<'questions' | 'research' | 'challenge' | 'synthesis' | 'voting' | 'spec'> =
+        ['questions', 'research', 'challenge', 'synthesis', 'voting', 'spec'];
+
       for (const stage of stages) {
         let attempts = 0;
         let success = false;
-        
+
         while (attempts < 2 && !success) {
           try {
             let body: any = { userInput: testInput, stage };
@@ -630,9 +724,16 @@ const Index = () => {
             if (stage === 'research') {
               body.agentConfigs = agentConfigs;
               body.roundData = { questions: roundData.questions, roundNumber: 1 };
-            } else if (stage === 'synthesis') {
+            } else if (stage === 'challenge') {
               body.agentConfigs = agentConfigs;
               body.roundData = { researchResults: roundData.researchResults, roundNumber: 1 };
+            } else if (stage === 'synthesis') {
+              body.agentConfigs = agentConfigs;
+              body.roundData = {
+                researchResults: roundData.researchResults,
+                debateResolutions: roundData.debateResolutions || [],
+                roundNumber: 1
+              };
             } else if (stage === 'voting') {
               body.agentConfigs = agentConfigs;
               body.roundData = { syntheses: roundData.syntheses };
@@ -640,7 +741,8 @@ const Index = () => {
               body.roundData = {
                 syntheses: roundData.syntheses,
                 votes: roundData.votes,
-                researchResults: roundData.researchResults
+                researchResults: roundData.researchResults,
+                debateResolutions: roundData.debateResolutions || []
               };
             }
 
