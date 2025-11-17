@@ -17,7 +17,7 @@ export const SimpleSpecInput = ({ onSubmit, isLoading, defaultValue }: SimpleSpe
 
   // Update input when defaultValue changes
   useEffect(() => {
-    if (defaultValue) {
+    if (defaultValue !== undefined) {
       setInput(defaultValue);
     }
   }, [defaultValue]);
