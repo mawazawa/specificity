@@ -20,7 +20,7 @@
     "typecheck:watch": "tsc --noEmit --watch",
     "preview": "vite preview",
     "optimize:images": "node scripts/optimize-images.js",
-    "test": "echo 'No tests configured yet' && exit 0",
+    "test": "playwright test",
     "validate": "npm run typecheck && npm run lint",
     "pre-commit": "npm run typecheck && npm run lint"
   },
