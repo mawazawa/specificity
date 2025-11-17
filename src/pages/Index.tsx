@@ -1162,7 +1162,7 @@ const Index = () => {
           onToggle={() => setIsDialogueOpen(!isDialogueOpen)}
         />
       )}
-      {process.env.NODE_ENV === 'development' && (
+      {import.meta.env.MODE === 'development' && (
         <button onClick={testWorkflow} className="fixed bottom-4 right-4 bg-blue-500 text-white p-2 rounded">Test Workflow</button>
       )}
     </div>
