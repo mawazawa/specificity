@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { SpecInput } from "@/components/SpecInput";
+import { SimpleSpecInput } from "@/components/SimpleSpecInput";
 import { AgentCard } from "@/components/AgentCard";
 import { VotingPanel } from "@/components/VotingPanel";
 import { RoundTracker } from "@/components/RoundTracker";
@@ -694,6 +695,15 @@ const Index = () => {
   const scrollToInput = () => {
     const inputElement = document.querySelector('[data-spec-input]');
     inputElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
+  const handleGetStarted = () => {
+    scrollToInput();
+    // Focus the input after scrolling
+    setTimeout(() => {
+      const inputElement = document.querySelector('[data-spec-input]') as HTMLInputElement;
+      inputElement?.focus();
+    }, 500);
   };
 
   // Show loading while checking auth

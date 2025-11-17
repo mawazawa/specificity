@@ -82,11 +82,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       }
     };
 
-    const rippleSpring = useSpring({
-      scale: ripple ? 1 : 0,
-      opacity: ripple ? [0.5, 0] : 0,
-      config: { tension: 300, friction: 40 }
-    });
+    // Note: rippleSpring removed - using direct animation instead
 
     const Comp = asChild ? Slot : motion.button;
 
@@ -118,9 +114,10 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
               top: ripple.y,
               width: ripple.size,
               height: ripple.size,
-              transform: `translate(-50%, -50%)`,
             }}
-            animate={rippleSpring}
+            initial={{ scale: 0, opacity: 0.5 }}
+            animate={{ scale: 1, opacity: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
           />
         )}
       </Comp>

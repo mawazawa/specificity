@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll } from "framer-motion";
 
 // Curated power words that build momentum
 const words = [
@@ -17,11 +17,11 @@ export const ScrollingTextSection = () => {
   });
 
   useEffect(() => {
-    const unsubscribe = scrollYProgress.on("change", (latest) => {
+    const unsubscribe = scrollYProgress.onChange((latest) => {
       const wordIndex = Math.floor(latest * words.length);
       setCurrentIndex(Math.min(wordIndex, words.length - 1));
     });
-    
+
     return () => unsubscribe();
   }, [scrollYProgress]);
 
