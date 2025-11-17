@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
@@ -33,7 +33,7 @@ interface AgentCardProps {
 export const AgentCard = ({ config, onChange }: AgentCardProps) => {
   const agent = agentInfo[config.agent as keyof typeof agentInfo];
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const ref = React.useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   const mouseX = useSpring(x, { 
@@ -45,7 +45,7 @@ export const AgentCard = ({ config, onChange }: AgentCardProps) => {
     damping: 40 
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     const element = ref.current;
     if (!element) return;
 
