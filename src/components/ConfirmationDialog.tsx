@@ -88,13 +88,13 @@ export const ConfirmationDialog = ({
                 </div>
               </div>
 
-              {/* Cost & time */}
+              {/* Cost & time - FREE FOR TESTING */}
               <div className="flex items-center gap-6 pt-2 border-t border-border/20">
                 <div className="flex items-center gap-2">
-                  <DollarSign className="w-4 h-4 text-primary" />
+                  <DollarSign className="w-4 h-4 text-green-500" />
                   <div className="text-sm">
-                    <span className="font-semibold text-foreground">$20</span>
-                    <span className="text-muted-foreground"> one-time fee</span>
+                    <span className="font-semibold text-green-600 dark:text-green-400">FREE</span>
+                    <span className="text-muted-foreground"> (testing phase)</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -106,11 +106,11 @@ export const ConfirmationDialog = ({
                 </div>
               </div>
 
-              {/* Guarantee */}
-              <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3">
-                <p className="text-xs text-green-700 dark:text-green-400 font-medium">
-                  💚 100% Money-Back Guarantee: If you're not satisfied with your specification,
-                  we'll refund your payment within 24 hours, no questions asked.
+              {/* Testing Notice */}
+              <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
+                <p className="text-xs text-blue-700 dark:text-blue-400 font-medium">
+                  🧪 Testing Phase: This product is currently FREE while we refine the experience.
+                  Pricing will be introduced later ($20/spec estimated).
                 </p>
               </div>
             </div>
@@ -125,7 +125,7 @@ export const ConfirmationDialog = ({
             onClick={handleConfirm}
             className="sm:flex-1 bg-primary hover:bg-primary/90"
           >
-            Confirm & Generate ($20)
+            Confirm & Generate (FREE)
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
