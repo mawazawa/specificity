@@ -5,8 +5,7 @@
  * stress-test ideas, and explore contrarian viewpoints.
  */
 
-import { callOpenRouter } from './openrouter-client.ts';
-import { retryWithBackoff } from './retry-utils.ts';
+import { callOpenRouter, retryWithBackoff } from './openrouter-client.ts';
 
 export interface ChallengeQuestion {
   id: string;

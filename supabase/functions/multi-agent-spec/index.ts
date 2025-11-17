@@ -781,10 +781,10 @@ Include:
 
 # 14. Deployment & DevOps
 - **Exact deployment steps** (command by command):
-  1. Build frontend: `npm run build`
-  2. Deploy to Vercel: `vercel --prod`
-  3. Deploy backend: `docker build && docker push && kubectl apply`
-  4. Run migrations: `npm run migrate:prod`
+  1. Build frontend: npm run build
+  2. Deploy to Vercel: vercel --prod
+  3. Deploy backend: docker build and docker push and kubectl apply
+  4. Run migrations: npm run migrate:prod
   5. Verify health checks
 - **Infrastructure as code** (Terraform/Pulumi/CDK)
 - **CI/CD pipeline** (GitHub Actions/GitLab CI configuration)
