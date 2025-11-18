@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { SpecInput } from "@/components/SpecInput";
 import { SimpleSpecInput } from "@/components/SimpleSpecInput";
 import { AgentCard } from "@/components/AgentCard";
 import { VotingPanel } from "@/components/VotingPanel";
@@ -982,10 +981,9 @@ const Index = () => {
           </div>
         ) : (
           <>
-            {/* View Mode Toggle - Desktop */}
-            <div className="hidden md:flex items-center justify-between">
-              <SpecInput onSubmit={handleSubmit} isLoading={isProcessing} />
-              <div className="flex gap-2 ml-4">
+            {/* View Mode Toggle - Desktop (No duplicate input) */}
+            <div className="hidden md:flex items-center justify-end">
+              <div className="flex gap-2">
                 <Button
                   variant={viewMode === 'chat' ? 'default' : 'outline'}
                   size="sm"
@@ -1005,13 +1003,6 @@ const Index = () => {
                   Panels
                 </Button>
               </div>
-            </div>
-
-            {/* Mobile - Just Input */}
-            <div className="md:hidden">
-              {viewMode === 'panels' && (
-                <SpecInput onSubmit={handleSubmit} isLoading={isProcessing} />
-              )}
             </div>
 
             {/* Main Content */}
@@ -1042,41 +1033,36 @@ const Index = () => {
 
         <div className="grid gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-8">
-            {/* Advisory Panel with Live Outputs */}
-            <div className="space-y-3">
-              <h2 className="text-xs font-light uppercase tracking-widest text-foreground/60">
-                Advisory Panel
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-w-5xl mx-auto">
-                {agentConfigs.map((config, index) => {
-                  const agentQuestion = currentRound?.questions?.find(q => q.askedBy === config.agent);
-                  const agentAnswer = currentRound?.answers?.find(a => a.agent === config.agent);
-                  const agentVote = currentRound?.votes?.find(v => v.agent === config.agent);
-                  
-                  return (
-                    <div key={config.agent} className="space-y-2">
-                      <AgentCard
-                        config={config}
-                        onChange={(updatedConfig) => {
-                          const newConfigs = [...agentConfigs];
-                          newConfigs[index] = updatedConfig;
-                          setAgentConfigs(newConfigs);
-                        }}
-                      />
-                      {(agentQuestion || agentAnswer || agentVote) && (
+            {/* Live Agent Activity - Only show LiveAgentCard, not duplicate static cards */}
+            {currentRound && (
+              <div className="space-y-3">
+                <h2 className="text-xs font-light uppercase tracking-widest text-foreground/60">
+                  Live Agent Activity
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-w-5xl mx-auto">
+                  {agentConfigs.map((config) => {
+                    const agentQuestion = currentRound?.questions?.find(q => q.askedBy === config.agent);
+                    const agentAnswer = currentRound?.answers?.find(a => a.agent === config.agent);
+                    const agentVote = currentRound?.votes?.find(v => v.agent === config.agent);
+                    
+                    // Only show LiveAgentCard if there's activity, otherwise show minimal placeholder
+                    if (agentQuestion || agentAnswer || agentVote) {
+                      return (
                         <LiveAgentCard
+                          key={config.agent}
                           agent={config.agent}
                           question={agentQuestion?.question}
                           output={agentAnswer?.answer}
                           vote={agentVote}
                           isActive={currentRound?.stage === 'questions' || currentRound?.stage === 'answers'}
                         />
-                      )}
-                    </div>
-                  );
-                })}
+                      );
+                    }
+                    return null;
+                  })}
+                </div>
               </div>
-            </div>
+            )}
 
             {isProcessing && currentRound && (
               <div className="animate-slide-up">
