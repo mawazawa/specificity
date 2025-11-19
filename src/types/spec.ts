@@ -20,13 +20,42 @@ export interface Vote {
   approved: boolean;
   reasoning: string;
   timestamp: string;
+  confidence?: number;
+}
+
+export interface Challenge {
+  id: string;
+  question: string;
+  challenger: AgentType;
+  target: AgentType;
+  riskScore: number;
+}
+
+export interface ChallengeResponse {
+  id: string;
+  challengeId: string;
+  challenger: AgentType;
+  challenge: string;
+  evidenceAgainst: string[];
+  alternativeApproach?: string;
+  riskScore: number;
+  cost: number;
+}
+
+export interface DebateResolution {
+  resolution: string;
+  confidenceChange: number;
+  adoptedAlternatives: string[];
 }
 
 export interface Round {
   roundNumber: number;
-  stage: 'questions' | 'research' | 'answers' | 'voting' | 'spec';
+  stage: 'questions' | 'research' | 'challenge' | 'answers' | 'voting' | 'spec';
   questions: SpecQuestion[];
   research: ResearchResult[];
+  challenges?: Challenge[];
+  challengeResponses?: ChallengeResponse[];
+  debateResolutions?: DebateResolution[];
   answers: AgentAnswer[];
   votes: Vote[];
   status: 'in-progress' | 'complete' | 'paused';
@@ -94,14 +123,56 @@ export interface SessionState {
   history: HistoryEntry[];
 }
 
+// History entry types for tracking session events
+export interface QuestionHistoryData {
+  stage: 'questions';
+  questions: SpecQuestion[];
+  count: number;
+}
+
+export interface ResearchHistoryData {
+  stage: 'research';
+  expertsCount: number;
+  toolsUsed: number;
+  cost: number;
+  duration: number;
+}
+
+export interface ChallengeHistoryData {
+  stage: 'challenge';
+  challenges: number;
+  responses: number;
+  resolutions: number;
+  cost: number;
+  duration: number;
+}
+
+export interface SynthesisHistoryData {
+  stage: 'synthesis';
+  syntheses: AgentAnswer[];
+}
+
+export interface SpecHistoryData {
+  spec: string;
+}
+
+export interface UserCommentData {
+  comment: string;
+}
+
 export type HistoryEntryData =
-  | { type: 'vote'; data: Vote }
-  | { type: 'output'; data: AgentPerspective }
-  | { type: 'spec'; data: string }
-  | { type: 'user-comment'; data: string };
+  | QuestionHistoryData
+  | ResearchHistoryData
+  | ChallengeHistoryData
+  | SynthesisHistoryData
+  | Vote
+  | AgentPerspective
+  | SpecHistoryData
+  | UserCommentData
+  | string;
 
 export interface HistoryEntry {
   timestamp: string;
   type: 'vote' | 'output' | 'spec' | 'user-comment';
-  data: Vote | AgentPerspective | string;
+  data: HistoryEntryData;
 }

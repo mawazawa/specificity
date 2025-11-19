@@ -18,20 +18,7 @@ interface LandingHeroProps {
 }
 
 export const LandingHero = ({ onGetStarted }: LandingHeroProps) => {
-  const [inputValue, setInputValue] = useState("");
   const [showSkeletons, setShowSkeletons] = useState(false);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(e.target.value);
-  };
-
-  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && inputValue.trim()) {
-      if (onGetStarted) {
-        onGetStarted();
-      }
-    }
-  };
 
   return (
     <div className="space-y-32 animate-fade-in relative">
@@ -47,8 +34,11 @@ export const LandingHero = ({ onGetStarted }: LandingHeroProps) => {
         }}
       />
 
-      {/* ADVANCED HEADER - Merged Specificity Hero with PAS, Value Props, CTA */}
-      <div className="relative min-h-[80vh] flex items-center justify-center overflow-hidden bg-gradient-to-b from-background via-background/95 to-background">
+      {/* HERO SECTION - Clean, Focused, Single CTA */}
+      <section
+        className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-gradient-to-b from-background via-background/95 to-background"
+        aria-labelledby="hero-heading"
+      >
         <DottedGlowBackground
           className="pointer-events-none"
           opacity={0.85}
@@ -63,162 +53,179 @@ export const LandingHero = ({ onGetStarted }: LandingHeroProps) => {
           speedMax={0.85}
           speedScale={1.3}
         />
-        
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, ease: "easeOut" }}
-          className="relative z-10 text-center space-y-8 max-w-6xl mx-auto px-4"
+          className="relative z-10 text-center space-y-12 max-w-6xl mx-auto px-4 py-12"
         >
-          <h1 
-            className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[1.1]"
-            style={{
-              background: "linear-gradient(135deg, hsl(var(--foreground)), hsl(var(--accent)))",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-              filter: "drop-shadow(0 0 60px hsl(var(--accent) / 0.4))"
-            }}
-          >
-            <span className="block">Specificity:</span>
-            <span className="block text-2xl md:text-4xl lg:text-5xl font-extralight mt-2">
-              Production-Ready Specs in 30 Minutes
-            </span>
-          </h1>
-          
-          {/* PAS: Agitate the Problem */}
-          <div className="max-w-3xl mx-auto space-y-6">
-            <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed">
-              Bad specs cost you <span className="text-destructive font-semibold">$50K in wasted dev time</span>, 
-              months of delays, and feature drift that kills products before launch.
-            </p>
-            
-            {/* PAS: Solution */}
-            <p className="text-lg text-foreground/80 leading-relaxed border-l-4 border-accent pl-6">
-              <span className="font-semibold">8 world-class AI advisors</span> debate your product, 
-              research the latest tech, and deliver <span className="font-semibold">15-section battle-tested specs</span> 
-              with anti-drift controls — so you never miss a requirement again.
+          {/* Main Headline */}
+          <div className="space-y-6">
+            <h1
+              id="hero-heading"
+              className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[1.05]"
+              style={{
+                background: "linear-gradient(135deg, hsl(var(--foreground)), hsl(var(--accent)))",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+                filter: "drop-shadow(0 0 60px hsl(var(--accent) / 0.4))"
+              }}
+            >
+              <span className="block">Production-Ready Specs</span>
+              <span className="block text-3xl md:text-5xl lg:text-6xl font-light mt-4 opacity-90">
+                in 30 Minutes
+              </span>
+            </h1>
+
+            {/* Value Proposition */}
+            <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed max-w-4xl mx-auto px-4">
+              8 world-class AI advisors debate your product, research the latest tech,
+              and deliver <span className="text-foreground font-semibold">15-section battle-tested specifications</span>
+              —ready for Claude Code to build from idea to production.
             </p>
           </div>
 
-          {/* Value Props Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-8 max-w-4xl mx-auto">
-            <div className="text-center space-y-1">
-              <div className="text-4xl md:text-5xl font-extralight text-foreground">8</div>
-              <div className="text-xs text-muted-foreground/80">Expert Advisors</div>
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 pt-4 max-w-4xl mx-auto">
+            <div className="text-center space-y-2" role="group" aria-label="8 Expert Advisors">
+              <div className="text-5xl md:text-6xl font-extralight text-foreground">8</div>
+              <div className="text-sm text-muted-foreground/80 font-medium">Expert Advisors</div>
             </div>
-            <div className="text-center space-y-1">
-              <div className="text-4xl md:text-5xl font-extralight text-foreground">30m</div>
-              <div className="text-xs text-muted-foreground/80">Average Time</div>
+            <div className="text-center space-y-2" role="group" aria-label="30 minute delivery">
+              <div className="text-5xl md:text-6xl font-extralight text-foreground">30m</div>
+              <div className="text-sm text-muted-foreground/80 font-medium">Delivery Time</div>
             </div>
-            <div className="text-center space-y-1">
-              <div className="text-4xl md:text-5xl font-extralight text-foreground">15</div>
-              <div className="text-xs text-muted-foreground/80">Sections</div>
+            <div className="text-center space-y-2" role="group" aria-label="15 comprehensive sections">
+              <div className="text-5xl md:text-6xl font-extralight text-foreground">15</div>
+              <div className="text-sm text-muted-foreground/80 font-medium">Comprehensive Sections</div>
             </div>
-            <div className="text-center space-y-1">
-              <div className="text-4xl md:text-5xl font-extralight text-foreground">$20</div>
-              <div className="text-xs text-muted-foreground/80">Per Spec</div>
+            <div className="text-center space-y-2" role="group" aria-label="20 dollar per spec">
+              <div className="text-5xl md:text-6xl font-extralight text-foreground">$20</div>
+              <div className="text-sm text-muted-foreground/80 font-medium">Per Specification</div>
             </div>
           </div>
 
-          {/* Interactive Input with Blinking Cursor */}
+          {/* Single CTA */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5, duration: 0.8 }}
-            className="space-y-8"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3, duration: 0.6 }}
+            className="pt-6"
           >
-            <div className="max-w-2xl mx-auto">
-              <div className="relative flex items-center justify-start bg-background/50 border-2 border-border/50 rounded-xl px-6 py-4 hover:border-accent/50 transition-all duration-300 focus-within:border-accent focus-within:shadow-lg focus-within:shadow-accent/20">
-                <input
-                  type="text"
-                  value={inputValue}
-                  onChange={handleInputChange}
-                  onKeyDown={handleInputKeyDown}
-                  placeholder="Describe your product idea..."
-                  className="flex-1 bg-transparent border-none outline-none text-lg text-foreground placeholder:text-muted-foreground/50 font-light"
-                  style={{ caretColor: 'hsl(var(--accent))' }}
-                />
-                {!inputValue && (
-                  <div
-                    className="w-0.5 h-6 bg-accent animate-pulse ml-1"
-                    style={{ animation: 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}
-                  />
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground/60 mt-2 text-center">
-                Press Enter or click below to get started
-              </p>
-            </div>
-
-            <AnimatedButton onClick={onGetStarted} className="text-lg px-12 py-6">
-              Get Started
+            <AnimatedButton
+              onClick={onGetStarted}
+              className="text-xl px-14 py-7 shadow-2xl"
+              aria-label="Get started with specification generation"
+            >
+              <span className="flex items-center gap-3">
+                <Sparkles className="w-6 h-6" aria-hidden="true" />
+                Get Started
+              </span>
             </AnimatedButton>
-            <p className="text-xs text-muted-foreground/60">$20 per spec • Money back guarantee</p>
+            <div className="flex items-center justify-center gap-6 mt-6 text-xs text-muted-foreground/70">
+              <span className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-success" aria-hidden="true" />
+                <span>30-min delivery</span>
+              </span>
+              <span className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-success" aria-hidden="true" />
+                <span>$20 flat fee</span>
+              </span>
+              <span className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-success" aria-hidden="true" />
+                <span>Money-back guarantee</span>
+              </span>
+            </div>
           </motion.div>
-        </motion.div>
-      </div>
 
-      {/* Enhanced 6-Step Process - Moved Below Merged Hero */}
-      <div className="max-w-5xl mx-auto space-y-8">
-        <div className="text-center space-y-3">
-          <h2 className="text-3xl md:text-4xl font-light tracking-tight">How It Works</h2>
-          <p className="text-sm text-muted-foreground/70 max-w-2xl mx-auto">
-            Six-phase workflow with research validation and expert debate
+          {/* Problem Statement - Subtle */}
+          <div className="max-w-2xl mx-auto pt-8">
+            <p className="text-sm text-muted-foreground/60 leading-relaxed italic">
+              Bad specs cost <span className="text-destructive font-medium not-italic">$50K in wasted dev time</span>
+              and months of delays. Never miss a requirement again.
+            </p>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* How It Works - Clean 6-Step Process */}
+      <section className="max-w-6xl mx-auto space-y-12" aria-labelledby="how-it-works-heading">
+        <div className="text-center space-y-4">
+          <h2 id="how-it-works-heading" className="text-4xl md:text-5xl font-light tracking-tight">
+            How It Works
+          </h2>
+          <p className="text-base text-muted-foreground/70 max-w-2xl mx-auto leading-relaxed">
+            Six-phase collaborative workflow with real-time research validation and expert debate
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-3 gap-8">
           {[
-            { 
-              phase: "1. Constitution", 
-              icon: Shield, 
-              description: "Establish project constitution, scope boundaries, and success criteria with expert alignment." 
+            {
+              phase: "Constitution",
+              icon: Shield,
+              description: "Establish project constitution, scope boundaries, and success criteria with expert alignment.",
+              step: "1"
             },
-            { 
-              phase: "2. Specify", 
-              icon: FileText, 
-              description: "Define detailed functional and non-functional requirements through collaborative debate." 
+            {
+              phase: "Specify",
+              icon: FileText,
+              description: "Define detailed functional and non-functional requirements through collaborative debate.",
+              step: "2"
             },
-            { 
-              phase: "3. Plan", 
-              icon: GitBranch, 
-              description: "Architect system design, data models, and technical roadmap with scalability in mind." 
+            {
+              phase: "Plan",
+              icon: GitBranch,
+              description: "Architect system design, data models, and technical roadmap with scalability in mind.",
+              step: "3"
             },
-            { 
-              phase: "4. Research", 
-              icon: Search, 
-              description: "Validate all decisions against real-time web research and latest industry standards." 
+            {
+              phase: "Research",
+              icon: Search,
+              description: "Validate all decisions against real-time web research and latest industry standards.",
+              step: "4"
             },
-            { 
-              phase: "5. Tasks", 
-              icon: CheckCircle2, 
-              description: "Break down implementation into actionable tasks with clear ownership and timelines." 
+            {
+              phase: "Tasks",
+              icon: CheckCircle2,
+              description: "Break down implementation into actionable tasks with clear ownership and timelines.",
+              step: "5"
             },
-            { 
-              phase: "6. Deliver", 
-              icon: Zap, 
-              description: "Synthesize comprehensive 15-section specification with anti-drift controls." 
+            {
+              phase: "Deliver",
+              icon: Zap,
+              description: "Synthesize comprehensive 15-section specification with anti-drift controls.",
+              step: "6"
             }
           ].map((item, i) => (
-            <motion.div
-              key={i}
+            <motion.article
+              key={item.step}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: i * 0.1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: i * 0.08 }}
               className="group"
             >
-              <Card className="p-4 text-center border-border/30 bg-card/30 backdrop-blur-sm shadow-lg group-hover:shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-accent/50">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-accent/10 to-primary/10 flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-300">
-                  <item.icon className="w-5 h-5 text-accent" />
+              <Card className="h-full p-6 text-center border-border/30 bg-card/30 backdrop-blur-sm shadow-lg group-hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 hover:border-accent/40">
+                <div className="flex flex-col items-center space-y-4">
+                  <div className="relative">
+                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-accent/10 to-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                      <item.icon className="w-6 h-6 text-accent" aria-hidden="true" />
+                    </div>
+                    <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center text-xs font-bold text-accent">
+                      {item.step}
+                    </div>
+                  </div>
+                  <h3 className="text-sm font-semibold text-foreground">{item.phase}</h3>
+                  <p className="text-xs text-muted-foreground/80 leading-relaxed">{item.description}</p>
                 </div>
-                <div className="text-xs font-medium text-foreground mb-2">{item.phase}</div>
-                <p className="text-[10px] text-muted-foreground/80 leading-tight">{item.description}</p>
               </Card>
-            </motion.div>
+            </motion.article>
           ))}
         </div>
-      </div>
+      </section>
 
       {/* Skeleton Loaders Section */}
       {showSkeletons && (
@@ -272,15 +279,17 @@ export const LandingHero = ({ onGetStarted }: LandingHeroProps) => {
       )}
 
       {/* What You Get - Deliverable Preview */}
-      <div className="max-w-6xl mx-auto space-y-8">
-        <div className="text-center space-y-3">
-          <h2 className="text-3xl md:text-4xl font-light tracking-tight">What You Get</h2>
-          <p className="text-sm text-muted-foreground/70 max-w-2xl mx-auto">
-            Production-ready specification with 15 comprehensive sections
+      <section className="max-w-6xl mx-auto space-y-12" aria-labelledby="what-you-get-heading">
+        <div className="text-center space-y-4">
+          <h2 id="what-you-get-heading" className="text-4xl md:text-5xl font-light tracking-tight">
+            What You Get
+          </h2>
+          <p className="text-base text-muted-foreground/70 max-w-2xl mx-auto leading-relaxed">
+            Production-ready specification with 15 comprehensive sections—ready for Claude Code to execute
           </p>
         </div>
-        
-        <div className="grid md:grid-cols-3 gap-3">
+
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {[
             { title: "Executive Summary", items: ["Business value", "Key objectives", "Timeline & costs"] },
             { title: "Requirements", items: ["Functional & non-functional", "Acceptance criteria", "Traceability matrix"] },
@@ -295,14 +304,19 @@ export const LandingHero = ({ onGetStarted }: LandingHeroProps) => {
             { title: "Tech Stack Analysis", items: ["Recommended technologies", "Alternatives comparison", "Research-backed"] },
             { title: "Anti-Drift Controls", items: ["Scope boundaries", "Change management", "Validation checklist"] }
           ].map((section, i) => (
-            <Card key={i} className="p-4 space-y-2 border-border/30 bg-card/30 backdrop-blur-sm">
-              <div className="flex items-start gap-2">
-                <CheckCircle2 className="w-3 h-3 text-foreground/40 mt-0.5 flex-shrink-0" />
+            <Card
+              key={i}
+              className="p-5 space-y-3 border-border/30 bg-card/30 backdrop-blur-sm hover:border-accent/30 transition-all duration-300 hover:shadow-lg"
+            >
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="w-4 h-4 text-accent/60 mt-0.5 flex-shrink-0" aria-hidden="true" />
                 <div className="flex-1">
-                  <div className="font-medium text-xs mb-1.5">{section.title}</div>
-                  <ul className="space-y-0.5">
+                  <h3 className="font-semibold text-sm mb-2 text-foreground">{section.title}</h3>
+                  <ul className="space-y-1" role="list">
                     {section.items.map((item, j) => (
-                      <li key={j} className="text-[10px] text-muted-foreground/60">• {item}</li>
+                      <li key={j} className="text-xs text-muted-foreground/70 leading-relaxed">
+                        • {item}
+                      </li>
                     ))}
                   </ul>
                 </div>
@@ -310,15 +324,20 @@ export const LandingHero = ({ onGetStarted }: LandingHeroProps) => {
             </Card>
           ))}
         </div>
-      </div>
+      </section>
 
       {/* Expert Advisory Panel - Unified */}
-      <div className="max-w-7xl mx-auto space-y-16">
-        <div className="text-center space-y-4">
-          <h2 className="text-3xl md:text-4xl font-light tracking-tight">Your Advisory Panel</h2>
-          <p className="text-sm text-muted-foreground/70 max-w-3xl mx-auto leading-relaxed">
-            Simulating a productive meeting by world-renowned major league moguls — at the speed of <span className="font-semibold text-foreground/80">Groq Cloud</span> with the research power of <span className="font-semibold text-foreground/80">Exa MCP</span> remote workers in the cloud. High-fidelity AI models trained on the complete corpus of publicly available tweets, videos, books, 
-            news articles, and interviews — with daily real-time monitoring and scraping.
+      <section className="max-w-7xl mx-auto space-y-16" aria-labelledby="advisory-panel-heading">
+        <div className="text-center space-y-6">
+          <h2 id="advisory-panel-heading" className="text-4xl md:text-5xl font-light tracking-tight">
+            Your AI Advisory Panel
+          </h2>
+          <p className="text-base text-muted-foreground/70 max-w-4xl mx-auto leading-relaxed">
+            Simulating a productive meeting of world-renowned experts — powered by{" "}
+            <span className="font-semibold text-foreground/80">Groq Cloud</span> for speed and{" "}
+            <span className="font-semibold text-foreground/80">Exa MCP</span> for real-time research.
+            High-fidelity AI models trained on the complete corpus of publicly available content:
+            tweets, videos, books, articles, and interviews.
           </p>
         </div>
 
@@ -405,7 +424,7 @@ export const LandingHero = ({ onGetStarted }: LandingHeroProps) => {
             </Card>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Cutting Edge Research */}
       <div className="max-w-5xl mx-auto">
@@ -457,24 +476,42 @@ export const LandingHero = ({ onGetStarted }: LandingHeroProps) => {
       </div>
 
       {/* Simple Pricing */}
-      <div className="max-w-2xl mx-auto">
-        <Card className="p-10 md:p-12 text-center border-border/20 bg-card/20">
-          <div className="space-y-6">
+      <section className="max-w-3xl mx-auto" aria-labelledby="pricing-heading">
+        <Card className="p-12 md:p-16 text-center border-border/20 bg-card/20 backdrop-blur-sm shadow-2xl">
+          <div className="space-y-8">
             <div>
-              <div className="text-6xl md:text-7xl font-extralight text-foreground mb-2">$20</div>
-              <div className="text-sm text-muted-foreground/70">per specification</div>
+              <h2 id="pricing-heading" className="text-7xl md:text-8xl font-extralight text-foreground mb-3">
+                $20
+              </h2>
+              <p className="text-base text-muted-foreground/70 font-medium">per specification</p>
             </div>
-            <div className="space-y-2">
-              <p className="text-xs text-foreground/60">Complete production-ready spec</p>
-              <p className="text-xs text-foreground/60">Money back guarantee</p>
-              <p className="text-xs text-foreground/60">No trial, no subscription</p>
+            <div className="space-y-3 pt-4">
+              <div className="flex items-center justify-center gap-2 text-sm text-foreground/70">
+                <CheckCircle2 className="w-4 h-4 text-success" aria-hidden="true" />
+                <span>Complete production-ready specification</span>
+              </div>
+              <div className="flex items-center justify-center gap-2 text-sm text-foreground/70">
+                <CheckCircle2 className="w-4 h-4 text-success" aria-hidden="true" />
+                <span>Money-back guarantee</span>
+              </div>
+              <div className="flex items-center justify-center gap-2 text-sm text-foreground/70">
+                <CheckCircle2 className="w-4 h-4 text-success" aria-hidden="true" />
+                <span>No trial, no subscription</span>
+              </div>
             </div>
-            <AnimatedButton onClick={onGetStarted} className="text-base px-10 py-5">
-              Get Started
+            <AnimatedButton
+              onClick={onGetStarted}
+              className="text-lg px-12 py-6 mt-6"
+              aria-label="Get started with specification generation"
+            >
+              <span className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5" aria-hidden="true" />
+                Get Started Now
+              </span>
             </AnimatedButton>
           </div>
         </Card>
-      </div>
+      </section>
 
       {/* Scrolling Text Section with "Ship" finale */}
       <ScrollingTextSection />
