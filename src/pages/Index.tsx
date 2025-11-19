@@ -17,7 +17,7 @@ import { VoteTally } from "@/components/VoteTally";
 import { DialoguePanel, DialogueEntry } from "@/components/DialoguePanel";
 import { LandingHero } from "@/components/LandingHero";
 import { SampleSpecGallery } from "@/components/SampleSpecGallery";
-import { AgentConfig, SessionState, Round } from "@/types/spec";
+import { AgentConfig, SessionState, Round, HistoryEntryData } from "@/types/spec";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, MessageSquare, LayoutGrid, LogOut, CheckCircle2 } from "lucide-react";
@@ -188,7 +188,7 @@ const Index = () => {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
   };
 
-  const addHistoryEntry = (type: 'vote' | 'output' | 'spec' | 'user-comment', data: Vote | AgentPerspective | string) => {
+  const addHistoryEntry = (type: 'vote' | 'output' | 'spec' | 'user-comment', data: HistoryEntryData) => {
     setSessionState(prev => ({
       ...prev,
       history: [...prev.history, { timestamp: new Date().toISOString(), type, data }]
@@ -870,29 +870,33 @@ const Index = () => {
             <div className="max-w-5xl mx-auto space-y-16">
 
               {/* Step 1: Clear Value Proposition */}
-              <div className="text-center space-y-4 max-w-3xl mx-auto">
-                <h2 className="text-3xl md:text-5xl font-bold leading-tight">
-                  Get Your Production-Ready Spec in 30 Minutes
+              <section className="text-center space-y-6 max-w-4xl mx-auto" aria-labelledby="value-prop-heading">
+                <h2 id="value-prop-heading" className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight">
+                  From Idea to Production-Ready Spec
+                  <span className="block text-2xl md:text-3xl font-light text-muted-foreground mt-3">
+                    in 30 Minutes
+                  </span>
                 </h2>
-                <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
+                <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-3xl mx-auto">
                   8 AI expert advisors analyze your idea, research the latest tech, debate architecture decisions,
-                  and deliver a <span className="font-semibold text-foreground">15-section specification</span> with anti-drift controls.
+                  and deliver a <span className="font-semibold text-foreground">15-section specification</span>
+                  ready for Claude Code to execute from start to finish.
                 </p>
-                <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 text-sm text-muted-foreground pt-4">
-                  <span className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-green-500" />
+                <div className="flex flex-wrap items-center justify-center gap-6 md:gap-8 text-sm pt-6" role="list">
+                  <div className="flex items-center gap-2" role="listitem">
+                    <CheckCircle2 className="w-5 h-5 text-success" aria-hidden="true" />
                     <span className="font-medium text-foreground">$20 flat fee</span>
-                  </span>
-                  <span className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-green-500" />
+                  </div>
+                  <div className="flex items-center gap-2" role="listitem">
+                    <CheckCircle2 className="w-5 h-5 text-success" aria-hidden="true" />
                     <span className="font-medium text-foreground">30-min delivery</span>
-                  </span>
-                  <span className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-green-500" />
+                  </div>
+                  <div className="flex items-center gap-2" role="listitem">
+                    <CheckCircle2 className="w-5 h-5 text-success" aria-hidden="true" />
                     <span className="font-medium text-foreground">Money-back guarantee</span>
-                  </span>
+                  </div>
                 </div>
-              </div>
+              </section>
 
               {/* Step 2: Sample Gallery FIRST (Inspiration) */}
               <div>
@@ -904,11 +908,14 @@ const Index = () => {
               </div>
 
               {/* Step 3: Simple, Clear Input */}
-              <div className="space-y-6">
-                <div className="text-center space-y-2">
-                  <h3 className="text-2xl font-semibold">Describe Your Product Idea</h3>
-                  <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
-                    Use one of the examples above or write your own. The more details you provide, the better your spec will be.
+              <section className="space-y-8" aria-labelledby="input-heading">
+                <div className="text-center space-y-3">
+                  <h3 id="input-heading" className="text-3xl md:text-4xl font-semibold tracking-tight">
+                    Describe Your Product Idea
+                  </h3>
+                  <p className="text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+                    Use one of the examples above or write your own. The more details you provide,
+                    the better your specification will be.
                   </p>
                 </div>
 
@@ -916,67 +923,91 @@ const Index = () => {
                   onSubmit={handleSubmit}
                   isLoading={isProcessing}
                   defaultValue={inputValue}
-                  key={inputValue}
                 />
-              </div>
+              </section>
 
               {/* Step 4: Social Proof - Who Reviews Your Spec */}
-              <div className="space-y-6 border-t border-border/30 pt-12">
-                <div className="text-center space-y-2">
-                  <h3 className="text-xl font-semibold">Your 8-Person AI Advisory Board</h3>
-                  <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
-                    Each advisor brings authentic expertise trained on their complete corpus of public work
+              <section
+                className="space-y-10 border-t border-border/20 pt-16"
+                aria-labelledby="advisory-board-heading"
+              >
+                <div className="text-center space-y-4">
+                  <h3 id="advisory-board-heading" className="text-3xl md:text-4xl font-semibold tracking-tight">
+                    Your 8-Person AI Advisory Board
+                  </h3>
+                  <p className="text-base text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+                    Each advisor brings authentic expertise trained on their complete corpus of public work—
+                    from Steve Jobs' design philosophy to Amal Clooney's legal precision.
                   </p>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 gap-3 max-w-4xl mx-auto">
+                <div
+                  className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 gap-4 max-w-5xl mx-auto"
+                  role="list"
+                  aria-label="AI advisory board members"
+                >
                   {agentConfigs.slice(0, 8).map((config) => (
-                    <AgentCard
-                      key={config.agent}
-                      config={config}
-                      onChange={(updatedConfig) => {
-                        const newConfigs = [...agentConfigs];
-                        const index = agentConfigs.findIndex(c => c.agent === config.agent);
-                        newConfigs[index] = updatedConfig;
-                        setAgentConfigs(newConfigs);
-                      }}
-                    />
+                    <div key={config.agent} role="listitem">
+                      <AgentCard
+                        config={config}
+                        onChange={(updatedConfig) => {
+                          const newConfigs = [...agentConfigs];
+                          const index = agentConfigs.findIndex(c => c.agent === config.agent);
+                          newConfigs[index] = updatedConfig;
+                          setAgentConfigs(newConfigs);
+                        }}
+                      />
+                    </div>
                   ))}
                 </div>
-              </div>
+              </section>
 
               {/* Step 5: What Happens Next Preview */}
-              <div className="bg-card/30 border border-border/30 rounded-2xl p-8 space-y-6">
-                <h3 className="text-xl font-semibold text-center">What Happens Next</h3>
-                <div className="grid md:grid-cols-3 gap-6">
-                  <div className="text-center space-y-2">
-                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
-                      <span className="text-2xl font-bold text-primary">1</span>
+              <section
+                className="bg-card/30 border border-border/20 rounded-2xl p-10 md:p-12 space-y-10"
+                aria-labelledby="what-happens-heading"
+              >
+                <h3 id="what-happens-heading" className="text-2xl md:text-3xl font-semibold text-center">
+                  What Happens Next
+                </h3>
+                <div className="grid md:grid-cols-3 gap-8">
+                  <article className="text-center space-y-3">
+                    <div
+                      className="w-16 h-16 rounded-full bg-gradient-to-br from-accent/20 to-primary/10 flex items-center justify-center mx-auto mb-4"
+                      aria-hidden="true"
+                    >
+                      <span className="text-2xl font-bold text-accent">1</span>
                     </div>
-                    <h4 className="font-medium">AI Panel Debates</h4>
-                    <p className="text-xs text-muted-foreground">
-                      8 expert AIs analyze your idea from different angles - design, tech, legal, business
+                    <h4 className="font-semibold text-base text-foreground">AI Panel Debates</h4>
+                    <p className="text-sm text-muted-foreground/80 leading-relaxed">
+                      8 expert AIs analyze your idea from different angles—design, tech, legal, and business
                     </p>
-                  </div>
-                  <div className="text-center space-y-2">
-                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
-                      <span className="text-2xl font-bold text-primary">2</span>
+                  </article>
+                  <article className="text-center space-y-3">
+                    <div
+                      className="w-16 h-16 rounded-full bg-gradient-to-br from-accent/20 to-primary/10 flex items-center justify-center mx-auto mb-4"
+                      aria-hidden="true"
+                    >
+                      <span className="text-2xl font-bold text-accent">2</span>
                     </div>
-                    <h4 className="font-medium">Real-Time Research</h4>
-                    <p className="text-xs text-muted-foreground">
+                    <h4 className="font-semibold text-base text-foreground">Real-Time Research</h4>
+                    <p className="text-sm text-muted-foreground/80 leading-relaxed">
                       Every decision validated against latest frameworks, security practices, and tech trends
                     </p>
-                  </div>
-                  <div className="text-center space-y-2">
-                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
-                      <span className="text-2xl font-bold text-primary">3</span>
+                  </article>
+                  <article className="text-center space-y-3">
+                    <div
+                      className="w-16 h-16 rounded-full bg-gradient-to-br from-accent/20 to-primary/10 flex items-center justify-center mx-auto mb-4"
+                      aria-hidden="true"
+                    >
+                      <span className="text-2xl font-bold text-accent">3</span>
                     </div>
-                    <h4 className="font-medium">15-Section Spec</h4>
-                    <p className="text-xs text-muted-foreground">
+                    <h4 className="font-semibold text-base text-foreground">15-Section Spec</h4>
+                    <p className="text-sm text-muted-foreground/80 leading-relaxed">
                       Production-ready specification with architecture, security, testing, and deployment plans
                     </p>
-                  </div>
+                  </article>
                 </div>
-              </div>
+              </section>
             </div>
           </div>
         ) : (
