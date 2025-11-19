@@ -161,7 +161,7 @@ async function executeChallenge(
   // Find the original findings being challenged
   const targetFindings = researchResults.find(r => r.expertId === challenge.targetFindings);
 
-  const systemPrompt = `You are ${challenger.name}, playing the role of "devil's advocate."
+  const systemPrompt = `You are ${challenger.agent}, playing the role of "devil's advocate."
 
 Your personality: ${challenger.systemPrompt}
 

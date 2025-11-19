@@ -34,7 +34,7 @@ export const MODELS: Record<string, ModelConfig> = {
   },
   'claude-sonnet-4.5': {
     provider: 'anthropic',
-    model: 'claude-sonnet-4.5-20250929',
+    model: 'claude-sonnet-4-5-20250929',
     costPer1MTokensInput: 3,
     costPer1MTokensOutput: 15,
     strengths: ['coding', 'reasoning', 'nuance'],
@@ -51,7 +51,7 @@ export const MODELS: Record<string, ModelConfig> = {
     speed: 'fast'
   },
   'llama-3.3-70b': {
-    provider: 'groq',
+    provider: 'meta-llama',
     model: 'llama-3.3-70b-versatile',
     costPer1MTokensInput: 0.10,
     costPer1MTokensOutput: 0.30,
