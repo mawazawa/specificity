@@ -1,9 +1,8 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { AgentConfig } from "@/types/spec";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Settings, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
 import { motion } from "framer-motion";
 import { mentorProfiles } from "@/types/mentor";
 import { useState } from "react";

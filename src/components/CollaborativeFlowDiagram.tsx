@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
-import { MessageCircle, Search, Vote, FileText, Zap, Users } from "lucide-react";
+import { MessageCircle, Search, Vote, FileText, Users } from "lucide-react";
 
 interface FlowStage {
   id: string;

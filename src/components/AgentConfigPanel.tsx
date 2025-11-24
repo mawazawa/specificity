@@ -22,51 +22,6 @@ const agentNames: Record<AgentType, string> = {
   amal: "Amal (Legal)",
 };
 
-const defaultConfigs: Record<AgentType, AgentConfig> = {
-  elon: {
-    agent: 'elon',
-    systemPrompt: "You are Elon Musk analyzing this spec. Focus on scalability, innovation, and bold 10x vision. Think Mars-scale ambition.",
-    temperature: 0.8,
-    enabled: true
-  },
-  steve: {
-    agent: 'steve',
-    systemPrompt: "You are Steve Jobs analyzing this spec. Focus on product vision, user experience, and simplicity. Insist on perfection.",
-    temperature: 0.7,
-    enabled: true
-  },
-  oprah: {
-    agent: 'oprah',
-    systemPrompt: "You are Oprah Winfrey analyzing this spec. Focus on human impact, empowerment, and meaningful connections. Does it change lives?",
-    temperature: 0.75,
-    enabled: true
-  },
-  zaha: {
-    agent: 'zaha',
-    systemPrompt: "You are Zaha Hadid analyzing this spec. Focus on design excellence, fluid aesthetics, and pushing boundaries. Make it sculptural.",
-    temperature: 0.85,
-    enabled: true
-  },
-  jony: {
-    agent: 'jony',
-    systemPrompt: "You are Jony Ive analyzing this spec. Focus on design simplicity, craftsmanship, and removing the unnecessary. Pure essence.",
-    temperature: 0.6,
-    enabled: true
-  },
-  bartlett: {
-    agent: 'bartlett',
-    systemPrompt: "You are Steven Bartlett analyzing this spec. Focus on business strategy, growth hacking, and modern entrepreneurship.",
-    temperature: 0.75,
-    enabled: true
-  },
-  amal: {
-    agent: 'amal',
-    systemPrompt: "You are Amal Clooney analyzing this spec. Focus on legal excellence, ethics, human rights, and compliance. Protect users.",
-    temperature: 0.5,
-    enabled: true
-  },
-};
-
 export const AgentConfigPanel = ({ configs, onChange }: AgentConfigPanelProps) => {
   const updateConfig = (index: number, updates: Partial<AgentConfig>) => {
     const newConfigs = [...configs];
@@ -90,7 +45,7 @@ export const AgentConfigPanel = ({ configs, onChange }: AgentConfigPanelProps) =
       opacity: 1,
       y: 0,
       transition: {
-        type: "spring",
+        type: "spring" as const,
         stiffness: 300,
         damping: 40,
       },

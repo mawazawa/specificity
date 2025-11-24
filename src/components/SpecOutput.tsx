@@ -1,9 +1,8 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { FileText, CheckCircle2, Download, Copy, FileType, ThumbsUp, ChevronDown, Layers, Shield, TestTube } from "lucide-react";
+import { FileText, CheckCircle2, Download, Copy, FileType, ThumbsUp, ChevronDown, Layers } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "@/hooks/use-toast";
 import { useState } from "react";
@@ -156,12 +155,12 @@ export const SpecOutput = ({ spec, onApprove, onRefine }: SpecOutputProps) => {
 
       // Add header
       doc.setFontSize(20);
-      doc.setFont(undefined, 'bold');
+      doc.setFont('helvetica', 'bold');
       doc.text('Technical Specification', margin, yPosition);
       yPosition += 10;
 
       doc.setFontSize(10);
-      doc.setFont(undefined, 'normal');
+      doc.setFont('helvetica', 'normal');
       doc.setTextColor(128, 128, 128);
       doc.text(`Generated: ${new Date().toLocaleDateString()}`, margin, yPosition);
       yPosition += 15;
@@ -183,28 +182,28 @@ export const SpecOutput = ({ spec, onApprove, onRefine }: SpecOutputProps) => {
         // Handle headings
         if (line.startsWith('# ')) {
           doc.setFontSize(16);
-          doc.setFont(undefined, 'bold');
+          doc.setFont('helvetica', 'bold');
           const text = line.replace('# ', '');
           doc.text(text, margin, yPosition);
           yPosition += 8;
           doc.setFontSize(10);
-          doc.setFont(undefined, 'normal');
+          doc.setFont('helvetica', 'normal');
         } else if (line.startsWith('## ')) {
           doc.setFontSize(14);
-          doc.setFont(undefined, 'bold');
+          doc.setFont('helvetica', 'bold');
           const text = line.replace('## ', '');
           doc.text(text, margin, yPosition);
           yPosition += 7;
           doc.setFontSize(10);
-          doc.setFont(undefined, 'normal');
+          doc.setFont('helvetica', 'normal');
         } else if (line.startsWith('### ')) {
           doc.setFontSize(12);
-          doc.setFont(undefined, 'bold');
+          doc.setFont('helvetica', 'bold');
           const text = line.replace('### ', '');
           doc.text(text, margin, yPosition);
           yPosition += 6;
           doc.setFontSize(10);
-          doc.setFont(undefined, 'normal');
+          doc.setFont('helvetica', 'normal');
         } else if (line.trim()) {
           // Regular text with word wrap
           const cleanLine = line.replace(/[*_`]/g, ''); // Remove markdown formatting

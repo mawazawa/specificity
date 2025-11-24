@@ -1,13 +1,19 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle2, Loader2, Users, MessageSquare, Search, Vote, FileText } from "lucide-react";
+import { Loader2, Users, MessageSquare, Search, Vote, FileText, Swords } from "lucide-react";
 
 interface StageIndicatorProps {
-  stage: 'questions' | 'research' | 'answers' | 'voting' | 'spec';
+  stage: 'challenge' | 'questions' | 'research' | 'answers' | 'voting' | 'spec';
   roundNumber: number;
 }
 
 const stageConfig = {
+  challenge: {
+    icon: Swords,
+    label: "Challenge Phase",
+    description: "Experts challenging and refining positions",
+    color: "from-red-500/20 to-orange-500/20"
+  },
   questions: {
     icon: MessageSquare,
     label: "Clarifying Questions",

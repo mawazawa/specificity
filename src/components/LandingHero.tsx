@@ -1,7 +1,5 @@
-import { FileText, Zap, Search, GitBranch, Shield, CheckCircle2, ExternalLink, Users } from "lucide-react";
+import { FileText, Zap, Search, GitBranch, Shield, CheckCircle2, ExternalLink, Users, Sparkles } from "lucide-react";
 import { Card } from "./ui/card";
-import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
 import { AnimatedButton } from "./AnimatedButton";
 import { ExpertCard } from "./ExpertCard";
 import { EXPERTS } from "@/types/expert";
@@ -10,16 +8,12 @@ import { Footer } from "./Footer";
 import DottedGlowBackground from "./ui/dotted-glow-background";
 import { motion } from "framer-motion";
 import { CollaborativeFlowDiagram } from "./CollaborativeFlowDiagram";
-import { SkeletonCard, SkeletonText } from "./ui/skeleton-loader";
-import { useState } from "react";
 
 interface LandingHeroProps {
   onGetStarted?: () => void;
 }
 
 export const LandingHero = ({ onGetStarted }: LandingHeroProps) => {
-  const [showSkeletons, setShowSkeletons] = useState(false);
-
   return (
     <div className="space-y-32 animate-fade-in relative">
       {/* Grid background overlay */}
@@ -226,57 +220,6 @@ export const LandingHero = ({ onGetStarted }: LandingHeroProps) => {
           ))}
         </div>
       </section>
-
-      {/* Skeleton Loaders Section */}
-      {showSkeletons && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="max-w-6xl mx-auto space-y-6"
-        >
-          {/* First Skeleton - Legible Content */}
-          <Card className="p-8 space-y-6 border-border/30 bg-card/50 backdrop-blur-sm">
-            <div className="space-y-4">
-              <h2 className="text-3xl font-bold tracking-tight">Executive Summary: Revolutionizing Product Specifications</h2>
-              <div className="space-y-3 text-foreground/80 leading-relaxed">
-                <p>
-                  In the rapidly evolving landscape of software development, the gap between vision and execution has never been more critical. 
-                  Traditional specification processes suffer from three fundamental failures: incomplete requirements discovery, stakeholder 
-                  misalignment, and scope drift during implementation.
-                </p>
-                <p>
-                  Our research indicates that <span className="font-semibold text-foreground">68% of failed projects</span> trace back to 
-                  inadequate initial specifications, costing organizations an average of <span className="font-semibold text-destructive">$50,000 
-                  in wasted development time</span> per project. The root cause isn't lack of effort—it's the absence of diverse, expert 
-                  perspectives working in genuine collaboration.
-                </p>
-                <p>
-                  This platform addresses these challenges through a revolutionary multi-agent AI system that simulates a world-class advisory 
-                  board. Eight distinct expert personas—from Steve Jobs' design philosophy to Amal Clooney's risk assessment framework—engage 
-                  in <span className="font-semibold text-foreground">iterative deliberation</span>, challenging assumptions, validating technical 
-                  decisions against real-time research, and synthesizing comprehensive specifications that account for business, technical, legal, 
-                  and user experience dimensions simultaneously.
-                </p>
-                <p className="pt-2 border-l-4 border-accent pl-4">
-                  <span className="font-semibold">Deliverable:</span> A production-ready, 15-section specification document encompassing executive 
-                  summary, functional requirements, system architecture, data models, API specifications, security protocols, testing strategy, 
-                  deployment plan, risk assessment, timeline, tech stack analysis, and anti-drift controls—delivered in approximately 30 minutes 
-                  for $20.
-                </p>
-              </div>
-            </div>
-          </Card>
-
-          {/* Remaining 14 Skeletons - Blurred */}
-          {Array.from({ length: 14 }).map((_, i) => (
-            <div key={i} className="relative">
-              <div className="absolute inset-0 backdrop-blur-md bg-background/40 z-10 rounded-lg" />
-              <SkeletonCard className="opacity-50" />
-            </div>
-          ))}
-        </motion.div>
-      )}
 
       {/* What You Get - Deliverable Preview */}
       <section className="max-w-6xl mx-auto space-y-12" aria-labelledby="what-you-get-heading">

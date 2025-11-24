@@ -39,9 +39,9 @@ export interface ButtonProps
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, magnetic = true, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, magnetic = true, onDrag: _onDrag, onDragStart: _onDragStart, onDragEnd: _onDragEnd, ...props }, ref) => {
     const localRef = React.useRef<HTMLButtonElement>(null);
-    const buttonRef = ref || localRef;
+    const buttonRef = (ref as React.RefObject<HTMLButtonElement>) || localRef;
     const x = useMotionValue(0);
     const y = useMotionValue(0);
     const mouseX = useSpring(x, { stiffness: 500, damping: 30 });
@@ -88,11 +88,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     const buttonProps = {
       ...props,
-      onClick: (e) => {
+      onClick: (e: React.MouseEvent<HTMLButtonElement>) => {
         if (asChild) {
           // For asChild, ripple not supported or handle differently
         } else {
-          handleClick(e as any);
+          handleClick(e);
         }
         if (props.onClick) props.onClick(e);
       },
@@ -103,8 +103,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         className={cn(buttonVariants({ variant, size, className }))}
         ref={buttonRef}
         style={{ x: mouseX, y: mouseY }}
-        animate={magnetic ? { x: mouseX, y: mouseY } : undefined}
-        {...buttonProps}
+        {...(buttonProps as any)}
       >
         {ripple && (
           <motion.div

@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { Command, CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { FileText, Download, Copy, Users, Settings, LogOut, Zap, Search } from "lucide-react";
 
 interface CommandPaletteProps {

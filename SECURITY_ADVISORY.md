@@ -21,8 +21,11 @@ The following credentials were committed to git history:
 ```
 Project ID: kxrdxiznaudatxyfrbxe
 Supabase URL: https://kxrdxiznaudatxyfrbxe.supabase.co
-ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4cmR4aXpuYXVkYXR4eWZyYnhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA3NjkxODEsImV4cCI6MjA3NjM0NTE4MX0.ukKtcaRiuWyq4rysXdQTgTavZ86_jVPFbVOMTnmF1Nk
+ANON_KEY: [REDACTED - Key was exposed and must be rotated immediately]
 ```
+
+> ⚠️ **Note**: The actual exposed key has been removed from this document.
+> If you need to verify the compromised key, check git history prior to this commit.
 
 ### Impact Assessment
 

@@ -101,8 +101,8 @@ SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 In `.env` (already configured):
 
 ```env
-VITE_SUPABASE_URL=https://kxrdxiznaudatxyfrbxe.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+VITE_SUPABASE_URL=https://your-project-id.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key-here
 ```
 
 ### How to Get API Keys
@@ -145,7 +145,7 @@ vercel
 
 # Set environment variables
 vercel env add VITE_SUPABASE_URL
-vercel env add VITE_SUPABASE_PUBLISHABLE_KEY
+vercel env add VITE_SUPABASE_ANON_KEY
 
 # Deploy to production
 vercel --prod
@@ -401,7 +401,7 @@ jobs:
         run: npm run build
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
 
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v20

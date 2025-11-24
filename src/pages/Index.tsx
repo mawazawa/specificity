@@ -9,8 +9,6 @@ import { HistoryPanel } from "@/components/HistoryPanel";
 import { ResearchPanel } from "@/components/ResearchPanel";
 import { SpecOutput } from "@/components/SpecOutput";
 import { StageIndicator } from "@/components/StageIndicator";
-import { AgentOutputCard } from "@/components/AgentOutputCard";
-import { ExpandableAgentCard } from "@/components/ExpandableAgentCard";
 import { LiveAgentCard } from "@/components/LiveAgentCard";
 import { ProcessViewer } from "@/components/ProcessViewer";
 import { VoteTally } from "@/components/VoteTally";
@@ -20,9 +18,8 @@ import { SampleSpecGallery } from "@/components/SampleSpecGallery";
 import { AgentConfig, SessionState, Round, HistoryEntryData } from "@/types/spec";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, MessageSquare, LayoutGrid, LogOut, CheckCircle2 } from "lucide-react";
+import { MessageSquare, LayoutGrid, LogOut, CheckCircle2 } from "lucide-react";
 import type { User, Session } from '@supabase/supabase-js';
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChatView, ChatEntry } from "@/components/chat/ChatView";
 import { MobileHeader } from "@/components/mobile/MobileHeader";
@@ -35,25 +32,6 @@ interface Task {
   status: 'pending' | 'running' | 'complete';
   duration?: number;
   result?: unknown;
-}
-
-// API Response interfaces
-interface DialogueTurn {
-  agent: AgentType;
-  message: string;
-  timestamp: string;
-}
-
-interface ResearchItem {
-  title?: string;
-  url?: string;
-  snippet?: string;
-  relevance?: number;
-}
-
-interface SynthesisItem {
-  agent: AgentType;
-  analysis: string;
 }
 
 // DialogueEntry is now imported from DialoguePanel
@@ -92,7 +70,7 @@ const Index = () => {
   // Authentication check
   useEffect(() => {
     // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       
@@ -423,9 +401,9 @@ const Index = () => {
 
       addHistoryEntry('output', {
         stage: 'challenge',
-        challenges: round.challenges.length,
-        responses: round.challengeResponses.length,
-        resolutions: round.debateResolutions.length,
+        challenges: round.challenges?.length ?? 0,
+        responses: round.challengeResponses?.length ?? 0,
+        resolutions: round.debateResolutions?.length ?? 0,
         cost: challengeMetadata.challengeCost,
         duration: challengeDuration
       });

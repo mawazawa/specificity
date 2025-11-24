@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { MentorContactCard } from "../mentor/MentorContactCard";
 import { mentorProfiles } from "@/types/mentor";
+import { toast } from "@/hooks/use-toast";
 
 export interface ChatEntry {
   agent: AgentType | 'user';
@@ -102,8 +103,10 @@ export const ChatView = ({
           isOpen={!!selectedMentor}
           onClose={() => setSelectedMentor(null)}
           onStartChat={(agent) => {
-            // TODO: Implement 1:1 chat
-            console.log('Start 1:1 chat with', agent);
+            toast({
+              title: "Coming Soon",
+              description: `1:1 chat with ${agent} will be available in a future update.`
+            });
             setSelectedMentor(null);
           }}
         />
