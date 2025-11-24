@@ -655,7 +655,7 @@ ${weightedContext}
 KEY REQUIREMENTS (from consensus voting):
 ${keyRequirements.join('\n')}${debateContext}
 
-Generate a 15-20 PAGE production-ready specification with EXTREME implementation detail:
+Generate a 20-30 PAGE production-ready specification with EXTREME implementation detail and VISUAL EXCELLENCE:
 
 # 1. Executive Summary
 - Product vision and value proposition
@@ -663,22 +663,159 @@ Generate a 15-20 PAGE production-ready specification with EXTREME implementation
 - Key differentiators from competitors
 - Success criteria (quantifiable)
 
-# 2. Core Requirements
+# 2. User Experience & Design Strategy
+
+## 2.1 User Personas (3-5 detailed personas)
+For each persona provide:
+- **Name, age, role, background**
+- **Photo description** (for design reference)
+- **Goals & motivations** (what they want to achieve)
+- **Frustrations & pain points** (current problems)
+- **Tech savviness** (1-10 scale)
+- **Quote** (representative of their mindset)
+
+## 2.2 Empathy Maps (one per persona)
+For each persona create a detailed empathy map:
+
+**THINKS:**
+- List 3-5 thoughts going through their mind
+- Concerns, considerations, mental models
+
+**FEELS:**
+- Emotional states (excited, frustrated, anxious, confident)
+- Intensity levels (high/medium/low)
+
+**SAYS:**
+- Direct quotes they would say
+- Feedback they give
+- Questions they ask
+
+**DOES:**
+- Observable behaviors
+- Actions they take
+- Habits and patterns
+
+**PAINS:**
+- Obstacles and challenges
+- Frustrations and fears
+- Unmet needs
+
+**GAINS:**
+- Desired outcomes
+- Success criteria
+- What would delight them
+
+## 2.3 User Journey Maps
+Create journey maps for critical user flows (signup, first use, core action):
+
+**Table Format:**
+| Stage | User Action | Touchpoint | Emotion | Pain Point | Opportunity | Design Requirement |
+|-------|-------------|------------|---------|------------|-------------|-------------------|
+| [Stage] | [Action] | [Where] | 😊/😐/😤 | [Problem] | [Solution] | [Spec] |
+
+Example stages: Awareness → Consideration → Decision → Action → Retention
+
+## 2.4 User Flow Diagrams (Mermaid)
+Provide Mermaid diagrams for critical user flows:
+
+\`\`\`mermaid
+graph LR
+    Start([User Entry Point]) --> Decision{Condition}
+    Decision -->|Yes| ActionA[Action A]
+    Decision -->|No| ActionB[Action B]
+    ActionA --> Success([Success State])
+    ActionB --> Error([Error State])
+\`\`\`
+
+Include flows for:
+- First-time user onboarding
+- Authentication (login/signup/password reset)
+- Core feature usage
+- Error recovery paths
+- Admin/power user workflows
+
+# 3. Core Requirements
 - Functional requirements (user stories with acceptance criteria)
 - Non-functional requirements (performance, security, scalability)
 - Must-have vs nice-to-have (prioritized by consensus)
 - Constraints and assumptions
 
-# 3. Complete Technical Architecture
-- **System architecture diagram** (describe in detail)
+# 4. Complete Technical Architecture with Visual Diagrams
+
+## 4.1 System Architecture (Mermaid Diagram)
+\`\`\`mermaid
+graph TB
+    Client[Web Client]
+    API[API Gateway]
+    Auth[Auth Service]
+    DB[(Database)]
+    Cache[(Redis Cache)]
+    CDN[CDN]
+
+    Client --> CDN
+    Client --> API
+    API --> Auth
+    API --> DB
+    API --> Cache
+    Auth --> DB
+\`\`\`
+
+Provide detailed Mermaid diagram showing:
+- All major system components
+- Data flow between components
+- External services and integrations
+- Caching layers
+- Load balancers and CDN
+
+## 4.2 Authentication Flow (Sequence Diagram)
+\`\`\`mermaid
+sequenceDiagram
+    participant User
+    participant Client
+    participant API
+    participant Auth
+    participant DB
+
+    User->>Client: Enter credentials
+    Client->>API: POST /auth/login
+    API->>Auth: Validate credentials
+    Auth->>DB: Check user
+    DB-->>Auth: User data
+    Auth-->>API: JWT token
+    API-->>Client: Auth response
+    Client-->>User: Logged in
+\`\`\`
+
+## 4.3 Database ERD (Entity Relationship Diagram)
+\`\`\`mermaid
+erDiagram
+    USER ||--o{ POST : creates
+    USER ||--o{ COMMENT : writes
+    POST ||--o{ COMMENT : has
+    USER {
+        uuid id PK
+        string email UK
+        string password_hash
+        timestamp created_at
+    }
+    POST {
+        uuid id PK
+        uuid user_id FK
+        string title
+        text content
+    }
+\`\`\`
+
+Provide complete ERD with all tables, relationships, and key fields.
+
+## 4.4 Component Architecture
 - **Frontend architecture**: Component hierarchy, state management, routing
 - **Backend architecture**: API design, microservices/monolith, data flow
 - **Database schema**: EXACT tables, columns, types, indexes, relationships, constraints
-- **Authentication/Authorization**: Flow diagrams, JWT/session strategy, role-based access
 - **Third-party integrations**: APIs, SDKs, webhooks
 - **Deployment architecture**: Cloud provider, regions, CDN, load balancing
 
-# 4. API Specification
+# 5. API Specification
 - **Every endpoint** with:
   - HTTP method, path, authentication
   - Request parameters (path, query, body) with types and validation
@@ -688,7 +825,7 @@ Generate a 15-20 PAGE production-ready specification with EXTREME implementation
 - **WebSocket/real-time** endpoints if applicable
 - **API versioning** strategy
 
-# 5. Database Schema (Detailed)
+# 6. Database Schema (Detailed)
 For each table provide:
 - Table name and purpose
 - Every column: name, type, constraints (NOT NULL, UNIQUE, etc.)
@@ -698,17 +835,277 @@ For each table provide:
 - Sample data for clarity
 - Migration strategy
 
-# 6. Frontend Implementation Details
-- **Exact folder structure**: /src/components, /src/pages, /src/hooks, etc.
+# 7. Design System & Visual Language (CRITICAL - 10-Point Excellence Standard)
+
+## 7.1 Design Philosophy & Principles
+Specify a **glassmorphic/liquid glass design system** that surpasses Apple's visual sophistication:
+
+**Core Principles (based on Apple HIG + elevated sophistication):**
+1. **Clarity**: Content and functionality at different Z-depths with perfect hierarchy
+2. **Deference**: Fluid glass surfaces defer to content while adding depth
+3. **Depth**: Realistic layers with multi-level frosted glass blur effects
+4. **Luminosity**: Dynamic light interactions, reflections, and refractions
+5. **Precision**: Pixel-perfect alignment, mathematical spacing ratios
+6. **Fluidity**: Smooth, physics-based animations (120fps on high-refresh displays)
+
+**Visual Aesthetic Requirements:**
+- **Primary Material**: Frosted glass with backdrop-blur (24px-40px blur radius)
+- **Sophistication Level**: Beyond Apple Vision Pro UI - more refined, more tactile
+- **Depth Layers**: Minimum 5 Z-index layers with distinct glass tint variations
+- **Light Physics**: Simulate real glass properties (refraction, reflection, caustics)
+- **Edge Treatment**: Soft glows, rim lighting, subtle shadows with color tinting
+- **Motion**: Spring animations with realistic mass and damping
+
+## 7.2 10-Point Design Quality Rating System
+
+Evaluate EVERY design element on a 10-point scale across these dimensions:
+
+### Typography (must score 9-10/10)
+- **Hierarchy Clarity** (10/10): 6+ distinct type scales with perfect mathematical ratios
+- **Readability** (10/10): WCAG AAA contrast, optimal line height (1.5-1.7), line length (60-80ch)
+- **Font Selection** (10/10): System font stack (SF Pro, Inter, -apple-system) with perfect fallbacks
+- **Tracking & Kerning** (10/10): Optically balanced spacing, responsive font sizing
+- **Weight Progression** (10/10): 5+ weights (300, 400, 500, 600, 700) used meaningfully
+- **Responsiveness** (10/10): Fluid typography (clamp() functions), device-optimized
+
+**Typography Scale Specification:**
+\`\`\`css
+--text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+--text-sm: clamp(0.875rem, 0.8rem + 0.375vw, 1rem);
+--text-base: clamp(1rem, 0.9rem + 0.5vw, 1.125rem);
+--text-lg: clamp(1.125rem, 1rem + 0.625vw, 1.25rem);
+--text-xl: clamp(1.25rem, 1.1rem + 0.75vw, 1.5rem);
+--text-2xl: clamp(1.5rem, 1.3rem + 1vw, 2rem);
+--text-3xl: clamp(1.875rem, 1.6rem + 1.375vw, 2.5rem);
+--text-4xl: clamp(2.25rem, 1.9rem + 1.75vw, 3rem);
+\`\`\`
+
+### Color System (must score 9-10/10)
+- **Palette Sophistication** (10/10): 5+ shades per color, HSL-based with luminosity curves
+- **Glass Tinting** (10/10): Subtle color overlays on glass surfaces (5-15% opacity)
+- **Dark Mode Parity** (10/10): Equally refined light and dark themes
+- **Contrast Compliance** (10/10): All text meets WCAG AAA (7:1 minimum)
+- **Semantic Naming** (10/10): Context-based tokens (--color-surface-glass, --color-text-primary)
+- **Dynamic Theming** (10/10): CSS variables with smooth transitions
+
+**Glass Material Variants:**
+\`\`\`css
+/* Ultra-light glass (backgrounds) */
+--glass-lightest: hsla(0, 0%, 100%, 0.05);
+backdrop-filter: blur(40px) saturate(180%);
+
+/* Primary glass (cards, panels) */
+--glass-primary: hsla(210, 20%, 98%, 0.08);
+backdrop-filter: blur(24px) saturate(150%);
+box-shadow:
+  0 8px 32px hsla(0, 0%, 0%, 0.12),
+  inset 0 1px 0 hsla(0, 0%, 100%, 0.15),
+  inset 0 -1px 0 hsla(0, 0%, 0%, 0.05);
+
+/* Elevated glass (modals, popovers) */
+--glass-elevated: hsla(210, 25%, 99%, 0.12);
+backdrop-filter: blur(32px) saturate(170%);
+\`\`\`
+
+### Spacing & Layout (must score 9-10/10)
+- **Mathematical Precision** (10/10): 8px base unit, powers of 2 (8, 16, 24, 32, 48, 64, 96, 128)
+- **Optical Alignment** (10/10): Visual centering, not mathematical (account for font metrics)
+- **Density Levels** (10/10): Compact, default, comfortable, spacious (user preference)
+- **Grid System** (10/10): 12-column responsive grid with perfect gutters
+- **Container Widths** (10/10): Content-optimized max-widths (prose: 65ch, wide: 1280px)
+- **Whitespace Usage** (10/10): Generous breathing room, clear visual grouping
+
+### Glass Effects & Materials (must score 10/10 - SIGNATURE FEATURE)
+- **Blur Quality** (10/10): Multi-pass gaussian blur, hardware-accelerated
+- **Transparency Depth** (10/10): 5+ distinct glass opacity levels (2%, 5%, 8%, 12%, 15%)
+- **Refraction Effects** (10/10): Subtle content distortion behind glass
+- **Reflection Simulation** (10/10): Environment reflections on glass surfaces
+- **Edge Lighting** (10/10): Rim lights, halos, glows with proper color temperature
+- **Shadow Sophistication** (10/10): Multi-layered shadows with color (not just black)
+
+**Advanced Glass Effects:**
+\`\`\`css
+.glass-surface {
+  background: linear-gradient(
+    135deg,
+    hsla(210, 100%, 95%, 0.12) 0%,
+    hsla(210, 100%, 98%, 0.08) 50%,
+    hsla(210, 100%, 95%, 0.12) 100%
+  );
+  backdrop-filter: blur(24px) saturate(150%) brightness(1.1);
+  border: 1px solid hsla(0, 0%, 100%, 0.18);
+  box-shadow:
+    /* Outer glow */
+    0 0 0 1px hsla(210, 100%, 70%, 0.04),
+    /* Depth shadow */
+    0 8px 32px hsla(210, 30%, 10%, 0.12),
+    0 2px 8px hsla(210, 30%, 10%, 0.08),
+    /* Inner highlight */
+    inset 0 1px 0 hsla(0, 0%, 100%, 0.15),
+    /* Inner shadow */
+    inset 0 -1px 0 hsla(0, 0%, 0%, 0.05);
+}
+\`\`\`
+
+### Animation & Motion (must score 10/10)
+- **Physics Accuracy** (10/10): Spring animations with realistic mass/stiffness/damping
+- **Performance** (10/10): 60fps minimum, 120fps on capable displays, GPU-accelerated
+- **Duration Curve** (10/10): Apple-style easing (cubic-bezier with precise control points)
+- **Choreography** (10/10): Staggered animations, entrance/exit transitions
+- **Micro-interactions** (10/10): Hover states, click feedback, loading states
+- **Accessibility** (10/10): Respects prefers-reduced-motion, no vestibular triggers
+
+**Animation Specifications:**
+\`\`\`css
+/* Spring-based easing (mimics physics) */
+--ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+--ease-apple: cubic-bezier(0.25, 0.1, 0.25, 1.0);
+--ease-smooth: cubic-bezier(0.4, 0.0, 0.2, 1);
+
+/* Duration scale */
+--duration-instant: 100ms;
+--duration-fast: 150ms;
+--duration-normal: 250ms;
+--duration-slow: 350ms;
+--duration-slower: 500ms;
+\`\`\`
+
+### Component Quality (must score 9-10/10)
+- **Consistency** (10/10): Every component follows design system rules
+- **Composability** (10/10): Components work together seamlessly
+- **States Coverage** (10/10): Default, hover, active, focus, disabled, loading, error
+- **Prop API Design** (10/10): Intuitive, flexible, well-documented props
+- **Accessibility** (10/10): ARIA labels, keyboard navigation, screen reader support
+- **Responsive Behavior** (10/10): Mobile-first, adapts gracefully across breakpoints
+
+## 7.3 Storybook Specification (MANDATORY)
+
+**Storybook Setup Requirements:**
+- **Version**: Storybook 8.0+ (latest stable)
+- **Framework Integration**: React + Vite + TypeScript
+- **Addons Required**:
+  - @storybook/addon-essentials (controls, actions, docs)
+  - @storybook/addon-a11y (accessibility testing)
+  - @storybook/addon-interactions (interaction testing)
+  - @storybook/addon-themes (dark/light theme switching)
+  - @storybook/addon-measure (spacing/layout debugging)
+  - @storybook/addon-outline (layout visualization)
+
+**Story Coverage Requirements:**
+- **Every component** must have minimum 5 stories:
+  1. Default state
+  2. All variants (if applicable)
+  3. Interactive states (hover/focus/active)
+  4. Edge cases (long text, empty state, error state)
+  5. Accessibility demonstration
+
+**Story Format:**
+\`\`\`typescript
+// Button.stories.tsx
+import type { Meta, StoryObj } from '@storybook/react';
+import { Button } from './Button';
+
+const meta: Meta<typeof Button> = {
+  title: 'Components/Button',
+  component: Button,
+  parameters: {
+    design: {
+      type: 'figma',
+      url: 'https://figma.com/file/...'
+    }
+  },
+  argTypes: {
+    variant: {
+      control: 'select',
+      options: ['primary', 'secondary', 'ghost', 'glass']
+    }
+  }
+};
+
+export default meta;
+type Story = StoryObj<typeof Button>;
+
+export const GlassMorphic: Story = {
+  args: {
+    variant: 'glass',
+    children: 'Glass Button'
+  },
+  parameters: {
+    backgrounds: { default: 'dark' }
+  }
+};
+\`\`\`
+
+**Documentation Requirements:**
+- **Component Docs**: MDX format with usage examples, prop tables, accessibility notes
+- **Design Tokens**: Documented color, spacing, typography scales
+- **Glass Effects Library**: Visual catalog of all glass variants with code examples
+- **Animation Showcase**: Interactive examples of all transitions/animations
+- **Accessibility Guide**: Keyboard navigation map, ARIA patterns, screen reader testing
+
+## 7.4 Component Library Structure
+
+**Required Components (all with glass aesthetic):**
+1. **Buttons**: 5 variants (primary, secondary, tertiary, ghost, glass)
+2. **Cards**: 4 variants (flat-glass, elevated-glass, interactive-glass, outlined-glass)
+3. **Inputs**: Text, textarea, select, checkbox, radio, switch (all with glass styling)
+4. **Navigation**: Navbar, sidebar, breadcrumbs, tabs (floating glass panels)
+5. **Overlays**: Modal, dialog, popover, tooltip, dropdown (frosted backdrops)
+6. **Feedback**: Toast, alert, progress, skeleton, badge, spinner
+7. **Data Display**: Table, list, grid, timeline, stat cards
+8. **Media**: Avatar, image, video player, carousel
+9. **Forms**: Form wrapper, field groups, validation states, step indicators
+10. **Layout**: Container, grid, flex, stack, spacer, divider
+
+**Each component MUST include:**
+- TypeScript type definitions
+- Prop documentation
+- Accessibility attributes
+- Keyboard navigation support
+- Responsive variants
+- Dark/light theme support
+- Storybook stories
+- Unit tests
+- Visual regression tests
+
+## 7.5 Design Token System
+
+Specify complete design tokens in JSON/YAML format:
+
+\`\`\`json
+{
+  "color": {
+    "glass": {
+      "lightest": "hsla(0, 0%, 100%, 0.05)",
+      "light": "hsla(210, 20%, 98%, 0.08)",
+      "medium": "hsla(210, 25%, 99%, 0.12)",
+      "heavy": "hsla(210, 30%, 100%, 0.15)"
+    }
+  },
+  "blur": {
+    "sm": "16px",
+    "md": "24px",
+    "lg": "32px",
+    "xl": "40px"
+  },
+  "shadow": {
+    "glass": "0 8px 32px hsla(0, 0%, 0%, 0.12)",
+    "elevated": "0 16px 48px hsla(0, 0%, 0%, 0.16)"
+  }
+}
+\`\`\`
+
+# 8. Frontend Implementation Details
+- **Exact folder structure**: /src/components, /src/pages, /src/hooks, /src/design-system, /stories, etc.
 - **Component breakdown**: Every major component with props, state, events
 - **State management**: Redux/Context/Zustand setup, store structure, actions
 - **Routing**: Exact routes, protected routes, navigation flow
 - **Form validation**: Libraries (Zod/Yup), validation rules
-- **UI/UX patterns**: Design system, component library, theming
-- **Responsive design**: Breakpoints, mobile-first approach
-- **Accessibility**: ARIA labels, keyboard navigation, screen reader support
+- **Design system integration**: How components consume design tokens
+- **Responsive design**: Breakpoints, mobile-first approach, container queries
+- **Accessibility**: ARIA labels, keyboard navigation, screen reader support, focus management
 
-# 7. Backend Implementation Details
+# 9. Backend Implementation Details
 - **Exact folder structure**: /src/routes, /src/controllers, /src/models, etc.
 - **Authentication flow**: Step-by-step with code patterns
 - **Authorization middleware**: Role checks, permission system
@@ -717,7 +1114,7 @@ For each table provide:
 - **Background jobs**: Queue system (Bull/BullMQ), cron jobs
 - **File uploads**: Storage strategy (S3/Cloudinary), validation, CDN
 
-# 8. Technology Stack (November 2025 - Latest Versions)
+# 10. Technology Stack (November 2025 - Latest Versions)
 For each technology specify:
 - **Exact version number** (e.g., React 19.0.2, Next.js 15.1.0)
 - **Why chosen** (specific features needed)
@@ -733,7 +1130,7 @@ Include:
 - DevOps: CI/CD, containerization, monitoring, logging
 - Testing: Unit (Vitest/Jest), E2E (Playwright/Cypress), API (Supertest)
 
-# 9. Environment Configuration
+# 11. Environment Configuration
 - **Every environment variable** needed:
   - Variable name
   - Purpose
@@ -742,14 +1139,14 @@ Include:
 - **.env.example** file content
 - **Secrets management** (Vault, Parameter Store)
 
-# 10. Dependencies & Third-Party Services
+# 12. Dependencies & Third-Party Services
 - **Every npm package** with version and purpose
 - **API services** (Stripe, SendGrid, etc.) with pricing tiers
 - **OAuth providers** (Google, GitHub) with setup steps
 - **CDN/Storage** (Cloudflare, S3) with configuration
 - **Monitoring** (Sentry, DataDog) with alert rules
 
-# 11. Security Implementation
+# 13. Security Implementation
 - **OWASP Top 10** mitigation strategies (specific to this app)
 - **Input validation** and sanitization (where and how)
 - **SQL injection** prevention (parameterized queries, ORM)
@@ -761,7 +1158,7 @@ Include:
 - **Security headers** (helmet.js configuration)
 - **Dependency scanning** (Snyk, npm audit)
 
-# 12. Scalability & Performance
+# 14. Scalability & Performance
 - **Horizontal scaling** strategy (load balancer, session management)
 - **Database optimization** (indexing strategy, query optimization)
 - **Caching layers** (Redis, CDN, browser cache)
@@ -770,7 +1167,7 @@ Include:
 - **Performance budgets** (load time, bundle size, FCP, LCP)
 - **Monitoring** (APM tools, metrics to track)
 
-# 13. Testing Strategy
+# 15. Testing Strategy
 - **Unit tests**: What to test, coverage goals (80%+), frameworks
 - **Integration tests**: API endpoints, database interactions
 - **E2E tests**: Critical user flows, test scenarios
@@ -779,7 +1176,7 @@ Include:
 - **Test data**: Fixtures, factories, seed data
 - **CI/CD integration**: Test automation, coverage reporting
 
-# 14. Deployment & DevOps
+# 16. Deployment & DevOps
 - **Exact deployment steps** (command by command):
   1. Build frontend: npm run build
   2. Deploy to Vercel: vercel --prod
@@ -794,7 +1191,7 @@ Include:
 - **Logging** (structured logs, log aggregation)
 - **Alerts** (error rates, performance degradation)
 
-# 15. Risk Analysis & Mitigation
+# 17. Risk Analysis & Mitigation
 - **Technical risks**:
   - Specific risk, likelihood (1-10), impact (1-10), mitigation plan
 - **Business risks**:
@@ -806,14 +1203,14 @@ Include:
 - **Third-party risks**:
   - Vendor lock-in, API changes, downtime, backup plans
 
-# 16. Success Metrics & KPIs
+# 18. Success Metrics & KPIs
 - **User metrics**: DAU/MAU, retention, churn, session duration
 - **Performance metrics**: API response time, error rate, uptime
 - **Business metrics**: Conversion rate, revenue, CAC, LTV
 - **Technical metrics**: Test coverage, deployment frequency, MTTR
 - **Monitoring dashboards**: What to track, alert thresholds
 
-# 17. Cost Estimates
+# 19. Cost Estimates
 - **Infrastructure costs** (monthly):
   - Hosting: $X (provider, tier, usage assumptions)
   - Database: $X (storage, compute, backups)
@@ -827,7 +1224,7 @@ Include:
   - Total estimated hours
 - **Third-party services**: License fees, API costs
 
-# 18. Implementation Timeline
+# 20. Implementation Timeline
 - **Phase 1 (Weeks 1-2)**: MVP core features
   - Week 1: Setup, auth, database schema
   - Week 2: Core UI, basic API endpoints
@@ -842,7 +1239,7 @@ Include:
   - Deliverable: Production release
 - **Milestones**: Specific deliverables with acceptance criteria
 
-# 19. Code Examples & Patterns
+# 21. Code Examples & Patterns
 Include code snippets for:
 - Authentication flow (login/signup/refresh)
 - Protected API endpoint
@@ -855,7 +1252,7 @@ Include code snippets for:
 - Payment processing
 - Email sending
 
-# 20. Open Questions & Future Enhancements
+# 22. Open Questions & Future Enhancements
 - Items that need user decisions
 - Features for v2.0
 - Technical debt to address
@@ -868,7 +1265,7 @@ CRITICAL REQUIREMENTS:
 - Be so detailed that NO clarifying questions are needed
 - Cite sources for technology choices
 - Assume the implementer has your expertise but not your context
-- Total spec should be 15-20 pages when rendered as PDF
+- Total spec should be 20-30 pages when rendered as PDF
 
 Use markdown with proper headings, code blocks, tables, and lists. Be EXTRAORDINARILY specific and actionable.`;
 
@@ -877,7 +1274,7 @@ Use markdown with proper headings, code blocks, tables, and lists. Be EXTRAORDIN
         messages: [
           {
             role: 'system',
-            content: 'You are an elite senior technical architect and staff engineer. Your specifications are legendary for their completeness - developers can implement entire applications from your specs without asking a single clarifying question. You have deep expertise in modern web development, AI integration, scalability, and security. You write 15-20 page specs with extreme implementation detail including exact API endpoints, database schemas, code patterns, and deployment steps.'
+            content: 'You are an elite senior technical architect and staff engineer. Your specifications are legendary for their completeness - developers can implement entire applications from your specs without asking a single clarifying question. You have deep expertise in modern web development, AI integration, scalability, and security. You write 20-30 page specs with extreme implementation detail including exact API endpoints, database schemas, code patterns, and deployment steps.'
           },
           {
             role: 'user',
