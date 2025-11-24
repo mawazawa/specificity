@@ -1,9 +1,100 @@
 import { test, expect } from '@playwright/test';
 
+test.describe('SimpleSpecInput Character Count Bug Fix', () => {
+  test('BUG: Character counter should use trimmed length, not raw input length', async ({ page }) => {
+    await page.goto('http://localhost:8080/');
+    await page.waitForLoadState('networkidle');
+
+    const specInput = page.locator('[data-spec-input] textarea').first();
+    const submitButton = page.getByRole('button', { name: /Generate My Specification/i });
+
+    // Test Case 1: Input with leading/trailing whitespace
+    // Type: "     hello world     " (5 spaces + 11 chars + 5 spaces = 21 total, 11 trimmed)
+    const inputWithSpaces = '     hello world     ';
+    await specInput.fill(inputWithSpaces);
+
+    // Character counter should show trimmed length (11), NOT total length (21)
+    // This is the BUG: currently it shows 21
+    const charCounterText = await page.locator('[data-spec-input]').locator('.text-xs.text-muted-foreground').first().textContent();
+    console.log(`Counter text: "${charCounterText}"`);
+
+    // The counter should show "11 / 5000" but currently shows "21 / 5000"
+    // After fix, this should pass
+    expect(charCounterText).toContain('11');
+    expect(charCounterText).not.toContain('21');
+
+    // Button should be disabled because trimmed length (11) < 25
+    await expect(submitButton).toBeDisabled();
+    console.log('✅ Button correctly disabled for trimmed length < 25');
+  });
+
+  test('BUG: All whitespace input should show 0 characters, not the number of spaces', async ({ page }) => {
+    await page.goto('http://localhost:8080/');
+    await page.waitForLoadState('networkidle');
+
+    const specInput = page.locator('[data-spec-input] textarea').first();
+    const submitButton = page.getByRole('button', { name: /Generate My Specification/i });
+
+    // Type 30 spaces
+    const allSpaces = '                              '; // 30 spaces
+    await specInput.fill(allSpaces);
+
+    // Character counter should show 0 (trimmed), NOT 30
+    const charCounterText = await page.locator('[data-spec-input]').locator('.text-xs.text-muted-foreground').first().textContent();
+    console.log(`Counter with all spaces: "${charCounterText}"`);
+
+    // Should show "0 / 5000" with "25 more needed"
+    expect(charCounterText).toContain('0');
+    expect(charCounterText).toContain('25 more needed');
+
+    // Button must be disabled
+    await expect(submitButton).toBeDisabled();
+    console.log('✅ All-whitespace input correctly shows 0 characters');
+  });
+
+  test('BUG: "X more needed" should be based on trimmed length', async ({ page }) => {
+    await page.goto('http://localhost:8080/');
+    await page.waitForLoadState('networkidle');
+
+    const specInput = page.locator('[data-spec-input] textarea').first();
+
+    // Type 10 characters with whitespace padding
+    const paddedInput = '     hello     '; // 5 + 5 + 5 = 15 total, 5 trimmed
+    await specInput.fill(paddedInput);
+
+    // Should show "20 more needed" (25 - 5 = 20), not based on untrimmed length
+    const charCounterText = await page.locator('[data-spec-input]').locator('.text-xs.text-muted-foreground').first().textContent();
+    console.log(`Counter text: "${charCounterText}"`);
+
+    expect(charCounterText).toContain('20 more needed');
+    console.log('✅ "X more needed" correctly based on trimmed length');
+  });
+
+  test('Button should be enabled when trimmed length >= 25, regardless of whitespace', async ({ page }) => {
+    await page.goto('http://localhost:8080/');
+    await page.waitForLoadState('networkidle');
+
+    const specInput = page.locator('[data-spec-input] textarea').first();
+    const submitButton = page.getByRole('button', { name: /Generate My Specification/i });
+
+    // Type exactly 25 characters with whitespace padding
+    const validInput = '   ' + 'a'.repeat(25) + '   '; // 31 total, 25 trimmed
+    await specInput.fill(validInput);
+
+    // Counter should show 25
+    const charCounterText = await page.locator('[data-spec-input]').locator('.text-xs.text-muted-foreground').first().textContent();
+    expect(charCounterText).toContain('25');
+
+    // Button should be enabled
+    await expect(submitButton).toBeEnabled();
+    console.log('✅ Button enabled for trimmed length = 25');
+  });
+});
+
 test.describe('SimpleSpecInput defaultValue Synchronization Bug Fix', () => {
   test('should update input when defaultValue prop changes from non-empty to empty string', async ({ page }) => {
     // Navigate to a test page that uses SimpleSpecInput
-    await page.goto('http://localhost:8082/');
+    await page.goto('http://localhost:8080/');
 
     // Wait for the app to load
     await page.waitForLoadState('networkidle');
@@ -46,7 +137,7 @@ test.describe('SimpleSpecInput defaultValue Synchronization Bug Fix', () => {
   });
 
   test('should handle defaultValue transitions: empty -> filled -> empty', async ({ page }) => {
-    await page.goto('http://localhost:8082/');
+    await page.goto('http://localhost:8080/');
     await page.waitForLoadState('networkidle');
 
     const specInput = page.locator('[data-spec-input] textarea').first();
@@ -73,7 +164,7 @@ test.describe('SimpleSpecInput defaultValue Synchronization Bug Fix', () => {
   });
 
   test('should accept exactly 25 characters (minimum) without error', async ({ page }) => {
-    await page.goto('http://localhost:8082/');
+    await page.goto('http://localhost:8080/');
     await page.waitForLoadState('networkidle');
 
     const specInput = page.locator('[data-spec-input] textarea').first();

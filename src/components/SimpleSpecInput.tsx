@@ -44,7 +44,9 @@ export const SimpleSpecInput = ({ onSubmit, isLoading, defaultValue }: SimpleSpe
     onSubmit(input.trim());
   };
 
-  const charCount = input.length;
+  // Fix: Use trimmed length for consistency between counter and validation
+  const trimmedInput = input.trim();
+  const charCount = trimmedInput.length;
   const charMin = 25;
   const charMax = 5000;
   const isValid = charCount >= charMin && charCount <= charMax;
