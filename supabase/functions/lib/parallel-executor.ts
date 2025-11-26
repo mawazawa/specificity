@@ -30,6 +30,7 @@ export async function executeParallelResearch(
     userInput: string;
     roundNumber: number;
     streamEmitter?: StreamEmitter; // Optional real-time streaming
+    maxIterations?: number; // Max iterations per agent (default: 15)
   }
 ): Promise<AgentResearchResult[]> {
   console.log(`[ParallelExecutor] Starting parallel execution with ${assignments.length} agents`);
@@ -46,9 +47,10 @@ export async function executeParallelResearch(
   const startTime = Date.now();
 
   // Execute all agents simultaneously
+  const maxIterations = context.maxIterations || 15; // Default to 15
   const results = await Promise.all(
     assignments.map(assignment =>
-      executeAgentAssignment(assignment, tools, context, emitter)
+      executeAgentAssignment(assignment, tools, context, emitter, maxIterations)
     )
   );
 
@@ -85,7 +87,8 @@ async function executeAgentAssignment(
     userInput: string;
     roundNumber: number;
   },
-  emitter: StreamEmitter
+  emitter: StreamEmitter,
+  maxIterations: number
 ): Promise<AgentResearchResult> {
   const startTime = Date.now();
   const toolsUsed: Array<{ tool: string; success: boolean; duration: number }> = [];
@@ -171,7 +174,7 @@ Remember:
 
   let conversationHistory = `Product Idea: ${context.userInput}\n\nRound: ${context.roundNumber}\n\nBegin your research.`;
   let iterations = 0;
-  const maxIterations = 15; // Extended to 15 iterations with self-reflection checkpoints
+  // maxIterations is now a parameter (passed from depth control)
 
   try {
     while (iterations < maxIterations) {

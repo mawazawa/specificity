@@ -24,6 +24,7 @@ import { callOpenRouter } from '../lib/openrouter-client.ts';
 import { generateChallenges, executeChallenges, resolveDebates } from '../lib/challenge-generator.ts';
 import { StreamEmitter } from '../lib/stream-emitter.ts';
 import { verifyAllAgents } from '../lib/fact-verifier.ts';
+import { getDepthConfig, filterAgentsForDepth, type ResearchDepth } from '../lib/depth-control.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -78,6 +79,7 @@ const requestSchema = z.object({
   agentConfigs: z.array(agentConfigSchema).optional(),
   roundData: z.any().optional(),
   sessionId: z.string().optional(), // For WebSocket streaming
+  depth: z.enum(['quick', 'standard', 'deep', 'exhaustive']).optional(), // Research depth control
 });
 
 // Prompt injection detection
@@ -271,7 +273,9 @@ serve(async (req) => {
       throw error;
     }
 
-    const { userInput, stage, agentConfigs, roundData, userComment, sessionId } = validated;
+    const { userInput, stage, agentConfigs, roundData, userComment, sessionId, depth } = validated;
+    const researchDepth: ResearchDepth = depth || 'standard'; // Default to standard
+    const depthConfig = getDepthConfig(researchDepth);
 
     // Check for prompt injection
     if (userInput && detectPromptInjection(userInput)) {
@@ -316,8 +320,10 @@ serve(async (req) => {
 
       const questions = await generateDynamicQuestions(cleanInput, {
         model: 'gpt-5.1',
-        count: 7
+        count: depthConfig.questionCount
       });
+
+      console.log(`[Enhanced] Using ${researchDepth} depth: ${depthConfig.questionCount} questions, ${depthConfig.maxAgents} agents`);
 
       console.log(`[Enhanced] Generated ${questions.length} questions`);
 
@@ -349,13 +355,17 @@ serve(async (req) => {
       }
 
       // Add IDs to agent configs
-      const configsWithIds: AgentConfig[] = agentConfigs.map((config, idx) => ({
+      let configsWithIds: AgentConfig[] = agentConfigs.map((config, idx) => ({
         id: config.id || config.agent.toLowerCase().replace(/\s+/g, '_'),
         agent: config.agent,
         systemPrompt: config.systemPrompt,
         temperature: config.temperature,
         enabled: config.enabled
       }));
+
+      // Filter agents based on depth (KISS: simple filtering)
+      configsWithIds = filterAgentsForDepth(configsWithIds.filter(c => c.enabled), researchDepth);
+      console.log(`[DepthControl] Using ${researchDepth} depth: ${configsWithIds.length} agents, ${depthConfig.maxIterations} max iterations`);
 
       // Assign questions to experts
       const assignments = assignQuestionsToExperts(questions, configsWithIds);
@@ -373,7 +383,8 @@ serve(async (req) => {
         {
           userInput: cleanInput,
           roundNumber: roundData?.roundNumber || 1,
-          streamEmitter
+          streamEmitter,
+          maxIterations: depthConfig.maxIterations
         }
       );
 
@@ -385,11 +396,11 @@ serve(async (req) => {
       console.log(`[Enhanced] Research complete - Cost: $${totalCost.toFixed(4)}, Tokens: ${totalTokens}, Tools: ${totalTools}`);
 
       // Optional: Verify research findings with fact-checking layer
-      // Only run if findings are substantial (reduces cost for simple queries)
+      // Controlled by depth config (disabled for 'quick' mode)
       let verificationReports = undefined;
       const hasSubstantialFindings = researchResults.some(r => r.findings.length > 200);
 
-      if (hasSubstantialFindings) {
+      if (depthConfig.enableFactChecking && hasSubstantialFindings) {
         console.log('[FactVerifier] Running fact verification on research findings...');
         const verifyStartTime = Date.now();
 
@@ -422,7 +433,14 @@ serve(async (req) => {
             factChecked: !!verificationReports,
             avgFactCheckConfidence: verificationReports
               ? Math.round(verificationReports.reduce((sum, r) => sum + r.overallConfidence, 0) / verificationReports.length)
-              : undefined
+              : undefined,
+            depth: researchDepth,
+            depthConfig: {
+              maxIterations: depthConfig.maxIterations,
+              agentsUsed: configsWithIds.length,
+              estimatedCost: depthConfig.estimatedCost,
+              estimatedDuration: depthConfig.estimatedDuration
+            }
           }
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
