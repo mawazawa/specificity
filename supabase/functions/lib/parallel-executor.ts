@@ -8,11 +8,13 @@ export interface AgentResearchResult {
   expertName: string;
   questions: ResearchQuestion[];
   findings: string;
+  confidence?: number; // Self-evaluated confidence score (0-100)
   toolsUsed: Array<{ tool: string; success: boolean; duration: number }>;
   duration: number;
   model: string;
   cost: number;
   tokensUsed: number;
+  iterationsUsed: number; // Track how many iterations were needed
 }
 
 /**
@@ -100,18 +102,31 @@ WHEN COMPLETE:
 Output ONLY this JSON object (no markdown):
 {
   "complete": true,
+  "confidence": 95,
   "findings": "Your comprehensive research findings as ${assignment.expertName}. Include specific technologies, frameworks, best practices, and actionable recommendations. Cite sources when relevant."
 }
+
+SELF-EVALUATION (at checkpoints):
+At iterations 5, 10, and 15, you will receive a self-reflection prompt.
+Honestly assess:
+- Have you answered all assigned questions thoroughly?
+- Are your technology recommendations current (November 2025)?
+- Are there critical gaps that need more research?
+- Confidence level (0-100%) in your findings
+
+If confidence >= 85% and all questions answered: Complete research
+If confidence < 85% or gaps exist: Use more tools to fill gaps
 
 Remember:
 - Be specific and technical (not vague)
 - Recommend bleeding-edge tech (November 2025)
 - Include concrete examples
-- Focus on production-ready solutions`;
+- Focus on production-ready solutions
+- Self-evaluate honestly at checkpoints`;
 
   let conversationHistory = `Product Idea: ${context.userInput}\n\nRound: ${context.roundNumber}\n\nBegin your research.`;
   let iterations = 0;
-  const maxIterations = 6; // Allow up to 6 tool calls per agent
+  const maxIterations = 15; // Extended to 15 iterations with self-reflection checkpoints
 
   try {
     while (iterations < maxIterations) {
@@ -141,6 +156,49 @@ Remember:
       totalCost += response.cost;
       totalTokens += response.usage.totalTokens;
 
+      // SELF-REFLECTION CHECKPOINTS
+      // At iteration 5: Ask if research is complete, aim to finish in next 5
+      if (iterations === 5) {
+        console.log(`[${assignment.expertName}] 📊 Self-reflection checkpoint (iteration 5)`);
+        conversationHistory += `\n\n[SELF-REFLECTION CHECKPOINT - Iteration 5/15]
+You have completed 5 iterations. Please evaluate:
+
+1. Is your research sufficiently comprehensive to answer all assigned questions?
+2. Have you gathered bleeding-edge, November 2025 technology recommendations?
+3. Are there any critical gaps in your findings?
+
+IMPORTANT: You have 10 more iterations available, but aim to complete your research within the next 5 iterations if possible.
+
+If research is complete: Output the completion JSON.
+If more research needed: Use tools to fill gaps, then complete.`;
+      }
+
+      // At iteration 10: Urgent warning to complete soon
+      if (iterations === 10) {
+        console.log(`[${assignment.expertName}] ⚠️  Self-reflection checkpoint (iteration 10)`);
+        conversationHistory += `\n\n[URGENT SELF-REFLECTION - Iteration 10/15]
+You have used 10 iterations. You have 5 iterations remaining.
+
+ASSESS YOUR RESEARCH:
+- Do you have comprehensive, actionable findings?
+- Have you verified all technology recommendations are current (Nov 2025)?
+- Are your recommendations specific and production-ready?
+
+⚠️ WARNING: You should strongly aim to complete your research within the next 5 iterations.
+
+If ready: Output completion JSON with your findings.
+If critical gaps remain: Use maximum 2-3 more tools, then MUST complete.`;
+      }
+
+      // At iteration 15: Final warning (last chance)
+      if (iterations === 15) {
+        console.log(`[${assignment.expertName}] 🔴 FINAL iteration - must complete now`);
+        conversationHistory += `\n\n[FINAL ITERATION - 15/15]
+This is your last iteration. You MUST complete your research now.
+
+Output your completion JSON immediately with all findings gathered so far.`;
+      }
+
       // Check if agent is done
       if (response.content.includes('"complete": true')) {
         try {
@@ -154,7 +212,8 @@ Remember:
           const result = JSON.parse(jsonContent);
 
           console.log(`[${assignment.expertName}] ✓ Research complete`);
-          console.log(`[${assignment.expertName}]   Iterations: ${iterations}`);
+          console.log(`[${assignment.expertName}]   Iterations: ${iterations}/${maxIterations}`);
+          console.log(`[${assignment.expertName}]   Confidence: ${result.confidence || 'N/A'}%`);
           console.log(`[${assignment.expertName}]   Tools used: ${toolsUsed.length}`);
           console.log(`[${assignment.expertName}]   Cost: $${totalCost.toFixed(4)}`);
 
@@ -163,11 +222,13 @@ Remember:
             expertName: assignment.expertName,
             questions: assignment.questions,
             findings: result.findings || response.content,
+            confidence: result.confidence,
             toolsUsed,
             duration: Date.now() - startTime,
             model: assignment.model,
             cost: totalCost,
-            tokensUsed: totalTokens
+            tokensUsed: totalTokens,
+            iterationsUsed: iterations
           };
         } catch (parseError) {
           console.warn(`[${assignment.expertName}] Failed to parse completion JSON, treating as findings`);
@@ -181,7 +242,8 @@ Remember:
             duration: Date.now() - startTime,
             model: assignment.model,
             cost: totalCost,
-            tokensUsed: totalTokens
+            tokensUsed: totalTokens,
+            iterationsUsed: iterations
           };
         }
       }
@@ -234,18 +296,20 @@ Remember:
     }
 
     // Max iterations reached - return what we have
-    console.warn(`[${assignment.expertName}] Max iterations reached, returning current state`);
+    console.warn(`[${assignment.expertName}] Max iterations (${maxIterations}) reached, returning current state`);
 
     return {
       expertId: assignment.expertId,
       expertName: assignment.expertName,
       questions: assignment.questions,
       findings: `Research incomplete after ${maxIterations} iterations. Last context:\n${conversationHistory.slice(-1000)}`,
+      confidence: 50, // Low confidence since incomplete
       toolsUsed,
       duration: Date.now() - startTime,
       model: assignment.model,
       cost: totalCost,
-      tokensUsed: totalTokens
+      tokensUsed: totalTokens,
+      iterationsUsed: maxIterations
     };
   } catch (error) {
     console.error(`[${assignment.expertName}] Research failed:`, error);
@@ -255,11 +319,13 @@ Remember:
       expertName: assignment.expertName,
       questions: assignment.questions,
       findings: `Research failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      confidence: 0, // Zero confidence on error
       toolsUsed,
       duration: Date.now() - startTime,
       model: assignment.model,
       cost: totalCost,
-      tokensUsed: totalTokens
+      tokensUsed: totalTokens,
+      iterationsUsed: iterations
     };
   }
 }

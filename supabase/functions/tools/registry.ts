@@ -1,9 +1,16 @@
 import { BaseTool } from './base-tool.ts';
 import { WebSearchTool } from './web-search-tool.ts';
+import { ExaMCPTool } from './exa-mcp-tool.ts';
 import { CompetitorAnalysisTool } from './competitor-analysis-tool.ts';
 import { GitHubSearchTool } from './github-search-tool.ts';
 import { NPMSearchTool } from './npm-search-tool.ts';
 import { MarketDataTool } from './market-data-tool.ts';
+import { PricingIntelligenceTool } from './pricing-intelligence-tool.ts';
+import { SEOKeywordTool } from './seo-keyword-tool.ts';
+import { StripePricingTool } from './stripe-pricing-tool.ts';
+import { AWSCostEstimator } from './aws-cost-estimator.ts';
+import { StackOverflowSearchTool } from './stackoverflow-search-tool.ts';
+import { AppStoreAnalyticsTool } from './appstore-analytics-tool.ts';
 
 /**
  * Tool Registry - Auto-discovery and management of available tools
@@ -16,11 +23,27 @@ export class ToolRegistry {
   }
 
   private registerDefaultTools() {
+    // Search & Research Tools
     this.register(new WebSearchTool());
+    this.register(new ExaMCPTool()); // Advanced AI-powered neural search (Nov 2025)
+    this.register(new StackOverflowSearchTool()); // Technical Q&A
+
+    // Competitive Intelligence
     this.register(new CompetitorAnalysisTool());
-    this.register(new GitHubSearchTool());
-    this.register(new NPMSearchTool());
-    this.register(new MarketDataTool());
+    this.register(new PricingIntelligenceTool()); // Scrape competitor pricing
+    this.register(new AppStoreAnalyticsTool()); // Mobile app metrics
+
+    // SEO & Marketing
+    this.register(new SEOKeywordTool()); // Keyword research & trends
+
+    // Financial & Cost Analysis
+    this.register(new StripePricingTool()); // Payment processing costs
+    this.register(new AWSCostEstimator()); // Cloud infrastructure costs
+    this.register(new MarketDataTool()); // TAM/SAM/market research
+
+    // Developer Tools
+    this.register(new GitHubSearchTool()); // Open source discovery
+    this.register(new NPMSearchTool()); // Package research
   }
 
   register(tool: BaseTool) {
