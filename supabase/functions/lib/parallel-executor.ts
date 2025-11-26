@@ -2,6 +2,7 @@ import { ExpertAssignment } from './expert-matcher.ts';
 import { ToolRegistry } from '../tools/registry.ts';
 import { callOpenRouter, retryWithBackoff } from './openrouter-client.ts';
 import { ResearchQuestion } from './question-generator.ts';
+import { StreamEmitter } from './stream-emitter.ts';
 
 export interface AgentResearchResult {
   expertId: string;
@@ -26,27 +27,48 @@ export async function executeParallelResearch(
   context: {
     userInput: string;
     roundNumber: number;
+    streamEmitter?: StreamEmitter; // Optional real-time streaming
   }
 ): Promise<AgentResearchResult[]> {
   console.log(`[ParallelExecutor] Starting parallel execution with ${assignments.length} agents`);
   console.log(`[ParallelExecutor] Round ${context.roundNumber}`);
+
+  const emitter = context.streamEmitter || new StreamEmitter(); // Use provided or create dummy
+
+  // Notify all agents starting
+  await emitter.systemMessage(
+    `Starting parallel research with ${assignments.length} agents`,
+    { agentCount: assignments.length, round: context.roundNumber }
+  );
 
   const startTime = Date.now();
 
   // Execute all agents simultaneously
   const results = await Promise.all(
     assignments.map(assignment =>
-      executeAgentAssignment(assignment, tools, context)
+      executeAgentAssignment(assignment, tools, context, emitter)
     )
   );
 
   const duration = Date.now() - startTime;
   const totalCost = results.reduce((sum, r) => sum + r.cost, 0);
   const totalTools = results.reduce((sum, r) => sum + r.toolsUsed.length, 0);
+  const avgConfidence = results.reduce((sum, r) => sum + (r.confidence || 0), 0) / results.length;
 
   console.log(`[ParallelExecutor] ✓ Completed in ${duration}ms`);
   console.log(`[ParallelExecutor]   Total cost: $${totalCost.toFixed(4)}`);
   console.log(`[ParallelExecutor]   Tools used: ${totalTools}`);
+
+  // Emit system completion message
+  await emitter.systemMessage(
+    `All ${results.length} agents completed research`,
+    {
+      duration,
+      totalCost: `$${totalCost.toFixed(4)}`,
+      totalTools,
+      avgConfidence: avgConfidence.toFixed(1)
+    }
+  );
 
   return results;
 }
@@ -60,12 +82,16 @@ async function executeAgentAssignment(
   context: {
     userInput: string;
     roundNumber: number;
-  }
+  },
+  emitter: StreamEmitter
 ): Promise<AgentResearchResult> {
   const startTime = Date.now();
   const toolsUsed: Array<{ tool: string; success: boolean; duration: number }> = [];
   let totalCost = 0;
   let totalTokens = 0;
+
+  // Emit agent start event
+  await emitter.agentStart(assignment.expertId, assignment.expertName, assignment.questions.length);
 
   // Combine all assigned questions
   const taskDescription = assignment.questions
@@ -134,6 +160,15 @@ Remember:
 
       console.log(`[${assignment.expertName}] Iteration ${iterations}/${maxIterations}`);
 
+      // Emit iteration event
+      await emitter.agentIteration(
+        assignment.expertId,
+        assignment.expertName,
+        iterations,
+        maxIterations,
+        'Analyzing and researching...'
+      );
+
       // Call LLM
       const response = await retryWithBackoff(
         () => callOpenRouter({
@@ -160,6 +195,10 @@ Remember:
       // At iteration 5: Ask if research is complete, aim to finish in next 5
       if (iterations === 5) {
         console.log(`[${assignment.expertName}] 📊 Self-reflection checkpoint (iteration 5)`);
+
+        // Emit reflection event
+        await emitter.agentReflection(assignment.expertId, assignment.expertName, 5);
+
         conversationHistory += `\n\n[SELF-REFLECTION CHECKPOINT - Iteration 5/15]
 You have completed 5 iterations. Please evaluate:
 
@@ -176,6 +215,10 @@ If more research needed: Use tools to fill gaps, then complete.`;
       // At iteration 10: Urgent warning to complete soon
       if (iterations === 10) {
         console.log(`[${assignment.expertName}] ⚠️  Self-reflection checkpoint (iteration 10)`);
+
+        // Emit urgent reflection event
+        await emitter.agentReflection(assignment.expertId, assignment.expertName, 10);
+
         conversationHistory += `\n\n[URGENT SELF-REFLECTION - Iteration 10/15]
 You have used 10 iterations. You have 5 iterations remaining.
 
@@ -193,6 +236,10 @@ If critical gaps remain: Use maximum 2-3 more tools, then MUST complete.`;
       // At iteration 15: Final warning (last chance)
       if (iterations === 15) {
         console.log(`[${assignment.expertName}] 🔴 FINAL iteration - must complete now`);
+
+        // Emit final reflection event
+        await emitter.agentReflection(assignment.expertId, assignment.expertName, 15);
+
         conversationHistory += `\n\n[FINAL ITERATION - 15/15]
 This is your last iteration. You MUST complete your research now.
 
@@ -216,6 +263,17 @@ Output your completion JSON immediately with all findings gathered so far.`;
           console.log(`[${assignment.expertName}]   Confidence: ${result.confidence || 'N/A'}%`);
           console.log(`[${assignment.expertName}]   Tools used: ${toolsUsed.length}`);
           console.log(`[${assignment.expertName}]   Cost: $${totalCost.toFixed(4)}`);
+
+          // Emit completion event
+          await emitter.agentComplete(
+            assignment.expertId,
+            assignment.expertName,
+            iterations,
+            result.confidence,
+            toolsUsed.length,
+            Date.now() - startTime,
+            totalCost
+          );
 
           return {
             expertId: assignment.expertId,
@@ -273,6 +331,16 @@ Output your completion JSON immediately with all findings gathered so far.`;
               duration: toolDuration
             });
 
+            // Emit tool usage event
+            await emitter.agentToolUse(
+              assignment.expertId,
+              assignment.expertName,
+              toolCall.tool,
+              toolCall.params,
+              toolResult.success,
+              toolDuration
+            );
+
             // Add tool result to conversation
             if (toolResult.success) {
               conversationHistory += `\n\n[Tool Result: ${toolCall.tool}]\n${JSON.stringify(toolResult.data, null, 2)}`;
@@ -313,6 +381,13 @@ Output your completion JSON immediately with all findings gathered so far.`;
     };
   } catch (error) {
     console.error(`[${assignment.expertName}] Research failed:`, error);
+
+    // Emit error event
+    await emitter.agentError(
+      assignment.expertId,
+      assignment.expertName,
+      error instanceof Error ? error.message : 'Unknown error'
+    );
 
     return {
       expertId: assignment.expertId,

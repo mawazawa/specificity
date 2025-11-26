@@ -11,6 +11,7 @@ import { SpecOutput } from "@/components/SpecOutput";
 import { StageIndicator } from "@/components/StageIndicator";
 import { LiveAgentCard } from "@/components/LiveAgentCard";
 import { ProcessViewer } from "@/components/ProcessViewer";
+import { LiveAgentDashboard } from "@/components/LiveAgentDashboard";
 import { VoteTally } from "@/components/VoteTally";
 import { DialoguePanel, DialogueEntry } from "@/components/DialoguePanel";
 import { LandingHero } from "@/components/LandingHero";
@@ -64,6 +65,8 @@ const Index = () => {
   const [isDialogueOpen, setIsDialogueOpen] = useState(true);
   const [viewMode, setViewMode] = useState<'chat' | 'panels'>('chat');
   const [inputValue, setInputValue] = useState<string>("");  // NEW: State for input value
+  const [researchSessionId, setResearchSessionId] = useState<string | null>(null); // WebSocket session ID
+  const [showLiveDashboard, setShowLiveDashboard] = useState(false); // Show live agent dashboard
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -248,6 +251,12 @@ const Index = () => {
       // ========================================
       round.stage = 'research';
       setCurrentStage(`Round ${roundNumber}: Parallel Expert Research`);
+
+      // Generate unique session ID for WebSocket streaming
+      const sessionId = `research-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+      setResearchSessionId(sessionId);
+      setShowLiveDashboard(true);
+
       toast({
         title: "🔬 Deep Research Phase",
         description: "Experts conducting parallel research with multiple tools..."
@@ -263,7 +272,8 @@ const Index = () => {
             roundData: {
               questions: round.questions,
               roundNumber
-            }
+            },
+            sessionId // Pass sessionId for WebSocket streaming
           }
         }
       );
@@ -274,6 +284,10 @@ const Index = () => {
       }
 
       const researchDuration = Date.now() - researchStartTime;
+
+      // Hide live dashboard after research completes
+      setShowLiveDashboard(false);
+      setResearchSessionId(null);
 
       // Store research results
       round.research = researchData.researchResults || [];
@@ -1017,6 +1031,19 @@ const Index = () => {
             {/* Main Content */}
             {viewMode === 'chat' ? (
           <div className="space-y-6">
+            {/* Live Agent Dashboard - Real-time WebSocket streaming in Chat View */}
+            {showLiveDashboard && researchSessionId && (
+              <div className="animate-slide-up">
+                <LiveAgentDashboard
+                  sessionId={researchSessionId}
+                  onComplete={() => {
+                    setShowLiveDashboard(false);
+                    setResearchSessionId(null);
+                  }}
+                />
+              </div>
+            )}
+
             <ChatView
               entries={chatEntries}
               isPaused={sessionState.isPaused}
@@ -1042,6 +1069,19 @@ const Index = () => {
 
         <div className="grid gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-8">
+            {/* Live Agent Dashboard - Real-time WebSocket streaming */}
+            {showLiveDashboard && researchSessionId && (
+              <div className="animate-slide-up">
+                <LiveAgentDashboard
+                  sessionId={researchSessionId}
+                  onComplete={() => {
+                    setShowLiveDashboard(false);
+                    setResearchSessionId(null);
+                  }}
+                />
+              </div>
+            )}
+
             {/* Live Agent Activity - Only show LiveAgentCard, not duplicate static cards */}
             {currentRound && (
               <div className="space-y-3">

@@ -22,6 +22,7 @@ import { assignQuestionsToExperts, balanceWorkload, AgentConfig } from '../lib/e
 import { executeParallelResearch } from '../lib/parallel-executor.ts';
 import { callOpenRouter } from '../lib/openrouter-client.ts';
 import { generateChallenges, executeChallenges, resolveDebates } from '../lib/challenge-generator.ts';
+import { StreamEmitter } from '../lib/stream-emitter.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -75,6 +76,7 @@ const requestSchema = z.object({
   userComment: z.string().max(1000).optional(),
   agentConfigs: z.array(agentConfigSchema).optional(),
   roundData: z.any().optional(),
+  sessionId: z.string().optional(), // For WebSocket streaming
 });
 
 // Prompt injection detection
@@ -268,7 +270,7 @@ serve(async (req) => {
       throw error;
     }
 
-    const { userInput, stage, agentConfigs, roundData, userComment } = validated;
+    const { userInput, stage, agentConfigs, roundData, userComment, sessionId } = validated;
 
     // Check for prompt injection
     if (userInput && detectPromptInjection(userInput)) {
@@ -360,13 +362,17 @@ serve(async (req) => {
 
       console.log(`[Enhanced] Assigned questions to ${balancedAssignments.length} experts`);
 
+      // Create stream emitter for real-time progress updates (if sessionId provided)
+      const streamEmitter = sessionId ? new StreamEmitter(sessionId) : undefined;
+
       // Execute parallel research
       const researchResults = await executeParallelResearch(
         balancedAssignments,
         tools,
         {
           userInput: cleanInput,
-          roundNumber: roundData?.roundNumber || 1
+          roundNumber: roundData?.roundNumber || 1,
+          streamEmitter
         }
       );
 
