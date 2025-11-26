@@ -3,6 +3,7 @@ import { ToolRegistry } from '../tools/registry.ts';
 import { callOpenRouter, retryWithBackoff } from './openrouter-client.ts';
 import { ResearchQuestion } from './question-generator.ts';
 import { StreamEmitter } from './stream-emitter.ts';
+import { spawnMultipleSubAgents, SubAgentRequest } from './sub-agent-spawner.ts';
 
 export interface AgentResearchResult {
   expertId: string;
@@ -16,6 +17,7 @@ export interface AgentResearchResult {
   cost: number;
   tokensUsed: number;
   iterationsUsed: number; // Track how many iterations were needed
+  subAgentsSpawned?: number; // Number of sub-agents spawned for deep research
 }
 
 /**
@@ -89,6 +91,7 @@ async function executeAgentAssignment(
   const toolsUsed: Array<{ tool: string; success: boolean; duration: number }> = [];
   let totalCost = 0;
   let totalTokens = 0;
+  let subAgentsSpawned = 0; // Track sub-agents spawned
 
   // Emit agent start event
   await emitter.agentStart(assignment.expertId, assignment.expertName, assignment.questions.length);
@@ -123,6 +126,22 @@ When you need information, output ONLY a JSON object (no markdown):
 }
 
 After receiving tool results, continue your research or output your findings.
+
+SPAWN SUB-AGENTS (for complex multi-faceted research):
+If you encounter a question that requires deep specialized research (e.g., comparing 3+ technologies, analyzing multiple competitors, verifying from multiple sources), you can spawn focused sub-agents:
+{
+  "spawnSubAgents": true,
+  "subAgents": [
+    {
+      "specialization": "Specific narrow topic",
+      "researchGoal": "What the sub-agent should research",
+      "toolsNeeded": ["tool1", "tool2"]
+    }
+  ]
+}
+
+Sub-agents will conduct focused research (5 iterations) and return findings to you.
+Use sparingly - only for truly complex multi-faceted questions.
 
 WHEN COMPLETE:
 Output ONLY this JSON object (no markdown):
@@ -286,7 +305,8 @@ Output your completion JSON immediately with all findings gathered so far.`;
             model: assignment.model,
             cost: totalCost,
             tokensUsed: totalTokens,
-            iterationsUsed: iterations
+            iterationsUsed: iterations,
+            subAgentsSpawned: subAgentsSpawned > 0 ? subAgentsSpawned : undefined
           };
         } catch (parseError) {
           console.warn(`[${assignment.expertName}] Failed to parse completion JSON, treating as findings`);
@@ -301,8 +321,88 @@ Output your completion JSON immediately with all findings gathered so far.`;
             model: assignment.model,
             cost: totalCost,
             tokensUsed: totalTokens,
-            iterationsUsed: iterations
+            iterationsUsed: iterations,
+            subAgentsSpawned: subAgentsSpawned > 0 ? subAgentsSpawned : undefined
           };
+        }
+      }
+
+      // Check if agent wants to spawn sub-agents
+      if (response.content.includes('"spawnSubAgents"') && response.content.includes('true')) {
+        try {
+          let jsonContent = response.content;
+          const jsonMatch = response.content.match(/\{[\s\S]*"spawnSubAgents"[\s\S]*\}/);
+          if (jsonMatch) {
+            jsonContent = jsonMatch[0];
+          }
+
+          const spawnRequest = JSON.parse(jsonContent);
+
+          if (spawnRequest.spawnSubAgents && spawnRequest.subAgents && spawnRequest.subAgents.length > 0) {
+            console.log(`[${assignment.expertName}] → Spawning ${spawnRequest.subAgents.length} sub-agents`);
+
+            // Emit sub-agent spawning event
+            await emitter.agentToolUse(
+              assignment.expertId,
+              assignment.expertName,
+              'spawn_sub_agents',
+              { count: spawnRequest.subAgents.length },
+              true,
+              0
+            );
+
+            // Build sub-agent requests
+            const subAgentRequests: SubAgentRequest[] = spawnRequest.subAgents.map((sa: any) => ({
+              parentAgentId: assignment.expertId,
+              parentAgentName: assignment.expertName,
+              specialization: sa.specialization || 'Deep research',
+              researchGoal: sa.researchGoal || 'Research assigned topic',
+              toolsNeeded: sa.toolsNeeded || [],
+              context: conversationHistory.slice(-500), // Last 500 chars of context
+              maxIterations: 5 // Sub-agents get 5 iterations
+            }));
+
+            // Spawn sub-agents in parallel
+            const subAgentStartTime = Date.now();
+            const subAgentResults = await spawnMultipleSubAgents(subAgentRequests, tools);
+            const subAgentDuration = Date.now() - subAgentStartTime;
+            subAgentsSpawned += subAgentResults.length; // Track spawned count
+
+            // Add sub-agent costs to parent agent
+            const subAgentCost = subAgentResults.reduce((sum, r) => sum + r.cost, 0);
+            const subAgentTokens = subAgentResults.reduce((sum, r) => sum + r.tokensUsed, 0);
+            totalCost += subAgentCost;
+            totalTokens += subAgentTokens;
+
+            // Track sub-agent tools used
+            subAgentResults.forEach(r => {
+              r.toolsUsed.forEach(t => toolsUsed.push(t));
+            });
+
+            // Format sub-agent findings for parent agent
+            const subAgentFindings = subAgentResults.map((r, idx) =>
+              `[Sub-Agent ${idx + 1}: ${r.specialization}]
+Confidence: ${r.confidence}%
+Findings:
+${r.findings}
+`
+            ).join('\n\n');
+
+            conversationHistory += `\n\n[Sub-Agent Research Complete]
+${spawnRequest.subAgents.length} sub-agents completed in ${(subAgentDuration / 1000).toFixed(1)}s
+Cost: $${subAgentCost.toFixed(4)}
+
+${subAgentFindings}
+
+Continue your research with these sub-agent findings integrated.`;
+
+            console.log(`[${assignment.expertName}] ✓ ${spawnRequest.subAgents.length} sub-agents complete in ${(subAgentDuration / 1000).toFixed(1)}s`);
+
+            continue; // Next iteration with sub-agent results
+          }
+        } catch (parseError) {
+          console.warn(`[${assignment.expertName}] Failed to parse sub-agent spawn request:`, parseError);
+          // Continue anyway
         }
       }
 
@@ -377,7 +477,8 @@ Output your completion JSON immediately with all findings gathered so far.`;
       model: assignment.model,
       cost: totalCost,
       tokensUsed: totalTokens,
-      iterationsUsed: maxIterations
+      iterationsUsed: maxIterations,
+      subAgentsSpawned: subAgentsSpawned > 0 ? subAgentsSpawned : undefined
     };
   } catch (error) {
     console.error(`[${assignment.expertName}] Research failed:`, error);
@@ -400,7 +501,8 @@ Output your completion JSON immediately with all findings gathered so far.`;
       model: assignment.model,
       cost: totalCost,
       tokensUsed: totalTokens,
-      iterationsUsed: iterations
+      iterationsUsed: iterations,
+      subAgentsSpawned: subAgentsSpawned > 0 ? subAgentsSpawned : undefined
     };
   }
 }
