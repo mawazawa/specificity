@@ -23,6 +23,7 @@ import { executeParallelResearch } from '../lib/parallel-executor.ts';
 import { callOpenRouter } from '../lib/openrouter-client.ts';
 import { generateChallenges, executeChallenges, resolveDebates } from '../lib/challenge-generator.ts';
 import { StreamEmitter } from '../lib/stream-emitter.ts';
+import { verifyAllAgents } from '../lib/fact-verifier.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -383,15 +384,45 @@ serve(async (req) => {
 
       console.log(`[Enhanced] Research complete - Cost: $${totalCost.toFixed(4)}, Tokens: ${totalTokens}, Tools: ${totalTools}`);
 
+      // Optional: Verify research findings with fact-checking layer
+      // Only run if findings are substantial (reduces cost for simple queries)
+      let verificationReports = undefined;
+      const hasSubstantialFindings = researchResults.some(r => r.findings.length > 200);
+
+      if (hasSubstantialFindings) {
+        console.log('[FactVerifier] Running fact verification on research findings...');
+        const verifyStartTime = Date.now();
+
+        verificationReports = await verifyAllAgents(
+          researchResults.map(r => ({
+            expertId: r.expertId,
+            expertName: r.expertName,
+            findings: r.findings
+          })),
+          tools
+        );
+
+        const verifyDuration = Date.now() - verifyStartTime;
+        const avgVerificationConfidence = verificationReports.reduce((sum, r) => sum + r.overallConfidence, 0) / verificationReports.length;
+
+        console.log(`[FactVerifier] ✓ Verification complete in ${(verifyDuration/1000).toFixed(1)}s`);
+        console.log(`[FactVerifier]   Avg confidence: ${avgVerificationConfidence.toFixed(1)}%`);
+      }
+
       return new Response(
         JSON.stringify({
           researchResults,
           assignments: balancedAssignments,
+          verificationReports, // Add verification results
           metadata: {
             totalCost,
             totalTokens,
             totalToolsUsed: totalTools,
-            duration: Math.max(...researchResults.map(r => r.duration))
+            duration: Math.max(...researchResults.map(r => r.duration)),
+            factChecked: !!verificationReports,
+            avgFactCheckConfidence: verificationReports
+              ? Math.round(verificationReports.reduce((sum, r) => sum + r.overallConfidence, 0) / verificationReports.length)
+              : undefined
           }
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
