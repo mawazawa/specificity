@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Index Page - Refactored for Performance (November 2025)
  *
@@ -38,7 +39,7 @@ import { MobileHeader } from "@/components/mobile/MobileHeader";
 // Extracted hooks
 import { useAuth } from "@/hooks/useAuth";
 import { useSessionPersistence } from "@/hooks/useSessionPersistence";
-import { useSpecGeneration } from "@/hooks/useSpecGeneration";
+import { useSpecGeneration } from "@/hooks/use-spec-generation";
 
 // Default agent configurations
 const defaultConfigs: AgentConfig[] = [

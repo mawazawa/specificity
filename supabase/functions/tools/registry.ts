@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { BaseTool } from './base-tool.ts';
 import { WebSearchTool } from './web-search-tool.ts';
 import { CompetitorAnalysisTool } from './competitor-analysis-tool.ts';

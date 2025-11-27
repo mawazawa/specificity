@@ -93,7 +93,7 @@ test.describe('Form Validation - User Experience', () => {
     await textarea.fill('Build a mobile fitness'); // 22 chars
     await page.waitForTimeout(100);
 
-    let generateButton = page.locator('[data-spec-input]').locator('button').first();
+    const generateButton = page.locator('[data-spec-input]').locator('button').first();
     let isDisabled = await generateButton.isDisabled();
     expect(isDisabled).toBe(true);
     console.log('✅ Button still disabled at 22 characters');

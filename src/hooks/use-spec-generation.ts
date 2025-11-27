@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * useSpecGeneration Hook - Extracted from Index.tsx
  * State machine for the multi-stage spec generation workflow

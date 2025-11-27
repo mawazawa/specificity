@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Base Tool Interface
  * All tools must extend this base class for auto-discovery and execution

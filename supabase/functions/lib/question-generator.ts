@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { callOpenRouter, retryWithBackoff } from './openrouter-client.ts';
 
 export interface ResearchQuestion {

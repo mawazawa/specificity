@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Challenge Generator - Ray Dalio Style Productive Conflict
  *
@@ -271,8 +272,8 @@ ${research.findings}
 
 Challenges Raised:
 ${relevantChallenges.map((c, idx) =>
-  `${idx + 1}. ${c.challenger}: ${c.challenge}\n   Evidence: ${c.evidenceAgainst.join('; ')}\n   Alternative: ${c.alternativeApproach || 'N/A'}\n   Risk Score: ${c.riskScore}/10`
-).join('\n\n')}
+    `${idx + 1}. ${c.challenger}: ${c.challenge}\n   Evidence: ${c.evidenceAgainst.join('; ')}\n   Alternative: ${c.alternativeApproach || 'N/A'}\n   Risk Score: ${c.riskScore}/10`
+  ).join('\n\n')}
 
 Synthesize these into a stronger position in JSON:
 {

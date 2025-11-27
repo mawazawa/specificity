@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { BaseTool, ToolParameter, ToolResult } from './base-tool.ts';
 
 export class WebSearchTool extends BaseTool {

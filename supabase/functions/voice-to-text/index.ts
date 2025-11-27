@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.75.1';
@@ -28,7 +29,7 @@ const sanitizeError = (error: any) => {
 // Utility: Get user-friendly error message
 const getUserMessage = (error: any): string => {
   const message = error instanceof Error ? error.message : String(error);
-  
+
   if (message.includes('audio') || message.includes('Audio')) {
     return 'Invalid audio format. Please try recording again.';
   }
@@ -44,38 +45,38 @@ const getUserMessage = (error: any): string => {
 // Validate audio file format by magic bytes
 function validateAudioBlob(binaryData: Uint8Array): { valid: boolean; format?: string; error?: string } {
   const magic = binaryData.slice(0, 12);
-  
+
   // WebM: 0x1A 0x45 0xDF 0xA3
   if (magic[0] === 0x1A && magic[1] === 0x45 && magic[2] === 0xDF && magic[3] === 0xA3) {
     return { valid: true, format: 'webm' };
   }
-  
+
   // WAV: 'RIFF' ... 'WAVE'
   if (magic[0] === 0x52 && magic[1] === 0x49 && magic[2] === 0x46 && magic[3] === 0x46 &&
-      magic[8] === 0x57 && magic[9] === 0x41 && magic[10] === 0x56 && magic[11] === 0x45) {
+    magic[8] === 0x57 && magic[9] === 0x41 && magic[10] === 0x56 && magic[11] === 0x45) {
     return { valid: true, format: 'wav' };
   }
-  
+
   // MP3: 0xFF 0xFB or ID3
   if ((magic[0] === 0xFF && (magic[1] & 0xE0) === 0xE0) ||
-      (magic[0] === 0x49 && magic[1] === 0x44 && magic[2] === 0x33)) {
+    (magic[0] === 0x49 && magic[1] === 0x44 && magic[2] === 0x33)) {
     return { valid: true, format: 'mp3' };
   }
-  
+
   // OGG: 'OggS'
   if (magic[0] === 0x4F && magic[1] === 0x67 && magic[2] === 0x67 && magic[3] === 0x53) {
     return { valid: true, format: 'ogg' };
   }
-  
+
   return { valid: false, error: 'Invalid audio format. Supported: WebM, WAV, MP3, OGG' };
 }
 
 // Atomic rate limiting function
 async function checkRateLimit(userId: string, endpoint: string, maxRequests: number = 5): Promise<{ allowed: boolean; remaining: number }> {
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-  
+
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-  
+
   try {
     const { data, error } = await supabase.rpc('check_and_increment_rate_limit', {
       p_user_id: userId,
@@ -89,9 +90,9 @@ async function checkRateLimit(userId: string, endpoint: string, maxRequests: num
       return { allowed: false, remaining: 0 };
     }
 
-    return { 
-      allowed: data.allowed, 
-      remaining: data.remaining 
+    return {
+      allowed: data.allowed,
+      remaining: data.remaining
     };
   } catch (error) {
     console.error('Rate limit exception:', { type: 'rate_limit_exception', user_id: userId });
@@ -118,7 +119,7 @@ serve(async (req) => {
     const token = authHeader.replace('Bearer ', '');
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    
+
     if (authError || !user) {
       return new Response(
         JSON.stringify({ error: 'Invalid authentication' }),
@@ -130,24 +131,24 @@ serve(async (req) => {
     const rateLimit = await checkRateLimit(user.id, 'voice-to-text', 5);
     if (!rateLimit.allowed) {
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           error: 'Rate limit exceeded. You can transcribe up to 5 audio clips per hour. Please try again later.',
-          retryAfter: 3600 
+          retryAfter: 3600
         }),
-        { 
-          status: 429, 
-          headers: { 
-            ...corsHeaders, 
+        {
+          status: 429,
+          headers: {
+            ...corsHeaders,
             'Content-Type': 'application/json',
             'X-RateLimit-Remaining': '0',
             'X-RateLimit-Reset': new Date(Date.now() + 60 * 60 * 1000).toISOString()
-          } 
+          }
         }
       );
     }
 
     const rawBody = await req.json();
-    
+
     // Validate request
     let validated;
     try {
@@ -164,7 +165,7 @@ serve(async (req) => {
     }
 
     const { audio } = validated;
-    
+
     // Validate audio size (max 10MB)
     const sizeEstimate = (audio.length * 3) / 4;
     if (sizeEstimate > 10 * 1024 * 1024) {
@@ -173,7 +174,7 @@ serve(async (req) => {
 
     // Convert base64 to binary
     const binaryAudio = Uint8Array.from(atob(audio), c => c.charCodeAt(0));
-    
+
     // Validate audio format by magic bytes
     const validation = validateAudioBlob(binaryAudio);
     if (!validation.valid) {
@@ -191,7 +192,7 @@ serve(async (req) => {
       mp3: 'audio/mpeg',
       ogg: 'audio/ogg'
     };
-    
+
     // Create form data with correct MIME type
     const formData = new FormData();
     const blob = new Blob([binaryAudio], { type: mimeTypes[validation.format!] });
@@ -212,20 +213,20 @@ serve(async (req) => {
 
     if (!response.ok) {
       console.error('Transcription error:', { type: 'api_error', status: response.status, user_id: user.id });
-      
+
       if (response.status === 429) {
         throw new Error('RATE_LIMIT: External API rate limit');
       }
-      
+
       throw new Error('API request failed');
     }
 
     const result = await response.json();
 
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         text: result.text,
-        remaining: rateLimit.remaining 
+        remaining: rateLimit.remaining
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
