@@ -193,28 +193,36 @@ async function checkRateLimit(userId: string, endpoint: string, maxRequests: num
 }
 
 serve(async (req) => {
+  console.log('[EdgeFunction] Request received:', { method: req.method, url: req.url });
+
   if (req.method === 'OPTIONS') {
+    console.log('[EdgeFunction] CORS preflight request');
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     // Check environment variables
+    console.log('[EdgeFunction] Validating environment variables...');
     if (!validateEnv()) {
-      console.error('Configuration error:', { type: 'missing_env_vars' });
+      console.error('[EdgeFunction] Configuration error: Missing environment variables');
       return new Response(
         JSON.stringify({
           error: 'Service configuration error. Please contact support.',
-          code: 'CONFIG_ERROR'
+          code: 'CONFIG_ERROR',
+          details: 'Required environment variables are not set'
         }),
         { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+    console.log('[EdgeFunction] Environment variables validated successfully');
 
     // Verify authentication
+    console.log('[EdgeFunction] Verifying authentication...');
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
+      console.error('[EdgeFunction] No authorization header provided');
       return new Response(
-        JSON.stringify({ error: 'Authentication required' }),
+        JSON.stringify({ error: 'Authentication required', code: 'AUTH_REQUIRED' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -225,11 +233,14 @@ serve(async (req) => {
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
 
     if (authError || !user) {
+      console.error('[EdgeFunction] Authentication failed:', authError?.message);
       return new Response(
-        JSON.stringify({ error: 'Invalid authentication' }),
+        JSON.stringify({ error: 'Invalid authentication', code: 'AUTH_INVALID' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    console.log('[EdgeFunction] User authenticated:', user.id);
 
     // Check rate limit
     const rateLimit = await checkRateLimit(user.id, 'multi-agent-spec', 5);
@@ -269,6 +280,8 @@ serve(async (req) => {
     }
 
     const { userInput, stage, agentConfigs, roundData, userComment } = validated;
+
+    console.log('[EdgeFunction] Request validated:', { stage, hasUserInput: !!userInput, hasAgentConfigs: !!agentConfigs });
 
     // Check for prompt injection
     if (userInput && detectPromptInjection(userInput)) {
@@ -912,13 +925,29 @@ Use markdown with proper headings, code blocks, tables, and lists. Be EXTRAORDIN
       );
     }
 
-    throw new Error('Invalid stage');
+    // Invalid stage - should never reach here
+    console.error('[EdgeFunction] Invalid stage received:', stage);
+    return new Response(
+      JSON.stringify({
+        error: 'Invalid stage parameter',
+        code: 'INVALID_STAGE',
+        validStages: ['questions', 'research', 'challenge', 'synthesis', 'voting', 'spec']
+      }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
 
   } catch (error) {
-    console.error('Request error:', sanitizeError(error));
+    console.error('[EdgeFunction] Request error:', sanitizeError(error));
+    const errorMessage = getUserMessage(error);
+    const statusCode = error instanceof Error && error.message.includes('Authentication') ? 401 : 500;
+
     return new Response(
-      JSON.stringify({ error: getUserMessage(error) }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({
+        error: errorMessage,
+        code: 'INTERNAL_ERROR',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      }),
+      { status: statusCode, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
