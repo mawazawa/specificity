@@ -1,47 +1,47 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/**
- * Challenge Generator - Ray Dalio Style Productive Conflict
- *
- * Implements "radical truth" by having experts challenge each other's assumptions,
- * stress-test ideas, and explore contrarian viewpoints.
- */
-
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 import { callOpenRouter, retryWithBackoff } from './openrouter-client.ts';
+import { AgentResearchResult } from './parallel-executor.ts';
 
-export interface ChallengeQuestion {
-  id: string;
-  type: 'feasibility' | 'risk' | 'alternative' | 'assumption' | 'vision' | 'cost';
-  question: string;
-  targetFindings: string; // Which research findings this challenges
-  challenger: string; // Expert ID who will challenge
-  priority: number;
-}
+export const ChallengeQuestionSchema = z.object({
+  id: z.string(),
+  type: z.enum(['feasibility', 'risk', 'alternative', 'assumption', 'vision', 'cost']),
+  question: z.string(),
+  targetFindings: z.string(), // Which research findings this challenges
+  challenger: z.string(), // Expert ID who will challenge
+  priority: z.number().int().min(1).max(10),
+});
 
-export interface ChallengeResponse {
-  challengeId: string;
-  challenger: string;
-  challenge: string; // The contrarian argument
-  evidenceAgainst: string[]; // Evidence supporting the challenge
-  alternativeApproach?: string;
-  riskScore: number; // 0-10, how serious is this concern
-  model: string;
-  cost: number;
-}
+export type ChallengeQuestion = z.infer<typeof ChallengeQuestionSchema>;
 
-export interface DebateResolution {
-  originalPosition: string;
-  challenges: string[];
-  resolution: string; // Synthesized position after debate
-  confidenceChange: number; // How much confidence changed (-100 to +100)
-  adoptedAlternatives: string[];
-}
+export const ChallengeResponseSchema = z.object({
+  challengeId: z.string(),
+  challenger: z.string(),
+  challenge: z.string(), // The contrarian argument
+  evidenceAgainst: z.array(z.string()), // Evidence supporting the challenge
+  alternativeApproach: z.string().optional(),
+  riskScore: z.number().int().min(0).max(10), // 0-10, how serious is this concern
+  model: z.string(),
+  cost: z.number(),
+});
+
+export type ChallengeResponse = z.infer<typeof ChallengeResponseSchema>;
+
+export const DebateResolutionSchema = z.object({
+  originalPosition: z.string(),
+  challenges: z.array(z.string()),
+  resolution: z.string(), // Synthesized position after debate
+  confidenceChange: z.number().int().min(-100).max(100), // How much confidence changed (-100 to +100)
+  adoptedAlternatives: z.array(z.string()),
+});
+
+export type DebateResolution = z.infer<typeof DebateResolutionSchema>;
 
 /**
  * Generate challenge questions based on research findings
  * Inspired by Ray Dalio's principle: "Stress test your ideas by having the smartest people challenge them"
  */
 export async function generateChallenges(
-  researchResults: any[],
+  researchResults: AgentResearchResult[],
   userInput: string,
   options: {
     model?: string;
@@ -137,10 +137,12 @@ function assignChallenger(type: string): string {
 /**
  * Execute a challenge - have an expert argue the contrarian position
  */
+import { AgentConfig } from '../multi-agent-spec/lib/types.ts'; // Import AgentConfig
+
 export async function executeChallenges(
   challenges: ChallengeQuestion[],
-  researchResults: any[],
-  agentConfigs: any[]
+  researchResults: AgentResearchResult[],
+  agentConfigs: AgentConfig[]
 ): Promise<ChallengeResponse[]> {
   const responses = await Promise.all(
     challenges.map(challenge => executeChallenge(challenge, researchResults, agentConfigs))
@@ -151,8 +153,8 @@ export async function executeChallenges(
 
 async function executeChallenge(
   challenge: ChallengeQuestion,
-  researchResults: any[],
-  agentConfigs: any[]
+  researchResults: AgentResearchResult[],
+  agentConfigs: AgentConfig[]
 ): Promise<ChallengeResponse> {
   const challenger = agentConfigs.find(a => a.id === challenge.challenger);
   if (!challenger) {
@@ -223,7 +225,7 @@ Be tough but fair. Your job is to IMPROVE the final outcome through productive c
  * Resolve debates - synthesize original position + challenges into stronger position
  */
 export async function resolveDebates(
-  researchResults: any[],
+  researchResults: AgentResearchResult[],
   challenges: ChallengeResponse[],
   options: { model?: string } = {}
 ): Promise<DebateResolution[]> {
@@ -239,7 +241,7 @@ export async function resolveDebates(
 }
 
 async function resolveDebate(
-  research: any,
+  research: AgentResearchResult,
   allChallenges: ChallengeResponse[],
   model: string
 ): Promise<DebateResolution> {

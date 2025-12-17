@@ -1,19 +1,28 @@
-import { ExpertAssignment } from './expert-matcher.ts';
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { ExpertAssignment, ExpertAssignmentSchema } from './expert-matcher.ts';
 import { ToolRegistry } from '../tools/registry.ts';
 import { callOpenRouter, retryWithBackoff } from './openrouter-client.ts';
-import { ResearchQuestion } from './question-generator.ts';
+import { ResearchQuestion, ResearchQuestionSchema } from './question-generator.ts';
 
-export interface AgentResearchResult {
-  expertId: string;
-  expertName: string;
-  questions: ResearchQuestion[];
-  findings: string;
-  toolsUsed: Array<{ tool: string; success: boolean; duration: number }>;
-  duration: number;
-  model: string;
-  cost: number;
-  tokensUsed: number;
-}
+export const ToolUsedSchema = z.object({
+  tool: z.string(),
+  success: z.boolean(),
+  duration: z.number(),
+});
+
+export const AgentResearchResultSchema = z.object({
+  expertId: z.string(),
+  expertName: z.string(),
+  questions: z.array(ResearchQuestionSchema),
+  findings: z.string(),
+  toolsUsed: z.array(ToolUsedSchema),
+  duration: z.number(),
+  model: z.string(),
+  cost: z.number(),
+  tokensUsed: z.number(),
+});
+
+export type AgentResearchResult = z.infer<typeof AgentResearchResultSchema>;
 
 /**
  * Execute all agents in parallel with autonomous tool usage

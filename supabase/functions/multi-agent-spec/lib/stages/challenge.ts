@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { generateChallenges, executeChallenges, resolveDebates } from '../../lib/challenge-generator.ts';
 import { corsHeaders } from '../utils/api.ts';
-import { AgentConfig } from '../types.ts';
+import { AgentConfig, RoundData } from '../types.ts';
 
 export const handleChallengeStage = async (
     agentConfigs: AgentConfig[] | undefined,
-    roundData: any,
+    roundData: RoundData | undefined,
     cleanInput: string
 ) => {
     console.log('[Ray Dalio] Generating contrarian challenges for productive conflict...');

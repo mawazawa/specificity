@@ -1,19 +1,15 @@
-import { ResearchQuestion } from './question-generator.ts';
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { ResearchQuestion, ResearchQuestionSchema } from './question-generator.ts';
+import { AgentConfig, agentConfigSchema } from '../multi-agent-spec/lib/types.ts'; // Import from types.ts
 
-export interface AgentConfig {
-  id: string;
-  agent: string;
-  systemPrompt: string;
-  temperature: number;
-  enabled: boolean;
-}
+export const ExpertAssignmentSchema = z.object({
+  expertId: z.string(),
+  expertName: z.string(),
+  questions: z.array(ResearchQuestionSchema),
+  model: z.string(),
+});
 
-export interface ExpertAssignment {
-  expertId: string;
-  expertName: string;
-  questions: ResearchQuestion[];
-  model: string; // Model selection per expert specialty
-}
+export type ExpertAssignment = z.infer<typeof ExpertAssignmentSchema>;
 
 /**
  * Model selection based on expert specialty (Nov 2025)

@@ -3,10 +3,11 @@ import { assignQuestionsToExperts, balanceWorkload, AgentConfig } from '../../li
 import { executeParallelResearch } from '../../lib/parallel-executor.ts';
 import { corsHeaders } from '../utils/api.ts';
 import { ToolRegistry } from '../../tools/registry.ts';
+import { AgentConfig, RoundData } from '../types.ts';
 
 export const handleResearchStage = async (
     agentConfigs: AgentConfig[] | undefined,
-    roundData: any,
+    roundData: RoundData | undefined,
     cleanInput: string,
     tools: ToolRegistry
 ) => {

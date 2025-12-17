@@ -1,13 +1,15 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { callOpenRouter, retryWithBackoff } from './openrouter-client.ts';
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
-export interface ResearchQuestion {
-  id: string;
-  question: string;
-  domain: 'technical' | 'design' | 'market' | 'legal' | 'growth' | 'security';
-  priority: number; // 1-10
-  requiredExpertise: string[]; // Expert IDs who should answer this
-}
+export const ResearchQuestionSchema = z.object({
+  id: z.string(),
+  question: z.string(),
+  domain: z.enum(['technical', 'design', 'market', 'legal', 'growth', 'security']),
+  priority: z.number().int().min(1).max(10),
+  requiredExpertise: z.array(z.string()),
+});
+
+export type ResearchQuestion = z.infer<typeof ResearchQuestionSchema>;
 
 /**
  * Generate dynamic research questions tailored to user input

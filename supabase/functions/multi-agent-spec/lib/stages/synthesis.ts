@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { callGroq, corsHeaders } from '../utils/api.ts';
+import { RoundData } from '../types.ts';
 
 export const handleSynthesisStage = async (
-    roundData: any,
+    roundData: RoundData | undefined,
     cleanComment: string | undefined,
     groqApiKey: string
 ) => {

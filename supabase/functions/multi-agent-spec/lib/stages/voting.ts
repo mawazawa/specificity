@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { callGroq, corsHeaders } from '../utils/api.ts';
-import { AgentConfig } from '../types.ts';
+import { AgentConfig, RoundData } from '../types.ts';
 
 export const handleVotingStage = async (
     agentConfigs: AgentConfig[] | undefined,
-    roundData: any,
+    roundData: RoundData | undefined,
     groqApiKey: string
 ) => {
     console.log('[Enhanced] Collecting consensus votes...');

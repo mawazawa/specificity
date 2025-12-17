@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { corsHeaders } from '../utils/api.ts';
+import { callGroq } from '../utils/api.ts';
+import { RoundData } from '../types.ts'; // Import RoundData
 
-export const handleSpecStage = async (roundData: any) => {
+export const handleSpecStage = async (roundData: RoundData | undefined) => {
     console.log('[Enhanced] Generating final specification...');
 
     const syntheses = roundData.syntheses || [];
@@ -194,7 +196,7 @@ Include:
 // Re-implementing the call properly
 import { callGroq } from '../utils/api.ts';
 
-export const handleSpecStageComplete = async (roundData: any, groqApiKey: string) => {
+export const handleSpecStageComplete = async (roundData: RoundData | undefined, groqApiKey: string) => {
     const { specPrompt } = await handleSpecStage(roundData);
 
     const spec = await callGroq(

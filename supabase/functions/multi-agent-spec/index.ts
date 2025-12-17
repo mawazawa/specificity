@@ -108,26 +108,6 @@ serve(async (req) => {
 
     console.log('[EdgeFunction] User authenticated:', user.id);
 
-    // Check rate limit
-    const rateLimit = await checkRateLimit(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, user.id, 'multi-agent-spec', 5);
-    if (!rateLimit.allowed) {
-      return new Response(
-        JSON.stringify({
-          error: 'Rate limit exceeded. You can generate up to 5 specifications per hour. Please try again later.',
-          retryAfter: 3600
-        }),
-        {
-          status: 429,
-          headers: {
-            ...corsHeaders,
-            'Content-Type': 'application/json',
-            'X-RateLimit-Remaining': '0',
-            'X-RateLimit-Reset': new Date(Date.now() + 60 * 60 * 1000).toISOString()
-          }
-        }
-      );
-    }
-
     // Parse and validate request
     const rawBody = await req.json();
 
@@ -145,7 +125,35 @@ serve(async (req) => {
       throw error;
     }
 
-    const { userInput, stage, agentConfigs, roundData, userComment } = validated;
+    const { userInput, stage, agentConfigs, roundData, userComment }: {
+      userInput?: string;
+      stage: RequestBody['stage'];
+      agentConfigs?: AgentConfig[];
+      roundData?: RequestBody['roundData'];
+      userComment?: string;
+    } = validated;
+
+    // Check rate limit (count 1 spec generation as the initial "questions" stage)
+    if (stage === 'questions') {
+      const rateLimit = await checkRateLimit(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, user.id, 'multi-agent-spec', 5);
+      if (!rateLimit.allowed) {
+        return new Response(
+          JSON.stringify({
+            error: 'Rate limit exceeded. You can generate up to 5 specifications per hour. Please try again later.',
+            retryAfter: 3600
+          }),
+          {
+            status: 429,
+            headers: {
+              ...corsHeaders,
+              'Content-Type': 'application/json',
+              'X-RateLimit-Remaining': '0',
+              'X-RateLimit-Reset': new Date(Date.now() + 60 * 60 * 1000).toISOString()
+            }
+          }
+        );
+      }
+    }
 
     console.log('[EdgeFunction] Request validated:', { stage, hasUserInput: !!userInput, hasAgentConfigs: !!agentConfigs });
 
