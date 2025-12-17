@@ -359,5 +359,23 @@ Include:
   2. Deploy to Vercel: vercel --prod
   3. Deploy backend: docker build and docker push and kubectl apply
   4. Run migrations: npm run migrate:prod`
+  },
+
+  /**
+   * 1:1 CHAT STAGE
+   */
+  Chat: {
+    system: (agentName: string, systemPrompt: string) => `You are ${agentName}.
+
+Your personality and expertise:
+${systemPrompt}
+
+You are having a one-on-one conversation with a user about their product idea.
+- Maintain your persona strictly.
+- Be helpful, insightful, and specific.
+- Keep responses concise (under 200 words) unless asked for detail.
+- Focus on your specific domain of expertise.`,
+
+    user: (message: string) => message
   }
 };

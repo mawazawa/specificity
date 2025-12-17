@@ -28,6 +28,7 @@ import { handleChallengeStage } from './lib/stages/challenge.ts';
 import { handleSynthesisStage } from './lib/stages/synthesis.ts';
 import { handleVotingStage } from './lib/stages/voting.ts';
 import { handleSpecStageComplete } from './lib/stages/spec.ts';
+import { handleChatStage } from './lib/stages/chat.ts';
 
 const GROQ_API_KEY = Deno.env.get('GROQ_API_KEY');
 const EXA_API_KEY = Deno.env.get('EXA_API_KEY');
@@ -125,12 +126,13 @@ serve(async (req) => {
       throw error;
     }
 
-    const { userInput, stage, agentConfigs, roundData, userComment }: {
+    const { userInput, stage, agentConfigs, roundData, userComment, targetAgent }: {
       userInput?: string;
       stage: RequestBody['stage'];
       agentConfigs?: AgentConfig[];
       roundData?: RequestBody['roundData'];
       userComment?: string;
+      targetAgent?: string;
     } = validated;
 
     // Check rate limit (count 1 spec generation as the initial "questions" stage)
@@ -232,6 +234,13 @@ serve(async (req) => {
     // ========================================
     if (stage === 'spec') {
       return await handleSpecStageComplete(roundData, GROQ_API_KEY!);
+    }
+
+    // ========================================
+    // STAGE 6: 1:1 CHAT
+    // ========================================
+    if (stage === 'chat') {
+      return await handleChatStage(agentConfigs, targetAgent, cleanInput);
     }
 
     // Fallback for unknown stage

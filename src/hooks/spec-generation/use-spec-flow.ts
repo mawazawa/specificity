@@ -471,6 +471,35 @@ export function useSpecFlow({ agentConfigs }: UseSpecFlowProps) {
     setError(null);
   }, [resetSession, resetDialogue, resetTasks]);
 
+  const chatWithAgent = useCallback(async (agentId: string, message: string) => {
+    // Add user message to dialogue
+    addDialogue({
+      agent: 'user',
+      message: message,
+      timestamp: new Date().toISOString(),
+      type: 'user'
+    });
+
+    try {
+      const response = await api.chatWithAgent(agentConfigs, agentId, message);
+      
+      // Add agent response to dialogue
+      addDialogue({
+        agent: response.agent as any,
+        message: response.response,
+        timestamp: response.timestamp,
+        type: 'discussion' // or a new 'chat' type if we defined it
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Chat error:', error);
+      const { title, message: errorMsg } = parseError(error);
+      toast({ title, description: errorMsg, variant: 'destructive' });
+      return false;
+    }
+  }, [agentConfigs, addDialogue, parseError, toast]);
+
   return {
     isProcessing,
     currentStage,
@@ -482,6 +511,7 @@ export function useSpecFlow({ agentConfigs }: UseSpecFlowProps) {
     startGeneration,
     pause,
     resume,
-    reset
+    reset,
+    chatWithAgent
   };
 }

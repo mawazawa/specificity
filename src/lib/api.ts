@@ -105,5 +105,18 @@ export const api = {
         debateResolutions
       }
     });
+  },
+
+  chatWithAgent: async (
+    agentConfigs: AgentConfig[],
+    targetAgent: string,
+    message: string
+  ) => {
+    return invokeFunction<{ response: string; agent: string; timestamp: string }>('multi-agent-spec', {
+      stage: 'chat',
+      agentConfigs,
+      targetAgent,
+      userInput: message
+    });
   }
 };

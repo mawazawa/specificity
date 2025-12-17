@@ -20,6 +20,7 @@ interface ChatViewProps {
   onPause: () => void;
   onResume: (message?: string) => void;
   isProcessing: boolean;
+  onChatWithAgent?: (agentId: string, message: string) => Promise<boolean>;
 }
 
 export const ChatView = ({ 
@@ -27,9 +28,11 @@ export const ChatView = ({
   isPaused, 
   onPause, 
   onResume,
-  isProcessing 
+  isProcessing,
+  onChatWithAgent
 }: ChatViewProps) => {
   const [selectedMentor, setSelectedMentor] = useState<AgentType | null>(null);
+  const [activeChatAgent, setActiveChatAgent] = useState<AgentType | null>(null);
 
   useEffect(() => {
     // Auto-scroll to bottom when new messages arrive - using a small delay to ensure DOM is updated
@@ -43,7 +46,11 @@ export const ChatView = ({
   }, [entries]);
 
   const handleSend = (message: string) => {
-    onResume(message);
+    if (activeChatAgent && onChatWithAgent) {
+      onChatWithAgent(activeChatAgent, message);
+    } else {
+      onResume(message);
+    }
   };
 
   const handleAvatarClick = (agent: AgentType) => {
@@ -52,6 +59,21 @@ export const ChatView = ({
 
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)] md:h-[calc(100vh-12rem)]">
+      {/* Active Chat Banner */}
+      {activeChatAgent && (
+        <div className="bg-primary/10 border-b border-primary/20 p-2 px-4 flex items-center justify-between animate-in slide-in-from-top-2">
+          <span className="text-sm font-medium text-primary">
+            Talking to {mentorProfiles[activeChatAgent]?.name}
+          </span>
+          <button 
+            onClick={() => setActiveChatAgent(null)}
+            className="text-xs hover:underline opacity-70 hover:opacity-100"
+          >
+            Exit 1:1 Chat
+          </button>
+        </div>
+      )}
+
       {/* Messages Area */}
       <ScrollArea className="flex-1 px-4 md:px-6">
         <div className="max-w-4xl mx-auto py-6 space-y-2">
@@ -93,6 +115,8 @@ export const ChatView = ({
         onPause={onPause}
         onResume={() => onResume()}
         isProcessing={isProcessing}
+        placeholder={activeChatAgent ? `Message ${mentorProfiles[activeChatAgent]?.name}...` : undefined}
+        mode={activeChatAgent ? 'direct' : 'round'}
       />
 
       {/* Mentor Contact Card */}
@@ -102,8 +126,7 @@ export const ChatView = ({
           isOpen={!!selectedMentor}
           onClose={() => setSelectedMentor(null)}
           onStartChat={(agent) => {
-            // TODO: Implement 1:1 chat
-            console.log('Start 1:1 chat with', agent);
+            setActiveChatAgent(agent);
             setSelectedMentor(null);
           }}
         />

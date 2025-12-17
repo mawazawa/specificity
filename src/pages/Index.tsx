@@ -73,7 +73,8 @@ const Index = () => {
     dialogueEntries,
     startGeneration,
     pause,
-    resume
+    resume,
+    chatWithAgent
   } = useSpecFlow({ agentConfigs });
 
   // Session persistence (debounced localStorage)
@@ -194,6 +195,7 @@ const Index = () => {
             setIsDialogueOpen={setIsDialogueOpen}
             onPause={pause}
             onResume={resume}
+            onChatWithAgent={chatWithAgent}
           />
         )}
       </div>
@@ -283,6 +285,7 @@ interface ActiveSessionContentProps {
   setIsDialogueOpen: (open: boolean) => void;
   onPause: () => void;
   onResume: (comment?: string) => void;
+  onChatWithAgent: (agentId: string, message: string) => Promise<boolean>;
 }
 
 const ActiveSessionContent = ({
@@ -300,7 +303,8 @@ const ActiveSessionContent = ({
   isDialogueOpen,
   setIsDialogueOpen,
   onPause,
-  onResume
+  onResume,
+  onChatWithAgent
 }: ActiveSessionContentProps) => {
   const { toast } = useToast();
 
@@ -337,6 +341,7 @@ const ActiveSessionContent = ({
           onPause={onPause}
           onResume={onResume}
           isProcessing={isProcessing}
+          onChatWithAgent={onChatWithAgent}
         />
       ) : (
         <PanelsView

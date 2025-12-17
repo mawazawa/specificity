@@ -4,9 +4,9 @@
 
 ### Scores & Assessment
 - **Design Score**: 8.5/10 (Premium UI implemented)
-- **UXO (User Experience Optimization)**: 7/10
-- **USDS (Surprise & Delight)**: 6/10
-- **UC (User-Centricity)**: 7/10
+- **UXO (User Experience Optimization)**: 7.5/10 (1:1 Chat added)
+- **USDS (Surprise & Delight)**: 7/10 (Direct mentorship)
+- **UC (User-Centricity)**: 8/10 (Personalized guidance)
 - **Target**: 9.5+/10 across all metrics
 
 ---
@@ -164,6 +164,7 @@
 - [x] ✅ Create custom agent configuration UI
 - [ ] [P] Add "Fork this spec" for iterations
 - [ ] Implement comments/annotations on spec sections
+- [x] ✅ Implement 1:1 Chat with Experts (High Impact Feature)
 - [ ] Add team collaboration (invite, review, approve)
 
 ### 4.2 Transparency & Trust
@@ -270,12 +271,11 @@
 
 ## 🎯 Next Steps (Immediate)
 
-1. **Implement 1:1 Chat Feature** (High Priority)
-2. **Onboarding Flow** (Interactive tutorial)
-3. **Spec Export** (PDF/Markdown)
-4. **Visual Diff View** for iterations
+1. **Onboarding Flow** (Interactive tutorial)
+2. **Spec Export** (PDF/Markdown)
+3. **Visual Diff View** for iterations
 
 ---
 
 **Last Updated**: 2025-12-17
-**Status**: UX Optimization Phase - Refactoring Complete
+**Status**: UX Optimization Phase - 1:1 Chat Implemented

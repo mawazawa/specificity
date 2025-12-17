@@ -155,7 +155,8 @@ export const requestSchema = z.object({
         .min(1, 'Input required')
         .max(5000, 'Input too long')
         .optional(),
-    stage: z.enum(['questions', 'research', 'challenge', 'synthesis', 'voting', 'spec']),
+    stage: z.enum(['questions', 'research', 'challenge', 'synthesis', 'voting', 'spec', 'chat']),
+    targetAgent: z.string().optional(),
     userComment: z.string().max(1000).optional(),
     agentConfigs: z.array(agentConfigSchema).optional(),
     roundData: roundDataSchema.optional(),
