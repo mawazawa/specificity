@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { callGroq, corsHeaders } from '../utils/api.ts';
 import { RoundData } from '../types.ts';
-import { Prompts } from '../../../lib/prompts.ts';
+import { renderPrompt } from '../../../lib/prompt-service.ts';
 
 export const handleSynthesisStage = async (
     roundData: RoundData | undefined,
@@ -33,7 +33,13 @@ export const handleSynthesisStage = async (
         const debateContext = debateResolution ?
             `\n\n**DEBATE-TESTED POSITION** (Ray Dalio productive conflict):\n${debateResolution.resolution}\n\nChallenges addressed: ${debateResolution.challenges.join('; ')}\nConfidence change: ${debateResolution.confidenceChange > 0 ? '+' : ''}${debateResolution.confidenceChange}%\nAdopted alternatives: ${debateResolution.adoptedAlternatives.join(', ') || 'None'}` : '';
 
-        const prompt = Prompts.Synthesis.user(result.findings, toolsContext, debateContext, userGuidance);
+        // Load synthesis stage prompt from database
+        const prompt = await renderPrompt('synthesis_stage', {
+            findings: result.findings,
+            toolsContext,
+            debateContext,
+            userGuidance
+        });
 
         const response = await callGroq(
             groqApiKey,

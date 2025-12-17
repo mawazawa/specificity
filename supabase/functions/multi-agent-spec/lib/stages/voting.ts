@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { callGroq, corsHeaders } from '../utils/api.ts';
 import { AgentConfig, RoundData } from '../types.ts';
-import { Prompts } from '../../../lib/prompts.ts';
+import { renderPrompt } from '../../../lib/prompt-service.ts';
 
 export const handleVotingStage = async (
     agentConfigs: AgentConfig[] | undefined,
@@ -25,7 +25,8 @@ export const handleVotingStage = async (
             `${s.expertName}: ${s.synthesis.slice(0, 300)}...`
         ).join('\n\n');
 
-        const votePrompt = Prompts.Voting.user(synthesesSummary);
+        // Load voting stage prompt from database
+        const votePrompt = await renderPrompt('voting_stage', { synthesesSummary });
 
         const response = await callGroq(
             groqApiKey,

@@ -3,7 +3,7 @@ import { ExpertAssignment, ExpertAssignmentSchema } from './expert-matcher.ts';
 import { ToolRegistry } from '../tools/registry.ts';
 import { callOpenRouter, retryWithBackoff } from './openrouter-client.ts';
 import { ResearchQuestion, ResearchQuestionSchema } from './question-generator.ts';
-import { Prompts } from './prompts.ts';
+import { renderPrompt } from './prompt-service.ts';
 
 export const ToolUsedSchema = z.object({
   tool: z.string(),
@@ -80,11 +80,12 @@ async function executeAgentAssignment(
     .map((q, idx) => `${idx + 1}. ${q.question}`)
     .join('\n');
 
-  const systemPrompt = Prompts.Research.system(
-    assignment.expertName,
+  // Load research stage prompt from database
+  const systemPrompt = await renderPrompt('research_stage', {
+    expertName: assignment.expertName,
     taskDescription,
-    tools.getPromptDescription()
-  );
+    toolsDescription: tools.getPromptDescription()
+  });
 
   let conversationHistory = `Product Idea: ${context.userInput}\n\nRound: ${context.roundNumber}\n\nBegin your research.`;
   let iterations = 0;

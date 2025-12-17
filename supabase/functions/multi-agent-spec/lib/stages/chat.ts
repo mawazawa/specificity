@@ -1,7 +1,7 @@
 import { corsHeaders } from '../utils/api.ts';
 import { AgentConfig } from '../types.ts';
 import { callOpenRouter } from '../../lib/openrouter-client.ts';
-import { Prompts } from '../../lib/prompts.ts';
+import { renderPrompt } from '../../lib/prompt-service.ts';
 
 export const handleChatStage = async (
     agentConfigs: AgentConfig[] | undefined,
@@ -37,8 +37,10 @@ export const handleChatStage = async (
     }
 
     try {
-        const systemPrompt = Prompts.Chat.system(agentConfig.agent, agentConfig.systemPrompt);
-        const userPrompt = Prompts.Chat.user(message);
+        // Load agent prompt from database based on agent ID
+        const agentPromptName = `agent_${agentConfig.id}`;
+        const systemPrompt = await renderPrompt(agentPromptName, {});
+        const userPrompt = message;
 
         // Determine model based on agent type (similar to expert-matcher logic)
         // For simplicity, we can default to a good chat model or map it if needed.
