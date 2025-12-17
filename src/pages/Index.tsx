@@ -35,6 +35,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChatView, ChatEntry } from "@/components/chat/ChatView";
 import { MobileHeader } from "@/components/mobile/MobileHeader";
+import { OnboardingOverlay } from "@/components/Onboarding/OnboardingOverlay";
 
 // Extracted hooks
 import { useAuth } from "@/hooks/useAuth";
@@ -58,6 +59,18 @@ const Index = () => {
   const [viewMode, setViewMode] = useState<'chat' | 'panels'>('chat');
   const [inputValue, setInputValue] = useState<string>("");
   const [isDialogueOpen, setIsDialogueOpen] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    // Only show on client side
+    if (typeof window !== 'undefined') {
+      return !localStorage.getItem("specificity.hasSeenOnboarding");
+    }
+    return false;
+  });
+
+  const handleOnboardingComplete = useCallback(() => {
+    localStorage.setItem("specificity.hasSeenOnboarding", "true");
+    setShowOnboarding(false);
+  }, []);
 
   const { toast } = useToast();
 
@@ -199,6 +212,8 @@ const Index = () => {
           />
         )}
       </div>
+
+      <OnboardingOverlay open={showOnboarding} onComplete={handleOnboardingComplete} />
     </div>
   );
 };
