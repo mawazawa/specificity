@@ -472,6 +472,88 @@ export function useSpecFlow({ agentConfigs }: UseSpecFlowProps) {
     setError(null);
   }, [resetSession, resetDialogue, resetTasks]);
 
+  const startRefinement = useCallback(async (input: string) => {
+    resetSession();
+    resetDialogue();
+    resetTasks();
+    setIsProcessing(true);
+    setCurrentStage('refinement');
+    startSession();
+
+    addDialogue({
+      agent: 'user',
+      message: input,
+      timestamp: new Date().toISOString(),
+      type: 'user'
+    });
+
+    try {
+      // Find a suitable agent for PM role (Steve or first enabled)
+      const pmAgent = agentConfigs.find(c => c.enabled && c.agent === 'steve') || 
+                      agentConfigs.find(c => c.enabled) || 
+                      agentConfigs[0];
+
+      if (!pmAgent) throw new Error("No agents available");
+
+      const prompt = `I have a product idea: "${input}". 
+      
+      Act as a Senior Product Manager. Your goal is to refine this idea into a solid spec.
+      I want you to ask me the **single most important** clarifying question to define the scope right now.
+      
+      Format your response exactly like this:
+      **Question:** [The question]
+      **Context:** [Why this matters]
+      
+      **Options:**
+      A) [Option A]
+      B) [Option B]
+      C) [Option C]
+      D) [Option D - "Something else" / Custom]
+      
+      **Recommendation:** I recommend [Option] because [Reason].
+      
+      Do not ask multiple questions. Ask only one.`;
+      
+      const response = await api.chatWithAgent(agentConfigs, pmAgent.agent, prompt);
+      
+      addDialogue({
+        agent: pmAgent.agent as any,
+        message: response.response,
+        timestamp: response.timestamp,
+        type: 'question'
+      });
+      
+      setIsProcessing(false);
+    } catch (error) {
+      console.error('Refinement failed:', error);
+      const { title, message } = parseError(error);
+      toast({ title, description: message, variant: 'destructive' });
+      setError(message);
+      setIsProcessing(false);
+    }
+  }, [agentConfigs, resetSession, resetDialogue, resetTasks, startSession, addDialogue, parseError, toast]);
+
+  const proceedToGeneration = useCallback(async () => {
+    setIsProcessing(true);
+    setCurrentStage('questions');
+    
+    // Aggregate context from the dialogue
+    const fullContext = dialogueEntries
+      .map(e => `${e.agent.toUpperCase()}: ${e.message}`)
+      .join('\n\n');
+      
+    try {
+      await runRound(fullContext, 1);
+    } catch (error) {
+      console.error('Spec generation failed:', error);
+      const { title, message } = parseError(error);
+      toast({ title, description: message, variant: 'destructive' });
+      setError(message);
+      setIsProcessing(false);
+      setCurrentStage('error');
+    }
+  }, [dialogueEntries, runRound, parseError, toast]);
+
   const chatWithAgent = useCallback(async (agentId: string, message: string) => {
     // Add user message to dialogue
     addDialogue({
