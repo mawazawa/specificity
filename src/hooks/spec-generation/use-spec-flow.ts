@@ -8,6 +8,7 @@ import { AgentConfig, Round } from '@/types/spec';
 
 export type GenerationStage =
   | 'idle'
+  | 'refinement'
   | 'questions'
   | 'research'
   | 'challenge'
@@ -509,6 +510,8 @@ export function useSpecFlow({ agentConfigs }: UseSpecFlowProps) {
     dialogueEntries,
     error,
     startGeneration,
+    startRefinement,
+    proceedToGeneration,
     pause,
     resume,
     reset,

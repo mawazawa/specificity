@@ -21,6 +21,8 @@ interface ChatViewProps {
   onResume: (message?: string) => void;
   isProcessing: boolean;
   onChatWithAgent?: (agentId: string, message: string) => Promise<boolean>;
+  currentStage?: string;
+  onProceedToGeneration?: () => void;
 }
 
 export const ChatView = ({ 
@@ -29,7 +31,9 @@ export const ChatView = ({
   onPause, 
   onResume,
   isProcessing,
-  onChatWithAgent
+  onChatWithAgent,
+  currentStage,
+  onProceedToGeneration
 }: ChatViewProps) => {
   const [selectedMentor, setSelectedMentor] = useState<AgentType | null>(null);
   const [activeChatAgent, setActiveChatAgent] = useState<AgentType | null>(null);
@@ -104,6 +108,23 @@ export const ChatView = ({
                 onAvatarClick={handleAvatarClick}
               />
             ))
+          )}
+          
+          {/* Refinement Generate Button */}
+          {currentStage === 'refinement' && !isProcessing && onProceedToGeneration && (
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex justify-center pt-6 pb-2"
+            >
+              <Button 
+                onClick={onProceedToGeneration}
+                size="lg"
+                className="rounded-full bg-gradient-to-r from-primary to-accent hover:shadow-lg transition-all"
+              >
+                Start Expert Panel Analysis
+              </Button>
+            </motion.div>
           )}
         </div>
       </ScrollArea>
