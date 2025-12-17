@@ -11,7 +11,7 @@
  */
 
 import { useReducer, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import type { AgentConfig, SessionState, Round, HistoryEntryData } from '@/types/spec';
 import type { DialogueEntry } from '@/components/DialoguePanel';
@@ -304,14 +304,7 @@ export const useSpecGeneration = ({
       });
 
       const questionsStartTime = Date.now();
-      const { data: questionsData, error: questionsError } = await supabase.functions.invoke(
-        'multi-agent-spec',
-        { body: { userInput: input, stage: 'questions' } }
-      );
-
-      if (questionsError) {
-        throw new Error(questionsError.message || 'Failed to generate questions');
-      }
+      const questionsData = await api.generateQuestions(input);
 
       const questionsDuration = Date.now() - questionsStartTime;
       round.questions = questionsData.questions || [];
@@ -349,23 +342,7 @@ export const useSpecGeneration = ({
       });
 
       const researchStartTime = Date.now();
-      const { data: researchData, error: researchError } = await supabase.functions.invoke(
-        'multi-agent-spec',
-        {
-          body: {
-            stage: 'research',
-            agentConfigs,
-            roundData: {
-              questions: round.questions,
-              roundNumber
-            }
-          }
-        }
-      );
-
-      if (researchError) {
-        throw new Error(researchError.message || 'Failed to conduct research');
-      }
+      const researchData = await api.conductResearch(agentConfigs, round.questions, roundNumber);
 
       const researchDuration = Date.now() - researchStartTime;
       round.research = researchData.researchResults || [];
@@ -423,23 +400,7 @@ export const useSpecGeneration = ({
       });
 
       const challengeStartTime = Date.now();
-      const { data: challengeData, error: challengeError } = await supabase.functions.invoke(
-        'multi-agent-spec',
-        {
-          body: {
-            stage: 'challenge',
-            agentConfigs,
-            roundData: {
-              researchResults: round.research,
-              roundNumber
-            }
-          }
-        }
-      );
-
-      if (challengeError) {
-        throw new Error(challengeError.message || 'Failed to execute challenges');
-      }
+      const challengeData = await api.runChallenge(agentConfigs, round.research, roundNumber);
 
       const challengeDuration = Date.now() - challengeStartTime;
       round.challenges = challengeData.challenges || [];
@@ -509,24 +470,16 @@ export const useSpecGeneration = ({
       });
 
       const synthesisStartTime = Date.now();
-      const { data: synthesisData, error: synthesisError } = await supabase.functions.invoke(
-        'multi-agent-spec',
-        {
-          body: {
-            stage: 'synthesis',
-            agentConfigs,
-            roundData: {
-              researchResults: round.research,
-              debateResolutions: round.debateResolutions,
-              roundNumber
-            },
-            userComment
-          }
-        }
+      const synthesisData = await api.synthesizeFindings(
+        agentConfigs,
+        round.research,
+        round.debateResolutions,
+        roundNumber,
+        userComment
       );
 
-      if (synthesisError) {
-        throw new Error(synthesisError.message || 'Failed to synthesize research');
+      if (!synthesisData.syntheses) {
+        throw new Error('Failed to synthesize research');
       }
 
       const synthesisDuration = Date.now() - synthesisStartTime;
@@ -563,14 +516,7 @@ export const useSpecGeneration = ({
       );
 
       const votingStartTime = Date.now();
-      const { data: votesData, error: votesError } = await supabase.functions.invoke(
-        'multi-agent-spec',
-        { body: { stage: 'voting', agentConfigs, roundData: { syntheses: synthesisData.syntheses } } }
-      );
-
-      if (votesError) {
-        throw new Error(votesError.message || 'Failed to collect votes');
-      }
+      const votesData = await api.collectVotes(agentConfigs, synthesisData.syntheses);
 
       const votingDuration = Date.now() - votingStartTime;
       voteTaskIds.forEach(id => updateTask(id, { status: 'complete', duration: votingDuration / voteTaskIds.length }));
@@ -613,24 +559,12 @@ export const useSpecGeneration = ({
         const specTaskId = addTask({ type: 'answer', description: 'Synthesizing specification', status: 'running' });
 
         const specStartTime = Date.now();
-        const { data: specData, error: specError } = await supabase.functions.invoke(
-          'multi-agent-spec',
-          {
-            body: {
-              stage: 'spec',
-              roundData: {
-                syntheses: synthesisData.syntheses,
-                votes: round.votes,
-                researchResults: round.research,
-                debateResolutions: round.debateResolutions || []
-              }
-            }
-          }
+        const specData = await api.generateSpec(
+          synthesisData.syntheses,
+          round.votes,
+          round.research,
+          round.debateResolutions || []
         );
-
-        if (specError) {
-          throw new Error(specError.message || 'Failed to generate specification');
-        }
 
         const specDuration = Date.now() - specStartTime;
         updateTask(specTaskId, { status: 'complete', duration: specDuration });

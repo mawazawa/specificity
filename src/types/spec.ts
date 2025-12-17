@@ -1,52 +1,39 @@
-export type AgentType = 'elon' | 'steve' | 'oprah' | 'zaha' | 'jony' | 'bartlett' | 'amal';
+import {
+  ResearchQuestion,
+  AgentResearchResult,
+  ChallengeQuestion,
+  ChallengeResponse,
+  DebateResolution as SchemaDebateResolution,
+  ExpertSynthesis,
+  ExpertVote
+} from './schemas';
+
+export type AgentType = 'elon' | 'steve' | 'oprah' | 'zaha' | 'jony' | 'bartlett' | 'amal' | 'user' | 'system';
 
 export interface AgentConfig {
-  agent: AgentType;
+  agent: string; // broadened from AgentType to allow dynamic agents
+  id?: string;
   systemPrompt: string;
   temperature: number;
   enabled: boolean;
 }
 
 export interface AgentPerspective {
-  agent: AgentType;
+  agent: string;
   thinking: string;
   response: string;
   reasoning: string;
   status: 'thinking' | 'complete' | 'idle';
 }
 
-export interface Vote {
-  agent: AgentType;
-  approved: boolean;
-  reasoning: string;
-  timestamp: string;
-  confidence?: number;
-}
-
-export interface Challenge {
-  id: string;
-  question: string;
-  challenger: AgentType;
-  target: AgentType;
-  riskScore: number;
-}
-
-export interface ChallengeResponse {
-  id: string;
-  challengeId: string;
-  challenger: AgentType;
-  challenge: string;
-  evidenceAgainst: string[];
-  alternativeApproach?: string;
-  riskScore: number;
-  cost: number;
-}
-
-export interface DebateResolution {
-  resolution: string;
-  confidenceChange: number;
-  adoptedAlternatives: string[];
-}
+// Re-export or alias schema types for UI compatibility
+export type Vote = ExpertVote;
+export type Challenge = ChallengeQuestion;
+export type { ChallengeResponse };
+export type DebateResolution = SchemaDebateResolution;
+export type AgentAnswer = ExpertSynthesis;
+export type ResearchResult = AgentResearchResult;
+export type SpecQuestion = ResearchQuestion;
 
 export interface Round {
   roundNumber: number;
@@ -60,27 +47,6 @@ export interface Round {
   votes: Vote[];
   status: 'in-progress' | 'complete' | 'paused';
   userComment?: string;
-}
-
-export interface AgentAnswer {
-  agent: AgentType;
-  question: string;
-  answer: string;
-  reasoning: string;
-}
-
-export interface ResearchResult {
-  title: string;
-  url: string;
-  snippet: string;
-  relevance: number;
-}
-
-export interface SpecQuestion {
-  question: string;
-  context: string;
-  importance: 'critical' | 'high' | 'medium' | 'low';
-  askedBy: AgentType;
 }
 
 export interface TechAlternative {
@@ -105,8 +71,8 @@ export interface SpecOutput {
   dependencies: string[];
   risks: string[];
   testStrategy: string[];
-  approvedBy: AgentType[];
-  dissentedBy: AgentType[];
+  approvedBy: string[];
+  dissentedBy: string[];
 }
 
 export interface SpecSection {
