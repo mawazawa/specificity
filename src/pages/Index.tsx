@@ -39,7 +39,7 @@ import { MobileHeader } from "@/components/mobile/MobileHeader";
 // Extracted hooks
 import { useAuth } from "@/hooks/useAuth";
 import { useSessionPersistence } from "@/hooks/useSessionPersistence";
-import { useSpecGeneration } from "@/hooks/use-spec-generation";
+import { useSpecFlow } from "@/hooks/spec-generation/use-spec-flow";
 
 // Default agent configurations
 const defaultConfigs: AgentConfig[] = [
@@ -74,7 +74,7 @@ const Index = () => {
     startGeneration,
     pause,
     resume
-  } = useSpecGeneration({ agentConfigs });
+  } = useSpecFlow({ agentConfigs });
 
   // Session persistence (debounced localStorage)
   const { hydratedData, isHydrated } = useSessionPersistence({

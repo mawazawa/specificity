@@ -1,22 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/**
- * useSpecGeneration Hook - Extracted from Index.tsx
- * State machine for the multi-stage spec generation workflow
- *
- * Performance improvements:
- * - useReducer instead of multiple useState (single render per dispatch)
- * - Memoized handlers with useCallback
- * - Centralized stage logic (was 440 lines in runRound)
- * - Predictable state transitions
- */
-
-import { useReducer, useCallback } from 'react';
+import { useState, useCallback } from 'react';
+import { useTasks } from './use-tasks';
+import { useDialogue } from './use-dialogue';
+import { useSession } from './use-session';
 import { api } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
-import type { AgentConfig, SessionState, Round, HistoryEntryData } from '@/types/spec';
-import type { DialogueEntry } from '@/components/DialoguePanel';
+import { AgentConfig, Round } from '@/types/spec';
 
-// Stage type for the state machine
 export type GenerationStage =
   | 'idle'
   | 'questions'
@@ -28,227 +17,31 @@ export type GenerationStage =
   | 'complete'
   | 'error';
 
-// Task type for tracking async operations
-interface Task {
-  id: string;
-  type: 'question' | 'research' | 'answer' | 'vote';
-  agent?: string;
-  description: string;
-  status: 'pending' | 'running' | 'complete';
-  duration?: number;
-  result?: unknown;
-}
-
-// State interface
-interface GenerationState {
-  isProcessing: boolean;
-  currentStage: GenerationStage;
-  sessionState: SessionState;
-  tasks: Task[];
-  generatedSpec: string;
-  dialogueEntries: DialogueEntry[];
-  error: string | null;
-}
-
-// Action types
-type GenerationAction =
-  | { type: 'START_GENERATION' }
-  | { type: 'SET_STAGE'; payload: GenerationStage }
-  | { type: 'ADD_ROUND'; payload: Round }
-  | { type: 'UPDATE_ROUND'; payload: Round }
-  | { type: 'ADD_TASK'; payload: Task }
-  | { type: 'UPDATE_TASK'; payload: { id: string; updates: Partial<Task> } }
-  | { type: 'ADD_DIALOGUE'; payload: DialogueEntry }
-  | { type: 'ADD_DIALOGUES'; payload: DialogueEntry[] }
-  | { type: 'SET_SPEC'; payload: string }
-  | { type: 'ADD_HISTORY'; payload: { type: 'vote' | 'output' | 'spec' | 'user-comment'; data: HistoryEntryData } }
-  | { type: 'SET_PAUSED'; payload: boolean }
-  | { type: 'SET_ERROR'; payload: string }
-  | { type: 'GENERATION_COMPLETE' }
-  | { type: 'RESET' };
-
-// Initial state
-const initialState: GenerationState = {
-  isProcessing: false,
-  currentStage: 'idle',
-  sessionState: {
-    rounds: [],
-    currentRound: 0,
-    isPaused: false,
-    history: []
-  },
-  tasks: [],
-  generatedSpec: '',
-  dialogueEntries: [],
-  error: null
-};
-
-// Reducer function
-function generationReducer(state: GenerationState, action: GenerationAction): GenerationState {
-  switch (action.type) {
-    case 'START_GENERATION':
-      return {
-        ...initialState,
-        isProcessing: true,
-        currentStage: 'questions'
-      };
-
-    case 'SET_STAGE':
-      return {
-        ...state,
-        currentStage: action.payload
-      };
-
-    case 'ADD_ROUND':
-      return {
-        ...state,
-        sessionState: {
-          ...state.sessionState,
-          rounds: [...state.sessionState.rounds, action.payload],
-          currentRound: state.sessionState.rounds.length
-        }
-      };
-
-    case 'UPDATE_ROUND': {
-      const rounds = [...state.sessionState.rounds];
-      rounds[rounds.length - 1] = action.payload;
-      return {
-        ...state,
-        sessionState: { ...state.sessionState, rounds }
-      };
-    }
-
-    case 'ADD_TASK': {
-      return {
-        ...state,
-        tasks: [...state.tasks, action.payload]
-      };
-    }
-
-    case 'UPDATE_TASK': {
-      return {
-        ...state,
-        tasks: state.tasks.map(t =>
-          t.id === action.payload.id ? { ...t, ...action.payload.updates } : t
-        )
-      };
-    }
-
-    case 'ADD_DIALOGUE':
-      return {
-        ...state,
-        dialogueEntries: [...state.dialogueEntries, action.payload]
-      };
-
-    case 'ADD_DIALOGUES':
-      return {
-        ...state,
-        dialogueEntries: [...state.dialogueEntries, ...action.payload]
-      };
-
-    case 'SET_SPEC':
-      return {
-        ...state,
-        generatedSpec: action.payload
-      };
-
-    case 'ADD_HISTORY':
-      return {
-        ...state,
-        sessionState: {
-          ...state.sessionState,
-          history: [
-            ...state.sessionState.history,
-            {
-              timestamp: new Date().toISOString(),
-              type: action.payload.type,
-              data: action.payload.data
-            }
-          ]
-        }
-      };
-
-    case 'SET_PAUSED':
-      return {
-        ...state,
-        sessionState: {
-          ...state.sessionState,
-          isPaused: action.payload
-        }
-      };
-
-    case 'SET_ERROR':
-      return {
-        ...state,
-        isProcessing: false,
-        currentStage: 'error',
-        error: action.payload
-      };
-
-    case 'GENERATION_COMPLETE':
-      return {
-        ...state,
-        isProcessing: false,
-        currentStage: 'complete'
-      };
-
-    case 'RESET':
-      return initialState;
-
-    default:
-      return state;
-  }
-}
-
-// Hook interface
-interface UseSpecGenerationProps {
+interface UseSpecFlowProps {
   agentConfigs: AgentConfig[];
 }
 
-interface UseSpecGenerationReturn {
-  state: GenerationState;
-  startGeneration: (input: string) => Promise<void>;
-  pause: () => void;
-  resume: (comment?: string) => void;
-  reset: () => void;
-  // Expose individual state pieces for backward compatibility
-  isProcessing: boolean;
-  currentStage: string;
-  sessionState: SessionState;
-  tasks: Task[];
-  generatedSpec: string;
-  dialogueEntries: DialogueEntry[];
-}
+export function useSpecFlow({ agentConfigs }: UseSpecFlowProps) {
+  const { tasks, addTask, updateTask, resetTasks } = useTasks();
+  const { entries: dialogueEntries, addEntry: addDialogue, resetDialogue } = useDialogue();
+  const {
+    sessionState,
+    generatedSpec,
+    startSession,
+    addRound,
+    updateCurrentRound,
+    addHistory,
+    setPaused,
+    setGeneratedSpec,
+    resetSession
+  } = useSession();
 
-export const useSpecGeneration = ({
-  agentConfigs
-}: UseSpecGenerationProps): UseSpecGenerationReturn => {
-  const [state, dispatch] = useReducer(generationReducer, initialState);
+  const [currentStage, setCurrentStage] = useState<GenerationStage>('idle');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const { toast } = useToast();
 
-  // Helper to add a task
-  const addTask = useCallback((task: Omit<Task, 'id'>): string => {
-    const id = `${task.type}-${Date.now()}-${Math.random()}`;
-    dispatch({ type: 'ADD_TASK', payload: { ...task, id } });
-    return id;
-  }, []);
-
-  // Helper to update a task
-  const updateTask = useCallback((id: string, updates: Partial<Task>) => {
-    dispatch({ type: 'UPDATE_TASK', payload: { id, updates } });
-  }, []);
-
-  // Helper to add dialogue entry
-  const addDialogue = useCallback((entry: DialogueEntry) => {
-    dispatch({ type: 'ADD_DIALOGUE', payload: entry });
-  }, []);
-
-  // Helper to add history entry
-  const addHistory = useCallback((type: 'vote' | 'output' | 'spec' | 'user-comment', data: HistoryEntryData) => {
-    dispatch({ type: 'ADD_HISTORY', payload: { type, data } });
-  }, []);
-
-  // Parse error message for user-friendly display
   const parseError = useCallback((error: unknown): { title: string; message: string } => {
     const errMessage = error instanceof Error ? error.message : '';
 
@@ -271,12 +64,12 @@ export const useSpecGeneration = ({
     };
   }, []);
 
-  // Main generation function - runs a single round
   const runRound = useCallback(async (
     input: string,
     roundNumber: number,
     userComment?: string
   ) => {
+    // Create new round object
     const round: Round = {
       roundNumber,
       stage: 'questions',
@@ -288,7 +81,7 @@ export const useSpecGeneration = ({
       userComment
     };
 
-    dispatch({ type: 'ADD_ROUND', payload: round });
+    addRound(round);
 
     try {
       const activeAgents = agentConfigs.filter(c => c.enabled);
@@ -297,7 +90,7 @@ export const useSpecGeneration = ({
       // STAGE 1: DYNAMIC QUESTION GENERATION
       // ========================================
       round.stage = 'questions';
-      dispatch({ type: 'SET_STAGE', payload: 'questions' });
+      setCurrentStage('questions');
       toast({
         title: '🧠 Generating Research Questions',
         description: 'AI analyzing your idea to create targeted questions...'
@@ -305,16 +98,16 @@ export const useSpecGeneration = ({
 
       const questionsStartTime = Date.now();
       const questionsData = await api.generateQuestions(input);
-
       const questionsDuration = Date.now() - questionsStartTime;
+
       round.questions = questionsData.questions || [];
 
       const questionsText = round.questions
-        .map((q: any, i: number) => `${i + 1}. [${q.domain}] ${q.question}`)
+        .map((q, i) => `${i + 1}. [${q.domain}] ${q.question}`)
         .join('\n');
 
       addDialogue({
-        agent: 'system' as any,
+        agent: 'system',
         message: `🎯 **Generated ${round.questions.length} Research Questions:**\n\n${questionsText}`,
         timestamp: new Date().toISOString(),
         type: 'discussion'
@@ -335,7 +128,7 @@ export const useSpecGeneration = ({
       // STAGE 2: PARALLEL RESEARCH WITH TOOLS
       // ========================================
       round.stage = 'research';
-      dispatch({ type: 'SET_STAGE', payload: 'research' });
+      setCurrentStage('research');
       toast({
         title: '🔬 Deep Research Phase',
         description: 'Experts conducting parallel research with multiple tools...'
@@ -343,33 +136,26 @@ export const useSpecGeneration = ({
 
       const researchStartTime = Date.now();
       const researchData = await api.conductResearch(agentConfigs, round.questions, roundNumber);
-
       const researchDuration = Date.now() - researchStartTime;
+
       round.research = researchData.researchResults || [];
-      const metadata = researchData.metadata || {};
+      const metadata = researchData.metadata || { totalToolsUsed: 0, totalCost: 0 };
 
-      const researchSummary = `📊 **Research Complete:**
-• ${round.research.length} experts analyzed
-• ${metadata.totalToolsUsed || 0} tool calls executed
-• Cost: $${(metadata.totalCost || 0).toFixed(4)}
-• Duration: ${(researchDuration / 1000).toFixed(1)}s
-
-**Models Used:** Multi-model (GPT-5.1-Codex, Claude Sonnet 4.5, Gemini 2.5 Flash)`;
+      const researchSummary = `📊 **Research Complete:**\n• ${round.research.length} experts analyzed\n• ${metadata.totalToolsUsed || 0} tool calls executed\n• Cost: $${(metadata.totalCost || 0).toFixed(4)}\n• Duration: ${(researchDuration / 1000).toFixed(1)}s\n\n**Models Used:** Multi-model (GPT-5.1-Codex, Claude Sonnet 4.5, Gemini 2.5 Flash)`;
 
       addDialogue({
-        agent: 'system' as any,
+        agent: 'system',
         message: researchSummary,
         timestamp: new Date().toISOString(),
         type: 'discussion'
       });
 
-      // Add individual research findings
-      round.research.forEach((result: any) => {
-        const toolsList = result.toolsUsed?.map((t: any) => t.tool).join(', ') || 'none';
+      round.research.forEach((result) => {
+        const toolsList = result.toolsUsed?.map((t) => t.tool).join(', ') || 'none';
         const findingsPreview = result.findings.slice(0, 500);
 
         addDialogue({
-          agent: result.expertId,
+          agent: result.expertId as any, // Cast to any or AgentType if possible
           message: `🔍 **Research Findings** (${result.model})\n\n${findingsPreview}...\n\n_Tools: ${toolsList} • Cost: $${result.cost.toFixed(4)}_`,
           timestamp: new Date().toISOString(),
           type: 'discussion'
@@ -390,55 +176,46 @@ export const useSpecGeneration = ({
       });
 
       // ========================================
-      // STAGE 2.5: CHALLENGE/DEBATE (RAY DALIO STYLE)
+      // STAGE 2.5: CHALLENGE/DEBATE
       // ========================================
       round.stage = 'challenge';
-      dispatch({ type: 'SET_STAGE', payload: 'challenge' });
+      setCurrentStage('challenge');
       toast({
         title: '⚔️ Challenge Phase',
-        description: 'Stress-testing ideas with contrarian viewpoints and productive conflict...'
+        description: 'Stress-testing ideas with contrarian viewpoints...'
       });
 
       const challengeStartTime = Date.now();
       const challengeData = await api.runChallenge(agentConfigs, round.research, roundNumber);
-
       const challengeDuration = Date.now() - challengeStartTime;
+
       round.challenges = challengeData.challenges || [];
       round.challengeResponses = challengeData.challengeResponses || [];
       round.debateResolutions = challengeData.debateResolutions || [];
-      const challengeMetadata = challengeData.metadata || {};
+      const challengeMetadata = challengeData.metadata || { totalChallenges: 0, totalResponses: 0, debatesResolved: 0, avgRiskScore: 0, challengeCost: 0 };
 
-      const challengeSummary = `⚔️ **Productive Conflict Complete (Ray Dalio Style):**
-• ${challengeMetadata.totalChallenges || 0} contrarian challenges generated
-• ${challengeMetadata.totalResponses || 0} expert debates
-• ${challengeMetadata.debatesResolved || 0} positions battle-tested
-• Avg Risk Score: ${challengeMetadata.avgRiskScore || 0}/10
-• Cost: $${(challengeMetadata.challengeCost || 0).toFixed(4)}
-• Duration: ${(challengeDuration / 1000).toFixed(1)}s
-
-**Result:** Ideas stress-tested through thoughtful disagreement`;
+      const challengeSummary = `⚔️ **Productive Conflict Complete (Ray Dalio Style):**\n• ${challengeMetadata.totalChallenges || 0} contrarian challenges generated\n• ${challengeMetadata.totalResponses || 0} expert debates\n• ${challengeMetadata.debatesResolved || 0} positions battle-tested\n• Avg Risk Score: ${challengeMetadata.avgRiskScore || 0}/10\n• Cost: $${(challengeMetadata.challengeCost || 0).toFixed(4)}\n• Duration: ${(challengeDuration / 1000).toFixed(1)}s\n\n**Result:** Ideas stress-tested through thoughtful disagreement`;
 
       addDialogue({
-        agent: 'system' as any,
+        agent: 'system',
         message: challengeSummary,
         timestamp: new Date().toISOString(),
         type: 'discussion'
       });
 
-      // Add challenge responses and resolutions
-      round.challengeResponses?.forEach((response: any) => {
-        const challenge = round.challenges?.find((c: any) => c.id === response.challengeId);
+      round.challengeResponses?.forEach((response) => {
+        const challenge = round.challenges?.find((c) => c.id === response.challengeId);
         addDialogue({
-          agent: response.challenger,
+          agent: response.challenger as any,
           message: `🎯 **Contrarian Challenge:**\n\n**Question:** ${challenge?.question || 'Challenge'}\n\n**Devil's Advocate Position:**\n${response.challenge}\n\n**Evidence Against:** ${response.evidenceAgainst.join('; ')}\n\n${response.alternativeApproach ? `**Alternative Approach:** ${response.alternativeApproach}\n\n` : ''}_Risk Score: ${response.riskScore}/10 • Cost: $${response.cost.toFixed(4)}_`,
           timestamp: new Date().toISOString(),
           type: 'discussion'
         });
       });
 
-      round.debateResolutions?.forEach((resolution: any) => {
+      round.debateResolutions?.forEach((resolution) => {
         addDialogue({
-          agent: 'system' as any,
+          agent: 'system',
           message: `🤝 **Debate Resolution:**\n\n${resolution.resolution}\n\n**Confidence Change:** ${resolution.confidenceChange > 0 ? '+' : ''}${resolution.confidenceChange}%\n**Adopted Alternatives:** ${resolution.adoptedAlternatives.join(', ') || 'None'}`,
           timestamp: new Date().toISOString(),
           type: 'discussion'
@@ -463,33 +240,33 @@ export const useSpecGeneration = ({
       // STAGE 3: EXPERT SYNTHESIS
       // ========================================
       round.stage = 'answers';
-      dispatch({ type: 'SET_STAGE', payload: 'synthesis' });
+      setCurrentStage('synthesis');
       toast({
         title: '💡 Synthesis Phase',
-        description: 'Experts synthesizing battle-tested research into actionable recommendations...'
+        description: 'Experts synthesizing battle-tested research...'
       });
 
       const synthesisStartTime = Date.now();
       const synthesisData = await api.synthesizeFindings(
         agentConfigs,
         round.research,
-        round.debateResolutions,
+        round.debateResolutions || [],
         roundNumber,
         userComment
       );
+      const synthesisDuration = Date.now() - synthesisStartTime;
 
       if (!synthesisData.syntheses) {
         throw new Error('Failed to synthesize research');
       }
 
-      const synthesisDuration = Date.now() - synthesisStartTime;
       round.answers = synthesisData.syntheses;
       addHistory('output', { stage: 'synthesis', syntheses: round.answers });
 
-      synthesisData.syntheses?.forEach((s: any) => {
+      synthesisData.syntheses?.forEach((s) => {
         const quality = s.researchQuality || {};
         addDialogue({
-          agent: s.expertId,
+          agent: s.expertId as any,
           message: `📝 **Final Synthesis:**\n\n${s.synthesis}\n\n_Research depth: ${quality.toolsUsed || 0} tools • $${(quality.cost || 0).toFixed(4)}_`,
           timestamp: s.timestamp,
           type: 'answer'
@@ -505,7 +282,7 @@ export const useSpecGeneration = ({
       // STAGE 4: CONSENSUS VOTING
       // ========================================
       round.stage = 'voting';
-      dispatch({ type: 'SET_STAGE', payload: 'voting' });
+      setCurrentStage('voting');
       toast({
         title: '🗳️ Consensus Vote',
         description: 'Panel voting on proceeding to specification...'
@@ -517,40 +294,40 @@ export const useSpecGeneration = ({
 
       const votingStartTime = Date.now();
       const votesData = await api.collectVotes(agentConfigs, synthesisData.syntheses);
-
       const votingDuration = Date.now() - votingStartTime;
+
       voteTaskIds.forEach(id => updateTask(id, { status: 'complete', duration: votingDuration / voteTaskIds.length }));
 
       round.votes = votesData.votes;
-      round.votes.forEach((vote: any) => addHistory('vote', vote));
+      round.votes.forEach((vote) => addHistory('vote', vote));
 
-      round.votes.forEach((v: any) => {
+      round.votes.forEach((v) => {
         const emoji = v.approved ? '✅' : '❌';
         addDialogue({
-          agent: v.agent,
+          agent: v.agent as any,
           message: `${emoji} **Vote:** ${v.approved ? 'APPROVED' : 'NEEDS ANOTHER ROUND'}\n\n${v.reasoning}\n\n_Confidence: ${v.confidence}%_`,
           timestamp: v.timestamp,
           type: 'vote'
         });
       });
 
-      const approvedCount = round.votes.filter((v: any) => v.approved).length;
+      const approvedCount = round.votes.filter((v) => v.approved).length;
       toast({
         title: '✓ Vote Complete',
         description: `${approvedCount}/${round.votes.length} approved • ${votingDuration}ms`
       });
 
       round.status = 'complete';
-      dispatch({ type: 'UPDATE_ROUND', payload: round });
+      updateCurrentRound(round); // Update the round in state
 
-      const approvalRate = round.votes.filter((v: any) => v.approved).length / round.votes.length;
+      const approvalRate = round.votes.filter((v) => v.approved).length / round.votes.length;
 
       if (approvalRate >= 0.6 || roundNumber >= 3) {
         // ========================================
         // STAGE 5: FINAL SPECIFICATION GENERATION
         // ========================================
         round.stage = 'spec';
-        dispatch({ type: 'SET_STAGE', payload: 'spec' });
+        setCurrentStage('spec');
         toast({
           title: '📄 Specification Phase',
           description: 'Generating comprehensive production-ready specification...'
@@ -565,42 +342,67 @@ export const useSpecGeneration = ({
           round.research,
           round.debateResolutions || []
         );
-
         const specDuration = Date.now() - specStartTime;
+
         updateTask(specTaskId, { status: 'complete', duration: specDuration });
 
-        dispatch({ type: 'SET_SPEC', payload: specData.spec });
+        setGeneratedSpec(specData.spec);
         addHistory('spec', { spec: specData.spec });
 
-        const totalCost = round.research.reduce((sum: number, r: any) => sum + (r.cost || 0), 0);
+        const totalCost = round.research.reduce((sum, r) => sum + (r.cost || 0), 0);
 
         toast({
           title: '✅ Specification Complete!',
           description: `Round ${roundNumber} • ${specDuration}ms • Total cost: $${totalCost.toFixed(4)}`
         });
 
-        dispatch({ type: 'GENERATION_COMPLETE' });
+        setIsProcessing(false);
+        setCurrentStage('complete');
       } else {
         toast({
           title: `Round ${roundNumber} Complete`,
           description: `${Math.round(approvalRate * 100)}% approval. Starting next round...`
         });
 
-        if (!state.sessionState.isPaused) {
+        if (!sessionState.isPaused) {
+          // Recursive call for next round
           await runRound(input, roundNumber + 1, userComment);
+        } else {
+          // If paused, just stop here
+          setIsProcessing(false);
         }
       }
+
     } catch (error) {
       console.error('Round error:', error);
       const { title, message } = parseError(error);
       toast({ title, description: message, variant: 'destructive', duration: 8000 });
-      dispatch({ type: 'SET_ERROR', payload: message });
+      setError(message);
+      setIsProcessing(false);
+      setCurrentStage('error');
     }
-  }, [agentConfigs, toast, addTask, updateTask, addDialogue, addHistory, parseError, state.sessionState.isPaused]);
+  }, [
+    agentConfigs,
+    addTask,
+    updateTask,
+    addDialogue,
+    addHistory,
+    setGeneratedSpec,
+    addRound,
+    updateCurrentRound,
+    sessionState.isPaused,
+    toast,
+    parseError
+  ]);
 
-  // Start generation
   const startGeneration = useCallback(async (input: string) => {
-    dispatch({ type: 'START_GENERATION' });
+    resetSession();
+    resetDialogue();
+    resetTasks();
+    setIsProcessing(true);
+    setCurrentStage('questions');
+    startSession(); // Dispatch start session
+
     try {
       await runRound(input, 1);
     } catch (error) {
@@ -611,48 +413,75 @@ export const useSpecGeneration = ({
         description: message,
         variant: 'destructive'
       });
-      dispatch({ type: 'SET_ERROR', payload: message });
+      setError(message);
+      setIsProcessing(false);
+      setCurrentStage('error');
     }
-  }, [runRound, toast, parseError]);
+  }, [runRound, toast, parseError, resetSession, resetDialogue, resetTasks, startSession]);
 
-  // Pause
   const pause = useCallback(() => {
-    dispatch({ type: 'SET_PAUSED', payload: true });
+    setPaused(true);
     toast({ title: 'Paused', description: 'Session paused. Add your comments.' });
-  }, [toast]);
+  }, [setPaused, toast]);
 
-  // Resume
   const resume = useCallback((comment?: string) => {
     if (comment) {
       addHistory('user-comment', { comment });
       addDialogue({
-        agent: 'user' as any,
+        agent: 'user',
         message: comment,
         timestamp: new Date().toISOString(),
-        type: 'user' as any
+        type: 'user'
       });
     }
-    dispatch({ type: 'SET_PAUSED', payload: false });
+    setPaused(false);
     toast({ title: 'Resuming', description: 'Continuing with your guidance...' });
-  }, [toast, addHistory, addDialogue]);
+    
+    // Resume logic needs to trigger the next round or continue processing
+    // Currently runRound is recursive, so if we are paused, we need to manually trigger the next round
+    // This is a bit tricky with the recursive function.
+    // The previous implementation had a simple resume, but `runRound` checked `state.sessionState.isPaused`.
+    // If it was paused, it stopped.
+    // So resume() needs to check if we should trigger the next round.
+    
+    // For now, let's assume the user will click a "Resume" button that might need to trigger something?
+    // Actually, looking at `use-spec-generation.ts`, `resume` just updated the state.
+    // And `runRound` recursively called itself ONLY IF `!state.sessionState.isPaused`.
+    // So if it paused, the recursion broke.
+    // To restart it, we need to know the LAST input and round number.
+    // This state is not currently persisted easily for restart in this function closure.
+    
+    // Ideally, we'd store `lastInput` and `nextRoundNumber` in state.
+    // But for this refactor, I'll keep it simple: simpler resume just updates state.
+    // Re-triggering the flow might require more complex state management or just passing the callback.
+    // The original `useSpecGeneration` didn't seem to have a mechanism to *restart* the loop if it was broken by pause,
+    // unless the UI calls something.
+    // Wait, the `PauseControls` component calls `onResume`.
+    // If the loop exited, `onResume` needs to restart it.
+    // I'll leave a TODO here or simple state update for now as exact behavior parity is the goal.
+    
+  }, [setPaused, toast, addHistory, addDialogue]);
 
-  // Reset
   const reset = useCallback(() => {
-    dispatch({ type: 'RESET' });
-  }, []);
+    resetSession();
+    resetDialogue();
+    resetTasks();
+    setIsProcessing(false);
+    setCurrentStage('idle');
+    setError(null);
+  }, [resetSession, resetDialogue, resetTasks]);
 
   return {
-    state,
+    isProcessing,
+    currentStage,
+    sessionState,
+    tasks,
+    generatedSpec,
+    dialogueEntries,
+    error,
     startGeneration,
     pause,
     resume,
-    reset,
-    // Backward compatibility
-    isProcessing: state.isProcessing,
-    currentStage: state.currentStage,
-    sessionState: state.sessionState,
-    tasks: state.tasks,
-    generatedSpec: state.generatedSpec,
-    dialogueEntries: state.dialogueEntries
+    reset
   };
-};
+}
