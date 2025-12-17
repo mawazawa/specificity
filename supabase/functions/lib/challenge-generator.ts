@@ -1,6 +1,7 @@
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 import { callOpenRouter, retryWithBackoff } from './openrouter-client.ts';
 import { AgentResearchResult } from './parallel-executor.ts';
+import { renderPrompt } from './prompt-service.ts';
 
 export const ChallengeQuestionSchema = z.object({
   id: z.string(),
@@ -58,8 +59,13 @@ export async function generateChallenges(
     `Finding ${idx + 1} (by ${r.expertId}):\n${r.findings.substring(0, 500)}...`
   ).join('\n\n');
 
-  const systemPrompt = Prompts.Challenge.Generation.system(challengesPerFinding * researchResults.length);
-  const userPrompt = Prompts.Challenge.Generation.user(userInput, findingsSummary);
+  // Load challenge generation prompt from database
+  const systemPrompt = await renderPrompt('challenge_generation', {
+    challengesPerFinding,
+    findingsSummary,
+    userInput
+  });
+  const userPrompt = `Product Idea: ${userInput}\n\nResearch Findings:\n${findingsSummary}\n\nGenerate challenge questions in JSON format as specified.`;
 
   const response = await retryWithBackoff(
     () => callOpenRouter({
@@ -134,11 +140,14 @@ async function executeChallenge(
   // Find the original findings being challenged
   const targetFindings = researchResults.find(r => r.expertId === challenge.targetFindings);
 
-  const systemPrompt = Prompts.Challenge.Execution.system(challenger.agent, challenger.systemPrompt);
-  const userPrompt = Prompts.Challenge.Execution.user(
-    challenge.question,
-    targetFindings?.findings || 'General findings'
-  );
+  // Load challenge execution prompt from database
+  const systemPrompt = await renderPrompt('challenge_execution', {
+    challengerName: challenger.agent,
+    challengerPersonality: challenger.systemPrompt,
+    challenge: challenge.question,
+    targetFindings: targetFindings?.findings || 'General findings'
+  });
+  const userPrompt = `Challenge Question: ${challenge.question}\n\nOriginal Research Finding:\n${targetFindings?.findings || 'General findings'}\n\nProvide your contrarian argument in JSON format as specified.`;
 
   const model = getModelForChallenger(challenger.id);
   const response = await retryWithBackoff(
@@ -207,13 +216,16 @@ async function resolveDebate(
     };
   }
 
-  const systemPrompt = Prompts.Challenge.Resolution.system;
-
   const challengesText = relevantChallenges.map((c, idx) =>
     `${idx + 1}. ${c.challenger}: ${c.challenge}\n   Evidence: ${c.evidenceAgainst.join('; ')}\n   Alternative: ${c.alternativeApproach || 'N/A'}\n   Risk Score: ${c.riskScore}/10`
   ).join('\n\n');
 
-  const userPrompt = Prompts.Challenge.Resolution.user(research.findings, challengesText);
+  // Load debate resolution prompt from database
+  const systemPrompt = await renderPrompt('debate_resolution', {
+    originalPosition: research.findings,
+    challenges: challengesText
+  });
+  const userPrompt = `Original Position:\n${research.findings}\n\nChallenges Raised:\n${challengesText}\n\nSynthesize these into a stronger position in JSON format as specified.`;
 
   const response = await retryWithBackoff(
     () => callOpenRouter({

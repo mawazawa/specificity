@@ -2,7 +2,7 @@
 import { corsHeaders } from '../utils/api.ts';
 import { callGroq } from '../utils/api.ts';
 import { RoundData } from '../types.ts';
-import { Prompts } from '../../../lib/prompts.ts';
+import { renderPrompt } from '../../../lib/prompt-service.ts';
 
 export const handleSpecStage = async (roundData: RoundData | undefined) => {
     console.log('[Enhanced] Generating final specification...');
@@ -31,7 +31,12 @@ export const handleSpecStage = async (roundData: RoundData | undefined) => {
         ).join('\n\n')
         }` : '';
 
-    const specPrompt = Prompts.SpecGeneration.user(weightedContext, keyRequirements, debateContext);
+    // Load specification generation prompt from database
+    const specPrompt = await renderPrompt('specification_generation', {
+        weightedContext,
+        keyRequirements,
+        debateContext
+    });
 
     return { specPrompt };
 };
@@ -39,9 +44,12 @@ export const handleSpecStage = async (roundData: RoundData | undefined) => {
 export const handleSpecStageComplete = async (roundData: RoundData | undefined, groqApiKey: string) => {
     const { specPrompt } = await handleSpecStage(roundData);
 
+    // Use a simple system prompt for spec generation
+    const systemPrompt = "You are a Principal Software Architect. Generate the final specification based on the provided research and requirements.";
+
     const spec = await callGroq(
         groqApiKey,
-        Prompts.SpecGeneration.system,
+        systemPrompt,
         specPrompt,
         0.7,
         4000 // Increased token limit for spec
