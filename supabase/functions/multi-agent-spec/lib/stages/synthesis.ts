@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { callGroq, corsHeaders } from '../utils/api.ts';
 import { RoundData } from '../types.ts';
+import { Prompts } from '../../../lib/prompts.ts';
 
 export const handleSynthesisStage = async (
     roundData: RoundData | undefined,
@@ -32,15 +33,7 @@ export const handleSynthesisStage = async (
         const debateContext = debateResolution ?
             `\n\n**DEBATE-TESTED POSITION** (Ray Dalio productive conflict):\n${debateResolution.resolution}\n\nChallenges addressed: ${debateResolution.challenges.join('; ')}\nConfidence change: ${debateResolution.confidenceChange > 0 ? '+' : ''}${debateResolution.confidenceChange}%\nAdopted alternatives: ${debateResolution.adoptedAlternatives.join(', ') || 'None'}` : '';
 
-        const prompt = `Your research findings:
-${result.findings}${toolsContext}${debateContext}${userGuidance}
-
-${debateResolution ? 'Your position has been battle-tested through contrarian challenges. ' : ''}Synthesize your final recommendations:
-1. What are the 3 most critical requirements?
-2. What specific technologies/approaches should be used? (November 2025 bleeding-edge)
-3. What are the key risks or challenges?
-
-Be specific, actionable, and cite sources when relevant.`;
+        const prompt = Prompts.Synthesis.user(result.findings, toolsContext, debateContext, userGuidance);
 
         const response = await callGroq(
             groqApiKey,

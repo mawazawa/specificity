@@ -1,5 +1,6 @@
 import { callOpenRouter, retryWithBackoff } from './openrouter-client.ts';
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { Prompts } from './prompts.ts';
 
 export const ResearchQuestionSchema = z.object({
   id: z.string(),
@@ -26,43 +27,8 @@ export async function generateDynamicQuestions(
     count = 7
   } = options;
 
-  const systemPrompt = `You are a research question generator for a product specification system.
-
-Given a user's product idea, generate ${count} research questions that will comprehensively explore:
-1. Technical architecture and implementation
-2. User experience and design
-3. Market landscape and competition
-4. Legal, compliance, and ethical considerations
-5. Growth strategy and go-to-market
-6. Security and scalability
-7. Cost and resource requirements
-
-Each question should:
-- Be specific and actionable
-- Target a distinct domain of expertise
-- Require contemporaneous web research (November 2025)
-- Lead to concrete specification requirements
-
-Output ONLY valid JSON (no markdown, no explanation) with this EXACT schema:
-{
-  "questions": [
-    {
-      "id": "q1",
-      "question": "What are the latest authentication standards for SaaS applications in November 2025?",
-      "domain": "technical",
-      "priority": 9,
-      "requiredExpertise": ["elon", "jony"]
-    }
-  ]
-}
-
-Valid domains: technical, design, market, legal, growth, security
-Valid expert IDs: elon, steve, oprah, zaha, jony, bartlett, amal
-Priority scale: 1 (low) to 10 (critical)`;
-
-  const userPrompt = `Product Idea: ${userInput}
-
-Generate ${count} research questions that will help create a comprehensive technical specification. Focus on what MUST be researched to create production-ready documentation.`;
+  const systemPrompt = Prompts.Questions.system(count);
+  const userPrompt = Prompts.Questions.user(userInput, count);
 
   try {
     const response = await retryWithBackoff(

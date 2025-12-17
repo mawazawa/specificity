@@ -58,38 +58,8 @@ export async function generateChallenges(
     `Finding ${idx + 1} (by ${r.expertId}):\n${r.findings.substring(0, 500)}...`
   ).join('\n\n');
 
-  const systemPrompt = `You are a critical thinking expert trained in Ray Dalio's principles of "radical truth" and "thoughtful disagreement."
-
-Your role is to generate CHALLENGING, CONTRARIAN questions that stress-test ideas and expose hidden assumptions.
-
-Key principles:
-1. **Play devil's advocate** - Find weaknesses in popular approaches
-2. **Challenge assumptions** - What are they taking for granted?
-3. **Explore alternatives** - What other paths weren't considered?
-4. **Identify risks** - What could go catastrophically wrong?
-5. **Question vision** - Is this ambitious enough? Or too ambitious?
-6. **Cost-benefit reality** - Are they underestimating complexity?
-
-Generate ${challengesPerFinding * researchResults.length} challenge questions that will force experts to defend their positions and consider alternatives.`;
-
-  const userPrompt = `Product Idea: ${userInput}
-
-Research Findings:
-${findingsSummary}
-
-Generate challenge questions in this JSON format:
-{
-  "challenges": [
-    {
-      "type": "feasibility|risk|alternative|assumption|vision|cost",
-      "question": "Challenging question that forces rethinking",
-      "targetFindingIndex": 0,
-      "priority": 1-10
-    }
-  ]
-}
-
-Make challenges TOUGH but fair. We want productive conflict that improves the final product.`;
+  const systemPrompt = Prompts.Challenge.Generation.system(challengesPerFinding * researchResults.length);
+  const userPrompt = Prompts.Challenge.Generation.user(userInput, findingsSummary);
 
   const response = await retryWithBackoff(
     () => callOpenRouter({
@@ -164,34 +134,11 @@ async function executeChallenge(
   // Find the original findings being challenged
   const targetFindings = researchResults.find(r => r.expertId === challenge.targetFindings);
 
-  const systemPrompt = `You are ${challenger.agent}, playing the role of "devil's advocate."
-
-Your personality: ${challenger.systemPrompt}
-
-Your task: CHALLENGE the current thinking with a well-reasoned contrarian argument.
-
-Ray Dalio principles:
-- "Be radically open-minded" - consider this may be wrong
-- "Stress test by disagreeing" - find the weakest points
-- "Thoughtful disagreement" - argue with evidence, not emotion
-- "Triangulate" - what alternative paths exist?
-
-Argue the OPPOSITE position or identify CRITICAL FLAWS.`;
-
-  const userPrompt = `Challenge Question: ${challenge.question}
-
-Original Research Finding:
-${targetFindings?.findings || 'General findings'}
-
-Provide your contrarian argument in JSON:
-{
-  "challenge": "Your core argument against the current approach",
-  "evidenceAgainst": ["Specific reason 1", "Specific reason 2", "Specific reason 3"],
-  "alternativeApproach": "What should we do instead? (optional)",
-  "riskScore": 1-10
-}
-
-Be tough but fair. Your job is to IMPROVE the final outcome through productive conflict.`;
+  const systemPrompt = Prompts.Challenge.Execution.system(challenger.agent, challenger.systemPrompt);
+  const userPrompt = Prompts.Challenge.Execution.user(
+    challenge.question,
+    targetFindings?.findings || 'General findings'
+  );
 
   const model = getModelForChallenger(challenger.id);
   const response = await retryWithBackoff(
@@ -260,31 +207,13 @@ async function resolveDebate(
     };
   }
 
-  const systemPrompt = `You are a neutral facilitator synthesizing a debate using Ray Dalio's principles:
+  const systemPrompt = Prompts.Challenge.Resolution.system;
 
-1. "Truth over harmony" - Best ideas win, not most popular
-2. "Idea meritocracy" - Weigh arguments on merit
-3. "Believability-weighted decision making" - Consider expertise
-4. "Synthesize" - Find the stronger position that emerges from conflict
-
-Your task: Reconcile the original position with challenges to create a STRONGER, BATTLE-TESTED position.`;
-
-  const userPrompt = `Original Position:
-${research.findings}
-
-Challenges Raised:
-${relevantChallenges.map((c, idx) =>
+  const challengesText = relevantChallenges.map((c, idx) =>
     `${idx + 1}. ${c.challenger}: ${c.challenge}\n   Evidence: ${c.evidenceAgainst.join('; ')}\n   Alternative: ${c.alternativeApproach || 'N/A'}\n   Risk Score: ${c.riskScore}/10`
-  ).join('\n\n')}
+  ).join('\n\n');
 
-Synthesize these into a stronger position in JSON:
-{
-  "resolution": "The battle-tested position that incorporates valid challenges",
-  "confidenceChange": -100 to +100 (how much confidence changed after debate),
-  "adoptedAlternatives": ["Which alternative approaches are worth pursuing"]
-}
-
-Don't just compromise - find the TRUTH through productive conflict.`;
+  const userPrompt = Prompts.Challenge.Resolution.user(research.findings, challengesText);
 
   const response = await retryWithBackoff(
     () => callOpenRouter({

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { callGroq, corsHeaders } from '../utils/api.ts';
 import { AgentConfig, RoundData } from '../types.ts';
+import { Prompts } from '../../../lib/prompts.ts';
 
 export const handleVotingStage = async (
     agentConfigs: AgentConfig[] | undefined,
@@ -24,11 +25,7 @@ export const handleVotingStage = async (
             `${s.expertName}: ${s.synthesis.slice(0, 300)}...`
         ).join('\n\n');
 
-        const votePrompt = `Expert syntheses:
-${synthesesSummary}
-
-Based on the research depth and consensus level, vote YES (proceed to spec) or NO (needs another round).
-Return JSON: {"approved": true/false, "confidence": 0-100, "reasoning": "why", "keyRequirements": ["req1", "req2"]}`;
+        const votePrompt = Prompts.Voting.user(synthesesSummary);
 
         const response = await callGroq(
             groqApiKey,

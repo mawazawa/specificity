@@ -3,6 +3,7 @@ import { ExpertAssignment, ExpertAssignmentSchema } from './expert-matcher.ts';
 import { ToolRegistry } from '../tools/registry.ts';
 import { callOpenRouter, retryWithBackoff } from './openrouter-client.ts';
 import { ResearchQuestion, ResearchQuestionSchema } from './question-generator.ts';
+import { Prompts } from './prompts.ts';
 
 export const ToolUsedSchema = z.object({
   tool: z.string(),
@@ -79,44 +80,11 @@ async function executeAgentAssignment(
     .map((q, idx) => `${idx + 1}. ${q.question}`)
     .join('\n');
 
-  const systemPrompt = `You are ${assignment.expertName}, a world-class expert.
-
-Your task is to thoroughly research these questions about the product idea:
-
-${taskDescription}
-
-You have access to these research tools:
-${tools.getPromptDescription()}
-
-IMPORTANT INSTRUCTIONS:
-1. Use tools to gather current, accurate information (November 2025)
-2. Verify all technology recommendations with web_search
-3. Focus on actionable, specific insights (not generic advice)
-4. Consider your unique perspective as ${assignment.expertName}
-
-HOW TO USE TOOLS:
-When you need information, output ONLY a JSON object (no markdown):
-{
-  "tool": "tool_name",
-  "params": {
-    "param1": "value1"
-  }
-}
-
-After receiving tool results, continue your research or output your findings.
-
-WHEN COMPLETE:
-Output ONLY this JSON object (no markdown):
-{
-  "complete": true,
-  "findings": "Your comprehensive research findings as ${assignment.expertName}. Include specific technologies, frameworks, best practices, and actionable recommendations. Cite sources when relevant."
-}
-
-Remember:
-- Be specific and technical (not vague)
-- Recommend bleeding-edge tech (November 2025)
-- Include concrete examples
-- Focus on production-ready solutions`;
+  const systemPrompt = Prompts.Research.system(
+    assignment.expertName,
+    taskDescription,
+    tools.getPromptDescription()
+  );
 
   let conversationHistory = `Product Idea: ${context.userInput}\n\nRound: ${context.roundNumber}\n\nBegin your research.`;
   let iterations = 0;
