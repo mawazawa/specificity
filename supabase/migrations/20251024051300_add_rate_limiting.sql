@@ -90,4 +90,4 @@ CREATE TRIGGER update_rate_limit_updated_at
 -- Grant necessary permissions
 GRANT USAGE ON SCHEMA public TO anon, authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.rate_limit TO authenticated;
-GRANT EXECUTE ON FUNCTION public.check_and_increment_rate_limit TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.check_and_increment_rate_limit(uuid, text, integer, timestamptz) TO authenticated, service_role;

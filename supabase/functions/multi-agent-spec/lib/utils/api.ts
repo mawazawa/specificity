@@ -82,7 +82,7 @@ export async function checkRateLimit(
 
         if (error) {
             console.error('Rate limit error:', { type: 'rate_limit_error', user_id: userId });
-            return { allowed: false, remaining: 0 };
+            return { allowed: true, remaining: maxRequests };
         }
 
         return {
@@ -91,7 +91,7 @@ export async function checkRateLimit(
         };
     } catch (error) {
         console.error('Rate limit exception:', { type: 'rate_limit_exception', user_id: userId });
-        return { allowed: false, remaining: 0 };
+        return { allowed: true, remaining: maxRequests };
     }
 }
 

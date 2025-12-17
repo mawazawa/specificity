@@ -66,4 +66,3 @@ $$;
 
 -- Grant permissions
 GRANT EXECUTE ON FUNCTION public.check_and_increment_rate_limit(uuid, text, integer, integer) TO authenticated, service_role;
-GRANT EXECUTE ON FUNCTION public.check_and_increment_rate_limit(uuid, text, integer) TO authenticated, service_role;
