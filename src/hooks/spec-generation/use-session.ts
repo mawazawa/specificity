@@ -1,5 +1,5 @@
 import { useReducer, useCallback } from 'react';
-import type { SessionState, Round, HistoryEntryData, HistoryEntry } from '@/types/spec';
+import type { SessionState, Round, HistoryEntryData, HistoryEntry, TechStackItem } from '@/types/spec';
 
 // Initial state
 const initialSessionState: SessionState = {
@@ -13,11 +13,13 @@ const initialSessionState: SessionState = {
 interface FullSessionState {
   session: SessionState;
   generatedSpec: string;
+  techStack: TechStackItem[];
 }
 
 const initialState: FullSessionState = {
   session: initialSessionState,
-  generatedSpec: ''
+  generatedSpec: '',
+  techStack: []
 };
 
 type SessionAction =
@@ -27,6 +29,7 @@ type SessionAction =
   | { type: 'ADD_HISTORY'; payload: { type: 'vote' | 'output' | 'spec' | 'user-comment'; data: HistoryEntryData } }
   | { type: 'SET_PAUSED'; payload: boolean }
   | { type: 'SET_SPEC'; payload: string }
+  | { type: 'SET_TECH_STACK'; payload: TechStackItem[] }
   | { type: 'RESET_SESSION' }
   | { type: 'SET_SESSION_STATE'; payload: Partial<SessionState> };
 
@@ -84,6 +87,12 @@ function sessionReducer(state: FullSessionState, action: SessionAction): FullSes
         generatedSpec: action.payload
       };
 
+    case 'SET_TECH_STACK':
+      return {
+        ...state,
+        techStack: action.payload
+      };
+
     case 'RESET_SESSION':
       return initialState;
 
@@ -125,6 +134,10 @@ export function useSession() {
     dispatch({ type: 'SET_SPEC', payload: spec });
   }, []);
 
+  const setTechStack = useCallback((techStack: TechStackItem[]) => {
+    dispatch({ type: 'SET_TECH_STACK', payload: techStack });
+  }, []);
+
   const resetSession = useCallback(() => {
     dispatch({ type: 'RESET_SESSION' });
   }, []);
@@ -136,12 +149,14 @@ export function useSession() {
   return {
     sessionState: state.session,
     generatedSpec: state.generatedSpec,
+    techStack: state.techStack,
     startSession,
     addRound,
     updateCurrentRound,
     addHistory,
     setPaused,
     setGeneratedSpec,
+    setTechStack,
     resetSession,
     setSessionState
   };

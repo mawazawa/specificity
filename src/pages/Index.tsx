@@ -28,7 +28,7 @@ import { VoteTally } from "@/components/VoteTally";
 import { DialoguePanel } from "@/components/DialoguePanel";
 import { LandingHero } from "@/components/LandingHero";
 import { SampleSpecGallery } from "@/components/SampleSpecGallery";
-import { AgentConfig } from "@/types/spec";
+import { AgentConfig, TechStackItem } from "@/types/spec";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, MessageSquare, LayoutGrid, LogOut } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -92,8 +92,8 @@ const Index = () => {
     isProcessing,
     currentStage,
     sessionState,
-    tasks,
     generatedSpec,
+    techStack,
     dialogueEntries,
     startRefinement,
     proceedToGeneration,
@@ -154,8 +154,8 @@ const Index = () => {
 
   // Handle form submission
   const handleSubmit = useCallback(async (input: string) => {
-    await startGeneration(input);
-  }, [startGeneration]);
+    await startRefinement(input);
+  }, [startRefinement]);
 
   // Handle agent config changes
   const handleAgentConfigChange = useCallback((updatedConfig: AgentConfig) => {
@@ -219,6 +219,7 @@ const Index = () => {
             currentStage={currentStage}
             tasks={tasks}
             generatedSpec={generatedSpec}
+            techStack={techStack}
             agentConfigs={agentConfigs}
             dialogueEntries={dialogueEntries}
             isDialogueOpen={isDialogueOpen}
@@ -313,6 +314,7 @@ interface ActiveSessionContentProps {
   currentStage: string;
   tasks: any[];
   generatedSpec: string;
+  techStack: TechStackItem[];
   agentConfigs: AgentConfig[];
   dialogueEntries: any[];
   isDialogueOpen: boolean;
@@ -387,11 +389,11 @@ const ActiveSessionContent = ({
                     isProcessing={isProcessing}
                     currentStage={currentStage}
                     tasks={tasks}
-                    sessionState={sessionState}
-                    generatedSpec={generatedSpec}
-                    agentConfigs={agentConfigs}
-                    onPause={onPause}
-                    onResume={onResume}
+                                sessionState={sessionState}
+                                generatedSpec={generatedSpec}
+                                techStack={techStack}
+                                agentConfigs={agentConfigs}
+                                onPause={onPause}                    onResume={onResume}
                     onShareSpec={onShareSpec}
                   />
                 )}
@@ -414,6 +416,7 @@ interface PanelsViewProps {
   tasks: any[];
   sessionState: any;
   generatedSpec: string;
+  techStack: TechStackItem[];
   agentConfigs: AgentConfig[];
   onPause: () => void;
   onResume: (comment?: string) => void;
@@ -473,6 +476,7 @@ const PanelsView = ({
           {generatedSpec && (
             <SpecOutput
               spec={generatedSpec}
+              initialTechStack={techStack}
               onApprove={() => toast({ title: "Approved!", description: "Specification has been approved" })}
               onRefine={(refinements) => toast({ title: "Refining...", description: `Applying ${refinements.length} refinement(s)` })}
               onShare={onShareSpec}

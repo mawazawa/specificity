@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { AgentConfig } from '@/types/spec';
+import { AgentConfig, TechStackItem } from '@/types/spec';
 import { RoundData } from '@/types/schemas';
 
 // Helper to handle Supabase function errors
@@ -96,7 +96,7 @@ export const api = {
     researchResults: RoundData['researchResults'],
     debateResolutions: RoundData['debateResolutions']
   ) => {
-    return invokeFunction<{ spec: string }>('multi-agent-spec', {
+    return invokeFunction<{ spec: string; techStack: TechStackItem[] }>('multi-agent-spec', {
       stage: 'spec',
       roundData: {
         syntheses,

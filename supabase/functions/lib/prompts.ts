@@ -358,8 +358,28 @@ Include:
   1. Build frontend: npm run build
   2. Deploy to Vercel: vercel --prod
   3. Deploy backend: docker build and docker push and kubectl apply
-  4. Run migrations: npm run migrate:prod`
+  4. Run migrations: npm run migrate:prod`,
+
+    techStackExtraction: (specText: string) => `Analyze the following technical specification and extract the recommended Technology Stack into a structured JSON format.
+
+SPECIFICATION:
+${specText.substring(0, 15000)}... [truncated]
+
+Extract the key technology decisions for these categories: Frontend, Backend, Database, AI/ML, DevOps.
+For each decision, identify the "Selected" tech and 1-2 "Alternatives" mentioned (or reasonable alternatives if not explicit).
+
+Output ONLY JSON with this schema:
+[
+  {
+    "category": "Frontend",
+    "selected": { "name": "React", "rating": 5, "pros": ["Ecosystem", "Components"], "cons": ["Complexity"], "logo": "https://..." },
+    "alternatives": [{ "name": "Vue", "rating": 4, "pros": [...], "cons": [...] }]
   },
+  ...
+]
+
+Try to find real logo URLs if possible, or use placeholder. Ensure "rating" is 1-5.`
+  }
 
   /**
    * 1:1 CHAT STAGE

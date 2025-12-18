@@ -25,6 +25,7 @@ interface SpecOutputProps {
   onRefine?: (refinements: string[]) => void;
   onShare?: () => void;
   readOnly?: boolean;
+  initialTechStack?: TechStackItem[];
 }
 
 const SUGGESTED_REFINEMENTS = [
@@ -33,11 +34,11 @@ const SUGGESTED_REFINEMENTS = [
   "Include cost estimates and timeline"
 ];
 
-export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = false }: SpecOutputProps) => {
+export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = false, initialTechStack }: SpecOutputProps) => {
   const [showRefinements, setShowRefinements] = useState(false);
   const [selectedRefinements, setSelectedRefinements] = useState<string[]>([]);
   const [customRefinement, setCustomRefinement] = useState("");
-  const [techStack, setTechStack] = useState<TechStackItem[]>([
+  const [techStack, setTechStack] = useState<TechStackItem[]>(initialTechStack || [
     {
       category: "Backend",
       selected: {

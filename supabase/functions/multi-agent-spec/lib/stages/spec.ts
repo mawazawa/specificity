@@ -44,19 +44,38 @@ export const handleSpecStage = async (roundData: RoundData | undefined) => {
 export const handleSpecStageComplete = async (roundData: RoundData | undefined, groqApiKey: string) => {
     const { specPrompt } = await handleSpecStage(roundData);
 
-    // Use a simple system prompt for spec generation
-    const systemPrompt = "You are a Principal Software Architect. Generate the final specification based on the provided research and requirements.";
-
     const spec = await callGroq(
         groqApiKey,
-        systemPrompt,
+        Prompts.SpecGeneration.system,
         specPrompt,
         0.7,
-        4000 // Increased token limit for spec
+        4000
     );
 
+    // Extract Tech Stack
+    console.log('[Enhanced] Extracting structured tech stack...');
+    const techStackPrompt = Prompts.SpecGeneration.techStackExtraction(spec);
+    
+    let techStack = [];
+    try {
+        const techStackJson = await callGroq(
+            groqApiKey,
+            "You are a JSON extractor. Output valid JSON only.",
+            techStackPrompt,
+            0.2, // Low temp for extraction
+            1000
+        );
+        // Attempt to parse JSON from potential markdown blocks
+        const match = techStackJson.match(/```json\n([\s\S]*?)\n```/) || techStackJson.match(/[\[]\s*\{[\s\S]*\}\s*[\]]/);
+        const jsonStr = match ? match[1] || match[0] : techStackJson;
+        techStack = JSON.parse(jsonStr);
+    } catch (e) {
+        console.error('Failed to extract tech stack:', e);
+        // Fallback or empty
+    }
+
     return new Response(
-        JSON.stringify({ spec }),
+        JSON.stringify({ spec, techStack }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 }

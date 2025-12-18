@@ -28,12 +28,14 @@ export function useSpecFlow({ agentConfigs }: UseSpecFlowProps) {
   const {
     sessionState,
     generatedSpec,
+    techStack,
     startSession,
     addRound,
     updateCurrentRound,
     addHistory,
     setPaused,
     setGeneratedSpec,
+    setTechStack,
     resetSession
   } = useSession();
 
@@ -348,6 +350,7 @@ export function useSpecFlow({ agentConfigs }: UseSpecFlowProps) {
         updateTask(specTaskId, { status: 'complete', duration: specDuration });
 
         setGeneratedSpec(specData.spec);
+        setTechStack(specData.techStack || []);
         addHistory('spec', { spec: specData.spec });
 
         const totalCost = round.research.reduce((sum, r) => sum + (r.cost || 0), 0);
@@ -614,6 +617,7 @@ export function useSpecFlow({ agentConfigs }: UseSpecFlowProps) {
     sessionState,
     tasks,
     generatedSpec,
+    techStack,
     dialogueEntries,
     error,
     startGeneration,
