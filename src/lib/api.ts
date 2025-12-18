@@ -118,5 +118,26 @@ export const api = {
       targetAgent,
       userInput: message
     });
+  },
+
+  saveSpec: async (
+    title: string,
+    content: string,
+    metadata: any = {}
+  ) => {
+    // Use the user from current session implicitly via RLS
+    const { data, error } = await supabase
+      .from('specifications')
+      .insert({
+        title,
+        content,
+        metadata,
+        is_public: true
+      })
+      .select('id')
+      .single();
+      
+    if (error) throw new Error(error.message);
+    return data;
   }
 };

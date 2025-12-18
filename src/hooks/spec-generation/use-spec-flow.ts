@@ -583,6 +583,31 @@ export function useSpecFlow({ agentConfigs }: UseSpecFlowProps) {
     }
   }, [agentConfigs, addDialogue, parseError, toast]);
 
+  const shareSpec = useCallback(async () => {
+    if (!generatedSpec) return;
+    
+    try {
+      const title = generatedSpec.split('\n')[0].replace('# ', '').trim() || "Product Specification";
+      
+      const { id } = await api.saveSpec(title, generatedSpec, {
+        rounds: sessionState.rounds.length,
+        agents: agentConfigs.filter(c => c.enabled).map(c => c.agent)
+      });
+      
+      const url = `${window.location.origin}/spec/${id}`;
+      navigator.clipboard.writeText(url);
+      
+      toast({
+        title: "Link Copied!",
+        description: "Share this URL with your team."
+      });
+      
+    } catch (error) {
+      console.error('Share failed:', error);
+      toast({ title: "Share Failed", description: "Could not save specification.", variant: "destructive" });
+    }
+  }, [generatedSpec, sessionState.rounds.length, agentConfigs, toast]);
+
   return {
     isProcessing,
     currentStage,
@@ -597,6 +622,7 @@ export function useSpecFlow({ agentConfigs }: UseSpecFlowProps) {
     pause,
     resume,
     reset,
-    chatWithAgent
+    chatWithAgent,
+    shareSpec
   };
 }

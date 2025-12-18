@@ -11,7 +11,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { FileText, CheckCircle2, Download, Copy, FileType, ThumbsUp, ChevronDown, Layers } from "lucide-react";
+import { FileText, CheckCircle2, Download, Copy, FileType, ThumbsUp, ChevronDown, Layers, Share2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useState } from "react";
 import jsPDF from "jspdf";
@@ -23,6 +23,8 @@ interface SpecOutputProps {
   spec: string;
   onApprove?: () => void;
   onRefine?: (refinements: string[]) => void;
+  onShare?: () => void;
+  readOnly?: boolean;
 }
 
 const SUGGESTED_REFINEMENTS = [
@@ -31,7 +33,7 @@ const SUGGESTED_REFINEMENTS = [
   "Include cost estimates and timeline"
 ];
 
-export const SpecOutput = ({ spec, onApprove, onRefine }: SpecOutputProps) => {
+export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = false }: SpecOutputProps) => {
   const [showRefinements, setShowRefinements] = useState(false);
   const [selectedRefinements, setSelectedRefinements] = useState<string[]>([]);
   const [customRefinement, setCustomRefinement] = useState("");
@@ -313,22 +315,32 @@ export const SpecOutput = ({ spec, onApprove, onRefine }: SpecOutputProps) => {
             <FileType className="w-3 h-3" />
             Text
           </Button>
+          {!readOnly && onShare && (
+            <Button onClick={onShare} variant="outline" size="sm" className="gap-2">
+              <Share2 className="w-3 h-3" />
+              Share
+            </Button>
+          )}
           <Button onClick={downloadPDF} variant="outline" size="sm" className="gap-2">
             <Download className="w-3 h-3" />
             PDF
           </Button>
           <div className="flex-1" />
-          <Button onClick={onApprove} variant="default" size="sm" className="gap-2">
-            <ThumbsUp className="w-3 h-3" />
-            Approve
-          </Button>
-          <Button 
-            onClick={() => setShowRefinements(!showRefinements)} 
-            variant="secondary" 
-            size="sm"
-          >
-            Refine Further
-          </Button>
+          {!readOnly && (
+            <>
+              <Button onClick={onApprove} variant="default" size="sm" className="gap-2">
+                <ThumbsUp className="w-3 h-3" />
+                Approve
+              </Button>
+              <Button 
+                onClick={() => setShowRefinements(!showRefinements)} 
+                variant="secondary" 
+                size="sm"
+              >
+                Refine Further
+              </Button>
+            </>
+          )}
         </div>
 
         {/* Refinement Options */}

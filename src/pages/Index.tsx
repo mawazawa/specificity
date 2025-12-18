@@ -95,10 +95,12 @@ const Index = () => {
     tasks,
     generatedSpec,
     dialogueEntries,
-    startGeneration,
+    startRefinement,
+    proceedToGeneration,
     pause,
     resume,
-    chatWithAgent
+    chatWithAgent,
+    shareSpec
   } = useSpecFlow({ agentConfigs });
 
   // Session persistence (debounced localStorage)
@@ -224,6 +226,8 @@ const Index = () => {
             onPause={pause}
             onResume={resume}
             onChatWithAgent={chatWithAgent}
+            onProceedToGeneration={proceedToGeneration}
+            onShareSpec={shareSpec}
           />
         )}
       </div>
@@ -316,6 +320,8 @@ interface ActiveSessionContentProps {
   onPause: () => void;
   onResume: (comment?: string) => void;
   onChatWithAgent: (agentId: string, message: string) => Promise<boolean>;
+  onProceedToGeneration?: () => void;
+  onShareSpec: () => void;
 }
 
 const ActiveSessionContent = ({
@@ -334,7 +340,9 @@ const ActiveSessionContent = ({
   setIsDialogueOpen,
   onPause,
   onResume,
-  onChatWithAgent
+  onChatWithAgent,
+  onProceedToGeneration,
+  onShareSpec
 }: ActiveSessionContentProps) => {
   const { toast } = useToast();
 
@@ -374,19 +382,19 @@ const ActiveSessionContent = ({
           onChatWithAgent={onChatWithAgent}
         />
       ) : (
-        <PanelsView
-          currentRound={currentRound}
-          isProcessing={isProcessing}
-          currentStage={currentStage}
-          tasks={tasks}
-          sessionState={sessionState}
-          generatedSpec={generatedSpec}
-          agentConfigs={agentConfigs}
-          onPause={onPause}
-          onResume={onResume}
-        />
-      )}
-
+                  <PanelsView
+                    currentRound={currentRound}
+                    isProcessing={isProcessing}
+                    currentStage={currentStage}
+                    tasks={tasks}
+                    sessionState={sessionState}
+                    generatedSpec={generatedSpec}
+                    agentConfigs={agentConfigs}
+                    onPause={onPause}
+                    onResume={onResume}
+                    onShareSpec={onShareSpec}
+                  />
+                )}
       {/* Floating Dialogue Panel */}
       {viewMode === 'panels' && (
         <DialoguePanel
@@ -409,6 +417,7 @@ interface PanelsViewProps {
   agentConfigs: AgentConfig[];
   onPause: () => void;
   onResume: (comment?: string) => void;
+  onShareSpec: () => void;
 }
 
 const PanelsView = ({
@@ -420,7 +429,8 @@ const PanelsView = ({
   generatedSpec,
   agentConfigs,
   onPause,
-  onResume
+  onResume,
+  onShareSpec
 }: PanelsViewProps) => {
   const { toast } = useToast();
 
@@ -465,6 +475,7 @@ const PanelsView = ({
               spec={generatedSpec}
               onApprove={() => toast({ title: "Approved!", description: "Specification has been approved" })}
               onRefine={(refinements) => toast({ title: "Refining...", description: `Applying ${refinements.length} refinement(s)` })}
+              onShare={onShareSpec}
             />
           )}
         </div>
