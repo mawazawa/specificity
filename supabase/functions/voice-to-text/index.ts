@@ -75,14 +75,12 @@ function validateAudioBlob(binaryData: Uint8Array): { valid: boolean; format?: s
 async function checkRateLimit(userId: string, endpoint: string, maxRequests: number = 5): Promise<{ allowed: boolean; remaining: number }> {
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-
   try {
     const { data, error } = await supabase.rpc('check_and_increment_rate_limit', {
       p_user_id: userId,
       p_endpoint: endpoint,
       p_max_requests: maxRequests,
-      p_window_start_cutoff: oneHourAgo
+      p_window_hours: 1
     });
 
     if (error) {

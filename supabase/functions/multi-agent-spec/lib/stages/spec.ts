@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { corsHeaders } from '../utils/api.ts';
 import { callGroq } from '../utils/api.ts';
+import { Prompts } from '../../../lib/prompts.ts';
 import { RoundData } from '../types.ts';
 import { renderPrompt } from '../../../lib/prompt-service.ts';
 

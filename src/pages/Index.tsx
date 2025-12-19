@@ -383,6 +383,8 @@ const ActiveSessionContent = ({
           onResume={onResume}
           isProcessing={isProcessing}
           onChatWithAgent={onChatWithAgent}
+          currentStage={currentStage}
+          onProceedToGeneration={onProceedToGeneration}
         />
       ) : (
                   <PanelsView

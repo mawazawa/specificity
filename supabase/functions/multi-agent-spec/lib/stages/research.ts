@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { assignQuestionsToExperts, balanceWorkload, AgentConfig } from '../../lib/expert-matcher.ts';
+import { assignQuestionsToExperts, balanceWorkload } from '../../lib/expert-matcher.ts';
 import { executeParallelResearch } from '../../lib/parallel-executor.ts';
 import { corsHeaders } from '../utils/api.ts';
 import { ToolRegistry } from '../../tools/registry.ts';
