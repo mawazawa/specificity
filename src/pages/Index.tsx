@@ -30,12 +30,13 @@ import { LandingHero } from "@/components/LandingHero";
 import { SampleSpecGallery } from "@/components/SampleSpecGallery";
 import { AgentConfig, TechStackItem } from "@/types/spec";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, MessageSquare, LayoutGrid, LogOut } from "lucide-react";
+import { Loader2, MessageSquare, LayoutGrid, LogOut, Folder } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChatView, ChatEntry } from "@/components/chat/ChatView";
 import { MobileHeader } from "@/components/mobile/MobileHeader";
 import { OnboardingOverlay } from "@/components/Onboarding/OnboardingOverlay";
+import { Link } from "react-router-dom";
 
 // Extracted hooks
 import { useAuth } from "@/hooks/useAuth";
@@ -185,7 +186,13 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background grid-background">
       {/* Sign Out Button */}
-      <div className="absolute top-4 right-4 z-50">
+      <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
+        <Button variant="outline" size="sm" asChild className="gap-2">
+          <Link to="/specs">
+            <Folder className="h-4 w-4" />
+            My Specs
+          </Link>
+        </Button>
         <Button variant="outline" size="sm" onClick={signOut} className="gap-2">
           <LogOut className="h-4 w-4" />
           Sign Out
