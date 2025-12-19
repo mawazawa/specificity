@@ -131,13 +131,15 @@ test.describe('Tasks Destructuring Bug Fix', () => {
     console.log('Filled spec input');
 
     // Click the generate button to open confirmation dialog
-    const generateButton = page.getByText('Generate My Specification').first();
+    // Button text includes price: "Generate My Specification ($20)"
+    // Using locator with :has-text because nested spans don't expose text to accessibility tree
+    const generateButton = page.locator('button:has-text("Generate My Specification")');
     await expect(generateButton).toBeVisible({ timeout: 5000 });
     await generateButton.click();
     console.log('Clicked Generate button');
 
     // Wait for and click the confirmation dialog button
-    const confirmButton = page.getByText('Confirm & Generate (FREE)');
+    const confirmButton = page.locator('button:has-text("Confirm & Generate")');
     await expect(confirmButton).toBeVisible({ timeout: 5000 });
     await confirmButton.click();
     console.log('Confirmed spec generation');
@@ -190,13 +192,15 @@ test.describe('Tasks Destructuring Bug Fix', () => {
     await specInput.fill('Test task for empty tasks array handling');
 
     // Click the generate button to open confirmation dialog
-    const generateButton = page.getByText('Generate My Specification').first();
+    // Button text includes price: "Generate My Specification ($20)"
+    // Using locator with :has-text because nested spans don't expose text to accessibility tree
+    const generateButton = page.locator('button:has-text("Generate My Specification")');
     await expect(generateButton).toBeVisible({ timeout: 5000 });
     await generateButton.click();
     console.log('Clicked Generate button');
 
     // Wait for and click the confirmation dialog button
-    const confirmButton = page.getByText('Confirm & Generate (FREE)');
+    const confirmButton = page.locator('button:has-text("Confirm & Generate")');
     await expect(confirmButton).toBeVisible({ timeout: 5000 });
     await confirmButton.click();
     console.log('Confirmed spec generation');
