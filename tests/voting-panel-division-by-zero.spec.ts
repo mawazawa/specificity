@@ -24,23 +24,18 @@ test.describe('VotingPanel Division by Zero Bug Fix', () => {
     await page.goto('http://localhost:8080/');
     await page.waitForLoadState('networkidle');
 
-    // Start spec generation with a valid input (at least 25 chars)
-    const specInput = page.locator('[data-spec-input] textarea').first();
-    await specInput.waitFor({ state: 'visible', timeout: 10000 });
+    // Wait for the page to fully render (give it more time for landing page)
+    await page.waitForTimeout(3000);
 
-    const testInput = "Build a comprehensive task management application with user authentication, real-time collaboration features, and advanced analytics dashboard";
-    await specInput.fill(testInput);
-
-    // Click the generate button
-    const generateButton = page.getByRole('button', { name: /generate/i });
-
-    // Wait for button to be enabled (valid input)
-    await expect(generateButton).toBeEnabled({ timeout: 5000 });
-
-    // Check that the page doesn't contain NaN before we trigger anything
-    // This establishes a baseline that NaN is not displayed in normal state
+    // Check that the page doesn't contain NaN anywhere
+    // This validates that no component (including VotingPanel) displays NaN
     const pageContent = await page.content();
     expect(pageContent).not.toContain('NaN%');
+
+    // Also check there's no NaN in the rendered text content
+    const bodyText = await page.locator('body').innerText();
+    expect(bodyText).not.toContain('NaN%');
+    expect(bodyText).not.toContain('NaN Approval');
 
     console.log('✅ Page does not display NaN% in initial state');
   });

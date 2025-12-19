@@ -37,7 +37,7 @@ export const useAgentPrompts = () => {
         const configs: AgentConfig[] = prompts.map(prompt => {
           // Extract agent_id from metadata (e.g., "agent_elon" -> "elon")
           const agentId = prompt.metadata?.agent_id ||
-                         prompt.name.replace('agent_', '');
+            prompt.name.replace('agent_', '');
 
           return {
             agent: agentId,
@@ -48,9 +48,12 @@ export const useAgentPrompts = () => {
           };
         });
 
+        // Filter out non-agent prompts that might have been categorized incorrectly
+        const validConfigs = configs.filter(c => c.agent !== 'research_stage');
+
         // Sort by specific order for consistent UI display
         const agentOrder = ['elon', 'steve', 'oprah', 'zaha', 'jony', 'bartlett', 'amal'];
-        const sortedConfigs = configs.sort((a, b) => {
+        const sortedConfigs = validConfigs.sort((a, b) => {
           const aIndex = agentOrder.indexOf(a.agent);
           const bIndex = agentOrder.indexOf(b.agent);
           return (aIndex === -1 ? 999 : aIndex) - (bIndex === -1 ? 999 : bIndex);
