@@ -61,6 +61,51 @@ Priority scale: 1 (low) to 10 (critical)$$, 'question', '{"default_count": 7, "s
 
 ON CONFLICT (name) DO NOTHING;
 
+-- Research Stage Prompt
+-- From: supabase/functions/lib/prompts.ts (Prompts.Research.system)
+
+INSERT INTO prompts (name, content, category, metadata, version) VALUES
+('research_stage', $$You are {{expertName}}, a world-class expert.
+
+Your task is to thoroughly research these questions about the product idea:
+
+{{taskDescription}}
+
+You have access to these research tools:
+{{toolsDescription}}
+
+IMPORTANT INSTRUCTIONS:
+1. Use tools to gather current, accurate information (November 2025)
+2. Verify all technology recommendations with web_search
+3. Focus on actionable, specific insights (not generic advice)
+4. Consider your unique perspective as {{expertName}}
+
+HOW TO USE TOOLS:
+When you need information, output ONLY a JSON object (no markdown):
+{
+  "tool": "tool_name",
+  "params": {
+    "param1": "value1"
+  }
+}
+
+After receiving tool results, continue your research or output your findings.
+
+WHEN COMPLETE:
+Output ONLY this JSON object (no markdown):
+{
+  "complete": true,
+  "findings": "Your comprehensive research findings as {{expertName}}. Include specific technologies, frameworks, best practices, and actionable recommendations. Cite sources when relevant."
+}
+
+Remember:
+- Be specific and technical (not vague)
+- Recommend bleeding-edge tech (November 2025)
+- Include concrete examples
+- Focus on production-ready solutions$$, 'research', '{"supports_variables": true, "variables": ["expertName", "taskDescription", "toolsDescription"], "temperature": 0.7}', 1)
+
+ON CONFLICT (name) DO NOTHING;
+
 -- Challenge Generation Prompt (Ray Dalio principles)
 -- From: supabase/functions/lib/challenge-generator.ts (lines 61-92)
 
@@ -272,6 +317,38 @@ Include:
 - **Alerting rules**: What triggers alerts, escalation procedures
 - **Documentation**: API docs, runbooks, architecture decision records
 - **Support processes**: Bug triage, feature requests, user feedback$$, 'spec', '{"target_length": "15-20 pages", "sections": 15, "supports_variables": true, "variables": ["weightedContext", "keyRequirements", "debateContext"], "temperature": 0.4, "recommended_model": "gpt-5.1"}', 1)
+
+ON CONFLICT (name) DO NOTHING;
+
+-- Synthesis Stage Prompt
+-- From: supabase/functions/lib/prompts.ts (Prompts.Synthesis.user)
+
+INSERT INTO prompts (name, content, category, metadata, version) VALUES
+('synthesis_stage', $$Your research findings:
+{{findings}}{{toolsContext}}{{debateContext}}{{userGuidance}}
+
+If debate context is provided, incorporate the battle-tested position into your synthesis.
+
+Synthesize your final recommendations:
+1. What are the 3 most critical requirements?
+2. What specific technologies/approaches should be used? (November 2025 bleeding-edge)
+3. What are the key risks or challenges?
+
+Be specific, actionable, and cite sources when relevant.$$,
+'synthesis', '{"supports_variables": true, "variables": ["findings", "toolsContext", "debateContext", "userGuidance"], "temperature": 0.7}', 1)
+
+ON CONFLICT (name) DO NOTHING;
+
+-- Voting Stage Prompt
+-- From: supabase/functions/lib/prompts.ts (Prompts.Voting.user)
+
+INSERT INTO prompts (name, content, category, metadata, version) VALUES
+('voting_stage', $$Expert syntheses:
+{{synthesesSummary}}
+
+Based on the research depth and consensus level, vote YES (proceed to spec) or NO (needs another round).
+Return JSON: {"approved": true/false, "confidence": 0-100, "reasoning": "why", "keyRequirements": ["req1", "req2"]}$$,
+'voting', '{"supports_variables": true, "variables": ["synthesesSummary"], "temperature": 0.7}', 1)
 
 ON CONFLICT (name) DO NOTHING;
 
