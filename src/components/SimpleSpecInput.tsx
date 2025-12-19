@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Mic, Sparkles, Square } from "lucide-react";
 import { ConfirmationDialog } from "./ConfirmationDialog";
+import { supabase } from "@/integrations/supabase/client";
 
 interface SimpleSpecInputProps {
   onSubmit: (input: string) => void;
@@ -14,6 +15,9 @@ interface SimpleSpecInputProps {
 export const SimpleSpecInput = ({ onSubmit, isLoading, defaultValue }: SimpleSpecInputProps) => {
   const [input, setInput] = useState(defaultValue || "");
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
 
   // Update input when defaultValue changes
   useEffect(() => {
@@ -42,6 +46,85 @@ export const SimpleSpecInput = ({ onSubmit, isLoading, defaultValue }: SimpleSpe
 
   const handleConfirm = () => {
     onSubmit(input.trim());
+  };
+
+  const startRecording = async () => {
+    if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+      toast({ title: "Voice input not supported", variant: "destructive" });
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        audioChunksRef.current.push(event.data);
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        await transcribeAudio(audioBlob);
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+      toast({ title: "Recording started" });
+    } catch (error) {
+      console.error('Error starting recording:', error);
+      toast({ title: "Failed to start recording", variant: "destructive" });
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      toast({ title: "Processing audio..." });
+    }
+  };
+
+  const transcribeAudio = async (audioBlob: Blob) => {
+    try {
+      const reader = new FileReader();
+      reader.readAsDataURL(audioBlob);
+      reader.onloadend = async () => {
+        try {
+          const base64Audio = (reader.result as string).split(',')[1];
+          const { data, error } = await supabase.functions.invoke('voice-to-text', {
+            body: { audio: base64Audio }
+          });
+
+          if (error) {
+            throw error;
+          }
+
+          if (data?.text) {
+            setInput(prev => prev + (prev ? ' ' : '') + data.text);
+            toast({ title: "Transcription complete", description: data.text.substring(0, 60) + '...' });
+          } else {
+            throw new Error('No transcription returned');
+          }
+        } catch (error) {
+          console.error('Voice-to-text error:', error);
+          toast({
+            title: "Failed to transcribe audio",
+            description: error instanceof Error ? error.message : 'Unknown error',
+            variant: "destructive"
+          });
+        }
+      };
+    } catch (error) {
+      console.error('Error transcribing audio:', error);
+      toast({
+        title: "Failed to transcribe audio",
+        description: error instanceof Error ? error.message : 'Unknown error',
+        variant: "destructive"
+      });
+    }
   };
 
   const charCount = input.length;
@@ -83,28 +166,52 @@ Example: Build a mobile fitness app where users can log workouts, track progress
         </div>
       </div>
 
-      {/* Submit Button */}
-      <Button
-        onClick={handleSubmit}
-        disabled={!isValid || isLoading}
-        size="lg"
-        className="w-full text-base font-medium h-14 group relative overflow-hidden"
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_100%] animate-shimmer opacity-0 group-hover:opacity-20 transition-opacity duration-500" />
-        <span className="relative flex items-center justify-center gap-2">
-          {isLoading ? (
-            <>
-              <Loader2 className="w-5 h-5 animate-spin" />
-              Generating Your Spec...
-            </>
-          ) : (
-            <>
-              <Sparkles className="w-5 h-5" />
-              Generate My Specification ($20)
-            </>
-          )}
-        </span>
-      </Button>
+      {/* Action Buttons */}
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Button
+          onClick={isRecording ? stopRecording : startRecording}
+          disabled={isLoading}
+          size="lg"
+          variant="outline"
+          className={`h-14 group relative overflow-hidden ${isRecording ? 'border-destructive text-destructive' : ''}`}
+        >
+          <span className="relative flex items-center justify-center gap-2">
+            {isRecording ? (
+              <>
+                <Square className="w-5 h-5" />
+                Stop Recording
+              </>
+            ) : (
+              <>
+                <Mic className="w-5 h-5" />
+                Voice Input
+              </>
+            )}
+          </span>
+        </Button>
+
+        <Button
+          onClick={handleSubmit}
+          disabled={!isValid || isLoading}
+          size="lg"
+          className="h-14 text-base font-medium group relative overflow-hidden"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_100%] animate-shimmer opacity-0 group-hover:opacity-20 transition-opacity duration-500" />
+          <span className="relative flex items-center justify-center gap-2">
+            {isLoading ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Generating Your Spec...
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-5 h-5" />
+                Generate My Specification ($20)
+              </>
+            )}
+          </span>
+        </Button>
+      </div>
 
       {/* Info Text */}
       <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
