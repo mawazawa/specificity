@@ -3,7 +3,7 @@ import { corsHeaders } from '../utils/api.ts';
 import { callGroq } from '../utils/api.ts';
 import { Prompts } from '../../../lib/prompts.ts';
 import { RoundData } from '../types.ts';
-import { renderPrompt } from '../../../lib/prompt-service.ts';
+import { renderPrompt, trackPromptUsage } from '../../../lib/prompt-service.ts';
 
 export const handleSpecStage = async (roundData: RoundData | undefined) => {
     console.log('[Enhanced] Generating final specification...');
@@ -45,6 +45,7 @@ export const handleSpecStage = async (roundData: RoundData | undefined) => {
 export const handleSpecStageComplete = async (roundData: RoundData | undefined, groqApiKey: string) => {
     const { specPrompt } = await handleSpecStage(roundData);
 
+    const specStart = Date.now();
     const spec = await callGroq(
         groqApiKey,
         Prompts.SpecGeneration.system,
@@ -52,6 +53,11 @@ export const handleSpecStageComplete = async (roundData: RoundData | undefined, 
         0.7,
         4000
     );
+
+    await trackPromptUsage('specification_generation', {
+        latency_ms: Date.now() - specStart,
+        model_used: 'llama-3.3-70b-versatile'
+    });
 
     // Extract Tech Stack
     console.log('[Enhanced] Extracting structured tech stack...');

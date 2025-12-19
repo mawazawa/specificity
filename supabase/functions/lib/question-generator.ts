@@ -1,6 +1,6 @@
 import { callOpenRouter, retryWithBackoff } from './openrouter-client.ts';
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
-import { renderPrompt } from './prompt-service.ts';
+import { renderPrompt, trackPromptUsage } from './prompt-service.ts';
 
 export const ResearchQuestionSchema = z.object({
   id: z.string(),
@@ -32,6 +32,7 @@ export async function generateDynamicQuestions(
   const userPrompt = `Product Idea: ${userInput}\n\nGenerate ${count} research questions that will help create a comprehensive technical specification. Focus on what MUST be researched to create production-ready documentation.`;
 
   try {
+    const startTime = Date.now();
     const response = await retryWithBackoff(
       () => callOpenRouter({
         model,
@@ -73,6 +74,14 @@ export async function generateDynamicQuestions(
       priority: Math.max(1, Math.min(10, q.priority || 5)),
       requiredExpertise: Array.isArray(q.requiredExpertise) ? q.requiredExpertise : []
     }));
+
+    await trackPromptUsage('question_generation', {
+      cost_cents: Math.round(response.cost * 100),
+      latency_ms: Date.now() - startTime,
+      model_used: response.model,
+      tokens_input: response.usage.promptTokens,
+      tokens_output: response.usage.completionTokens
+    });
 
     console.log(`[QuestionGen] Generated ${questions.length} questions using ${model}`);
 

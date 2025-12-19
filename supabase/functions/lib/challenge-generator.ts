@@ -1,7 +1,7 @@
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 import { callOpenRouter, retryWithBackoff } from './openrouter-client.ts';
 import { AgentResearchResult } from './parallel-executor.ts';
-import { renderPrompt } from './prompt-service.ts';
+import { renderPrompt, trackPromptUsage } from './prompt-service.ts';
 
 export const ChallengeQuestionSchema = z.object({
   id: z.string(),
@@ -67,6 +67,7 @@ export async function generateChallenges(
   });
   const userPrompt = `Product Idea: ${userInput}\n\nResearch Findings:\n${findingsSummary}\n\nGenerate challenge questions in JSON format as specified.`;
 
+  const startTime = Date.now();
   const response = await retryWithBackoff(
     () => callOpenRouter({
       model,
@@ -89,6 +90,14 @@ export async function generateChallenges(
     challenger: assignChallenger(c.type),
     priority: c.priority
   }));
+
+  await trackPromptUsage('challenge_generation', {
+    cost_cents: Math.round(response.cost * 100),
+    latency_ms: Date.now() - startTime,
+    model_used: response.model,
+    tokens_input: response.usage.promptTokens,
+    tokens_output: response.usage.completionTokens
+  });
 
   return challenges;
 }
@@ -150,6 +159,7 @@ async function executeChallenge(
   const userPrompt = `Challenge Question: ${challenge.question}\n\nOriginal Research Finding:\n${targetFindings?.findings || 'General findings'}\n\nProvide your contrarian argument in JSON format as specified.`;
 
   const model = getModelForChallenger(challenger.id);
+  const startTime = Date.now();
   const response = await retryWithBackoff(
     () => callOpenRouter({
       model,
@@ -164,6 +174,14 @@ async function executeChallenge(
   );
 
   const parsed = JSON.parse(response.content);
+
+  await trackPromptUsage('challenge_execution', {
+    cost_cents: Math.round(response.cost * 100),
+    latency_ms: Date.now() - startTime,
+    model_used: response.model,
+    tokens_input: response.usage.promptTokens,
+    tokens_output: response.usage.completionTokens
+  });
 
   return {
     challengeId: challenge.id,
@@ -227,6 +245,7 @@ async function resolveDebate(
   });
   const userPrompt = `Original Position:\n${research.findings}\n\nChallenges Raised:\n${challengesText}\n\nSynthesize these into a stronger position in JSON format as specified.`;
 
+  const startTime = Date.now();
   const response = await retryWithBackoff(
     () => callOpenRouter({
       model,
@@ -241,6 +260,14 @@ async function resolveDebate(
   );
 
   const parsed = JSON.parse(response.content);
+
+  await trackPromptUsage('debate_resolution', {
+    cost_cents: Math.round(response.cost * 100),
+    latency_ms: Date.now() - startTime,
+    model_used: response.model,
+    tokens_input: response.usage.promptTokens,
+    tokens_output: response.usage.completionTokens
+  });
 
   return {
     originalPosition: research.findings,

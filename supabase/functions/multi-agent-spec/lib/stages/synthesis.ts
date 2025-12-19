@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { callGroq, corsHeaders } from '../utils/api.ts';
 import { RoundData } from '../types.ts';
-import { renderPrompt } from '../../../lib/prompt-service.ts';
+import { renderPrompt, trackPromptUsage } from '../../../lib/prompt-service.ts';
 
 export const handleSynthesisStage = async (
     roundData: RoundData | undefined,
@@ -41,6 +41,7 @@ export const handleSynthesisStage = async (
             userGuidance
         });
 
+        const startTime = Date.now();
         const response = await callGroq(
             groqApiKey,
             `You are ${result.expertName}, a world-class expert. Provide your synthesis.`,
@@ -48,6 +49,11 @@ export const handleSynthesisStage = async (
             0.7,
             800
         );
+
+        await trackPromptUsage('synthesis_stage', {
+            latency_ms: Date.now() - startTime,
+            model_used: 'llama-3.3-70b-versatile'
+        });
 
         return {
             expertId: result.expertId,

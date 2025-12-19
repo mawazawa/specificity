@@ -3,7 +3,7 @@ import { ExpertAssignment, ExpertAssignmentSchema } from './expert-matcher.ts';
 import { ToolRegistry } from '../tools/registry.ts';
 import { callOpenRouter, retryWithBackoff } from './openrouter-client.ts';
 import { ResearchQuestion, ResearchQuestionSchema } from './question-generator.ts';
-import { renderPrompt } from './prompt-service.ts';
+import { renderPrompt, trackPromptUsage } from './prompt-service.ts';
 
 export const ToolUsedSchema = z.object({
   tool: z.string(),
@@ -98,6 +98,7 @@ async function executeAgentAssignment(
       console.log(`[${assignment.expertName}] Iteration ${iterations}/${maxIterations}`);
 
       // Call LLM
+      const callStart = Date.now();
       const response = await retryWithBackoff(
         () => callOpenRouter({
           model: assignment.model,
@@ -118,6 +119,14 @@ async function executeAgentAssignment(
 
       totalCost += response.cost;
       totalTokens += response.usage.totalTokens;
+
+      await trackPromptUsage('research_stage', {
+        cost_cents: Math.round(response.cost * 100),
+        latency_ms: Date.now() - callStart,
+        model_used: response.model,
+        tokens_input: response.usage.promptTokens,
+        tokens_output: response.usage.completionTokens
+      });
 
       // Check if agent is done
       if (response.content.includes('"complete": true')) {

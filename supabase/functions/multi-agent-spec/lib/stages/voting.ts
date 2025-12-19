@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { callGroq, corsHeaders } from '../utils/api.ts';
 import { AgentConfig, RoundData } from '../types.ts';
-import { renderPrompt } from '../../../lib/prompt-service.ts';
+import { renderPrompt, trackPromptUsage } from '../../../lib/prompt-service.ts';
 
 export const handleVotingStage = async (
     agentConfigs: AgentConfig[] | undefined,
@@ -28,6 +28,7 @@ export const handleVotingStage = async (
         // Load voting stage prompt from database
         const votePrompt = await renderPrompt('voting_stage', { synthesesSummary });
 
+        const startTime = Date.now();
         const response = await callGroq(
             groqApiKey,
             config.systemPrompt,
@@ -35,6 +36,11 @@ export const handleVotingStage = async (
             config.temperature,
             300
         );
+
+        await trackPromptUsage('voting_stage', {
+            latency_ms: Date.now() - startTime,
+            model_used: 'llama-3.3-70b-versatile'
+        });
 
         try {
             const vote = JSON.parse(response);
