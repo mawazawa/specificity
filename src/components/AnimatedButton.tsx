@@ -61,11 +61,12 @@ interface AnimatedButtonProps {
   className?: string;
 }
 
-export const AnimatedButton = ({ children, onClick, className = "" }: AnimatedButtonProps) => {
+export const AnimatedButton = ({ children, onClick, className = "", ...props }: AnimatedButtonProps & React.ButtonHTMLAttributes<HTMLButtonElement>) => {
   return (
-    <button 
+    <button
       onClick={onClick}
       className={`relative w-[320px] h-[120px] bg-background/10 backdrop-blur-sm no-underline group cursor-pointer shadow-2xl shadow-primary/20 rounded-full p-px text-xs font-semibold leading-6 text-foreground inline-block ${className}`}
+      {...props}
     >
       <span className="absolute inset-0 overflow-hidden rounded-full">
         <span className="absolute inset-0 rounded-full bg-[image:radial-gradient(75%_100%_at_50%_0%,hsl(var(--primary)/0.6)_0%,hsl(var(--primary)/0)_75%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />

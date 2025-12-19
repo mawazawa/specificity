@@ -67,6 +67,7 @@ export const MobileHeader = ({
             <div className="flex gap-3 pb-2">
               {enabledAgents.map((config, index) => {
                 const profile = mentorProfiles[config.agent];
+                if (!profile) return null;
                 return (
                   <motion.div
                     key={config.agent}
@@ -97,7 +98,7 @@ export const MobileHeader = ({
       </div>
 
       {/* Mentor Contact Card */}
-      {selectedAgent && (
+      {selectedAgent && mentorProfiles[selectedAgent as keyof typeof mentorProfiles] && (
         <MentorContactCard
           profile={mentorProfiles[selectedAgent as keyof typeof mentorProfiles]}
           isOpen={!!selectedAgent}

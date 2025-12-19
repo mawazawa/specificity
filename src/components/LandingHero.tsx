@@ -118,6 +118,7 @@ export const LandingHero = ({ onGetStarted }: LandingHeroProps) => {
               onClick={onGetStarted}
               className="text-xl px-14 py-7 shadow-2xl"
               aria-label="Get started with specification generation"
+              data-testid="get-started-button"
             >
               <span className="flex items-center gap-3">
                 <Sparkles className="w-6 h-6" aria-hidden="true" />
