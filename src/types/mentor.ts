@@ -1,4 +1,11 @@
 import { AgentType } from "./spec";
+import elonAvatar from "@/assets/optimized/elon-musk-nobg.webp";
+import steveAvatar from "@/assets/optimized/steve-jobs-nobg.webp";
+import oprahAvatar from "@/assets/optimized/oprah-nobg.webp";
+import zahaAvatar from "@/assets/optimized/agent-placeholder.webp";
+import jonyAvatar from "@/assets/optimized/jony-ive-nobg.webp";
+import bartlettAvatar from "@/assets/optimized/steven-bartlett-nobg.webp";
+import amalAvatar from "@/assets/optimized/amal-clooney-nobg.webp";
 
 export interface MentorParameter {
   name: string;
@@ -22,7 +29,7 @@ export const mentorProfiles: Record<AgentType, MentorProfile> = {
     agent: 'elon',
     name: 'Elon Musk',
     title: 'Visionary Engineer',
-    avatar: '/src/assets/elon-musk.png',
+    avatar: elonAvatar,
     gradient: 'from-red-500/20 via-orange-500/10 to-yellow-500/5',
     bio: 'First principles thinker focused on breakthrough innovation and rapid execution at scale.',
     parameters: [
@@ -42,7 +49,7 @@ export const mentorProfiles: Record<AgentType, MentorProfile> = {
     agent: 'steve',
     name: 'Steve Jobs',
     title: 'Design Perfectionist',
-    avatar: '/src/assets/steve-jobs.png',
+    avatar: steveAvatar,
     gradient: 'from-slate-500/20 via-gray-500/10 to-zinc-500/5',
     bio: 'Obsessed with elegant simplicity and products that delight users at every interaction.',
     parameters: [
@@ -62,7 +69,7 @@ export const mentorProfiles: Record<AgentType, MentorProfile> = {
     agent: 'oprah',
     name: 'Oprah Winfrey',
     title: 'Empowerment Leader',
-    avatar: '/src/assets/oprah.png',
+    avatar: oprahAvatar,
     gradient: 'from-purple-500/20 via-pink-500/10 to-rose-500/5',
     bio: 'Champions human connection, empowerment, and creating meaningful impact at scale.',
     parameters: [
@@ -82,7 +89,7 @@ export const mentorProfiles: Record<AgentType, MentorProfile> = {
     agent: 'zaha',
     name: 'Zaha Hadid',
     title: 'Architectural Visionary',
-    avatar: '/src/assets/agent-placeholder.png',
+    avatar: zahaAvatar,
     gradient: 'from-indigo-500/20 via-violet-500/10 to-purple-500/5',
     bio: 'Pioneering fluid, organic forms that challenge conventions and redefine spatial experiences.',
     parameters: [
@@ -102,7 +109,7 @@ export const mentorProfiles: Record<AgentType, MentorProfile> = {
     agent: 'jony',
     name: 'Jony Ive',
     title: 'Chief Design Officer',
-    avatar: '/src/assets/jony-ive.png',
+    avatar: jonyAvatar,
     gradient: 'from-blue-500/20 via-cyan-500/10 to-sky-500/5',
     bio: 'Master of restraint, creating products where every detail serves a purpose.',
     parameters: [
@@ -122,7 +129,7 @@ export const mentorProfiles: Record<AgentType, MentorProfile> = {
     agent: 'bartlett',
     name: 'Steven Bartlett',
     title: 'Entrepreneurial Mindset',
-    avatar: '/src/assets/steven-bartlett.png',
+    avatar: bartlettAvatar,
     gradient: 'from-green-500/20 via-emerald-500/10 to-teal-500/5',
     bio: 'Building something people want through relentless iteration and psychological understanding.',
     parameters: [
@@ -142,7 +149,7 @@ export const mentorProfiles: Record<AgentType, MentorProfile> = {
     agent: 'amal',
     name: 'Amal Clooney',
     title: 'Human Rights Advocate',
-    avatar: '/src/assets/amal-clooney.png',
+    avatar: amalAvatar,
     gradient: 'from-amber-500/20 via-yellow-500/10 to-orange-500/5',
     bio: 'Champion of justice, ethics, and building systems that protect human dignity.',
     parameters: [

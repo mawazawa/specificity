@@ -6,6 +6,13 @@ import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { MessageSquare, Search, Vote, FileText, User } from "lucide-react";
 import { mentorProfiles } from "@/types/mentor";
+import elonAvatar from "@/assets/optimized/elon-musk-nobg.webp";
+import steveAvatar from "@/assets/optimized/steve-jobs-nobg.webp";
+import oprahAvatar from "@/assets/optimized/oprah-nobg.webp";
+import zahaAvatar from "@/assets/optimized/agent-placeholder.webp";
+import jonyAvatar from "@/assets/optimized/jony-ive-nobg.webp";
+import bartlettAvatar from "@/assets/optimized/steven-bartlett-nobg.webp";
+import amalAvatar from "@/assets/optimized/amal-clooney-nobg.webp";
 
 interface ChatMessageProps {
   agent: AgentType | 'user';
@@ -16,13 +23,15 @@ interface ChatMessageProps {
 }
 
 const agentAvatars: Record<AgentType, string> = {
-  elon: '/src/assets/elon-musk.png',
-  steve: '/src/assets/steve-jobs.png',
-  oprah: '/src/assets/oprah.png',
-  zaha: '/src/assets/agent-placeholder.png',
-  jony: '/src/assets/jony-ive.png',
-  bartlett: '/src/assets/steven-bartlett.png',
-  amal: '/src/assets/amal-clooney.png',
+  elon: elonAvatar,
+  steve: steveAvatar,
+  oprah: oprahAvatar,
+  zaha: zahaAvatar,
+  jony: jonyAvatar,
+  bartlett: bartlettAvatar,
+  amal: amalAvatar,
+  user: "",
+  system: ""
 };
 
 export const ChatMessage = ({ 
