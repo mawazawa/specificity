@@ -195,6 +195,7 @@ Example: Build a mobile fitness app where users can log workouts, track progress
           disabled={!isValid || isLoading}
           size="lg"
           className="h-14 text-base font-medium group relative overflow-hidden"
+          data-testid="generate-spec-button"
         >
           <div className="absolute inset-0 bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_100%] animate-shimmer opacity-0 group-hover:opacity-20 transition-opacity duration-500" />
           <span className="relative flex items-center justify-center gap-2">

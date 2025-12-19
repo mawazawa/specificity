@@ -13,8 +13,11 @@ import { Separator } from "@/components/ui/separator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { FileText, CheckCircle2, Download, Copy, FileType, ThumbsUp, ChevronDown, Layers, Share2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import { Document, Packer, Paragraph, TextRun, HeadingLevel } from "docx";
+import { saveAs } from "file-saver";
 import { TechStackCard } from "./TechStackCard";
 import { TechStackItem } from "@/types/spec";
 import { SpecMarkdown } from "./SpecOutput/markdownComponents";
@@ -99,6 +102,8 @@ export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = fals
     testing: false
   });
 
+  const specRef = useRef<HTMLDivElement>(null);
+
   if (!spec) return null;
 
   const handleTechSelect = (category: string, techName: string) => {
@@ -115,9 +120,9 @@ export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = fals
       }
       return item;
     }));
-    toast({ 
-      title: "Tech Stack Updated", 
-      description: `Selected ${techName} for ${category}` 
+    toast({
+      title: "Tech Stack Updated",
+      description: `Selected ${techName} for ${category}`
     });
   };
 
@@ -154,6 +159,81 @@ export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = fals
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     toast({ title: "Downloaded", description: "Specification saved as text" });
+  };
+
+  const downloadImage = async () => {
+    if (!specRef.current) return;
+    try {
+      const canvas = await html2canvas(specRef.current, {
+        scale: 2, // Retain high resolution
+        useCORS: true,
+        backgroundColor: "#1a1b1e" // Match dark theme
+      });
+      canvas.toBlob((blob) => {
+        if (blob) {
+          saveAs(blob, `specification-${new Date().toISOString().split('T')[0]}.png`);
+          toast({ title: "Image Downloaded", description: "Specification saved as PNG" });
+        }
+      });
+    } catch (error) {
+      console.error("Image generation error:", error);
+      toast({
+        title: "Export Failed",
+        description: "Could not generate image.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const downloadWord = async () => {
+    try {
+      const lines = spec.split('\n');
+      const docChildren = lines.map(line => {
+        if (line.startsWith('# ')) {
+          return new Paragraph({
+            text: line.replace('# ', ''),
+            heading: HeadingLevel.HEADING_1,
+            spacing: { after: 200 }
+          });
+        }
+        if (line.startsWith('## ')) {
+          return new Paragraph({
+            text: line.replace('## ', ''),
+            heading: HeadingLevel.HEADING_2,
+            spacing: { before: 200, after: 120 }
+          });
+        }
+        if (line.startsWith('### ')) {
+          return new Paragraph({
+            text: line.replace('### ', ''),
+            heading: HeadingLevel.HEADING_3,
+            spacing: { before: 120, after: 120 }
+          });
+        }
+        return new Paragraph({
+          children: [new TextRun(line)],
+          spacing: { after: 120 }
+        });
+      });
+
+      const doc = new Document({
+        sections: [{
+          properties: {},
+          children: docChildren,
+        }],
+      });
+
+      const blob = await Packer.toBlob(doc);
+      saveAs(blob, `specification-${new Date().toISOString().split('T')[0]}.docx`);
+      toast({ title: "Word Doc Downloaded", description: "Specification saved as .docx" });
+    } catch (error) {
+      console.error("Word generation error:", error);
+      toast({
+        title: "Export Failed",
+        description: "Could not generate Word document.",
+        variant: "destructive"
+      });
+    }
   };
 
   const downloadPDF = () => {
@@ -322,6 +402,14 @@ export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = fals
               Share
             </Button>
           )}
+          <Button onClick={downloadImage} variant="outline" size="sm" className="gap-2">
+            <Download className="w-3 h-3" />
+            PNG
+          </Button>
+          <Button onClick={downloadWord} variant="outline" size="sm" className="gap-2">
+            <FileText className="w-3 h-3" />
+            DOCX
+          </Button>
           <Button onClick={downloadPDF} variant="outline" size="sm" className="gap-2">
             <Download className="w-3 h-3" />
             PDF
@@ -333,9 +421,9 @@ export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = fals
                 <ThumbsUp className="w-3 h-3" />
                 Approve
               </Button>
-              <Button 
-                onClick={() => setShowRefinements(!showRefinements)} 
-                variant="secondary" 
+              <Button
+                onClick={() => setShowRefinements(!showRefinements)}
+                variant="secondary"
                 size="sm"
               >
                 Refine Further
@@ -376,9 +464,9 @@ export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = fals
                 className="w-full min-h-[60px] px-3 py-2 bg-background/50 border border-border/30 rounded-lg text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50"
               />
             </div>
-            <Button 
-              onClick={handleRefine} 
-              size="sm" 
+            <Button
+              onClick={handleRefine}
+              size="sm"
               className="w-full"
               disabled={selectedRefinements.length === 0 && !customRefinement.trim()}
             >
@@ -388,7 +476,9 @@ export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = fals
         )}
 
         {/* Spec Content - Using memoized markdown renderer */}
-        <SpecMarkdown content={spec} />
+        <div ref={specRef} className="p-4 rounded-lg bg-background/30">
+          <SpecMarkdown content={spec} />
+        </div>
       </Card>
 
       {/* Interactive Tech Stack Section */}
