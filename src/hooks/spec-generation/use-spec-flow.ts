@@ -1,10 +1,10 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useTasks } from './use-tasks';
-import { useDialogue } from './use-dialogue';
+import { useDialogue, DialogueEntry } from './use-dialogue';
 import { useSession } from './use-session';
 import { api } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
-import { AgentConfig, Round } from '@/types/spec';
+import { AgentConfig, ResumeContext, Round, SessionState } from '@/types/spec';
 
 export type GenerationStage =
   | 'idle'
@@ -24,7 +24,7 @@ interface UseSpecFlowProps {
 
 export function useSpecFlow({ agentConfigs }: UseSpecFlowProps) {
   const { tasks, addTask, updateTask, resetTasks } = useTasks();
-  const { entries: dialogueEntries, addEntry: addDialogue, resetDialogue } = useDialogue();
+  const { entries: dialogueEntries, addEntry: addDialogue, resetDialogue, setDialogue } = useDialogue();
   const {
     sessionState,
     generatedSpec,
@@ -36,12 +36,14 @@ export function useSpecFlow({ agentConfigs }: UseSpecFlowProps) {
     setPaused,
     setGeneratedSpec,
     setTechStack,
-    resetSession
+    resetSession,
+    setSessionState
   } = useSession();
 
   const [currentStage, setCurrentStage] = useState<GenerationStage>('idle');
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const pendingResumeRef = useRef<ResumeContext | null>(null);
 
   const { toast } = useToast();
 
@@ -66,6 +68,11 @@ export function useSpecFlow({ agentConfigs }: UseSpecFlowProps) {
       message: errMessage || 'An error occurred during processing'
     };
   }, []);
+
+  const setPendingResume = useCallback((context: ResumeContext | null) => {
+    pendingResumeRef.current = context;
+    setSessionState({ pendingResume: context });
+  }, [setSessionState]);
 
   const runRound = useCallback(async (
     input: string,
@@ -373,6 +380,7 @@ export function useSpecFlow({ agentConfigs }: UseSpecFlowProps) {
           await runRound(input, roundNumber + 1, userComment);
         } else {
           // If paused, just stop here
+          setPendingResume({ input, nextRound: roundNumber + 1, userComment });
           setIsProcessing(false);
         }
       }
@@ -392,6 +400,7 @@ export function useSpecFlow({ agentConfigs }: UseSpecFlowProps) {
     addDialogue,
     addHistory,
     setGeneratedSpec,
+    setPendingResume,
     addRound,
     updateCurrentRound,
     sessionState.isPaused,
@@ -403,6 +412,7 @@ export function useSpecFlow({ agentConfigs }: UseSpecFlowProps) {
     resetSession();
     resetDialogue();
     resetTasks();
+    setPendingResume(null);
     setIsProcessing(true);
     setCurrentStage('questions');
     startSession(); // Dispatch start session
@@ -421,14 +431,14 @@ export function useSpecFlow({ agentConfigs }: UseSpecFlowProps) {
       setIsProcessing(false);
       setCurrentStage('error');
     }
-  }, [runRound, toast, parseError, resetSession, resetDialogue, resetTasks, startSession]);
+  }, [runRound, toast, parseError, resetSession, resetDialogue, resetTasks, startSession, setPendingResume]);
 
   const pause = useCallback(() => {
     setPaused(true);
     toast({ title: 'Paused', description: 'Session paused. Add your comments.' });
   }, [setPaused, toast]);
 
-  const resume = useCallback((comment?: string) => {
+  const resume = useCallback(async (comment?: string) => {
     if (comment) {
       addHistory('user-comment', { comment });
       addDialogue({
@@ -440,45 +450,73 @@ export function useSpecFlow({ agentConfigs }: UseSpecFlowProps) {
     }
     setPaused(false);
     toast({ title: 'Resuming', description: 'Continuing with your guidance...' });
-    
-    // Resume logic needs to trigger the next round or continue processing
-    // Currently runRound is recursive, so if we are paused, we need to manually trigger the next round
-    // This is a bit tricky with the recursive function.
-    // The previous implementation had a simple resume, but `runRound` checked `state.sessionState.isPaused`.
-    // If it was paused, it stopped.
-    // So resume() needs to check if we should trigger the next round.
-    
-    // For now, let's assume the user will click a "Resume" button that might need to trigger something?
-    // Actually, looking at `use-spec-generation.ts`, `resume` just updated the state.
-    // And `runRound` recursively called itself ONLY IF `!state.sessionState.isPaused`.
-    // So if it paused, the recursion broke.
-    // To restart it, we need to know the LAST input and round number.
-    // This state is not currently persisted easily for restart in this function closure.
-    
-    // Ideally, we'd store `lastInput` and `nextRoundNumber` in state.
-    // But for this refactor, I'll keep it simple: simpler resume just updates state.
-    // Re-triggering the flow might require more complex state management or just passing the callback.
-    // The original `useSpecGeneration` didn't seem to have a mechanism to *restart* the loop if it was broken by pause,
-    // unless the UI calls something.
-    // Wait, the `PauseControls` component calls `onResume`.
-    // If the loop exited, `onResume` needs to restart it.
-    // I'll leave a TODO here or simple state update for now as exact behavior parity is the goal.
-    
-  }, [setPaused, toast, addHistory, addDialogue]);
+
+    const pendingResume = pendingResumeRef.current ?? sessionState.pendingResume;
+    if (!pendingResume || isProcessing) {
+      return;
+    }
+
+    setPendingResume(null);
+    setIsProcessing(true);
+    setCurrentStage('questions');
+
+    try {
+      await runRound(
+        pendingResume.input,
+        pendingResume.nextRound,
+        comment ?? pendingResume.userComment
+      );
+    } catch (error) {
+      console.error('Resume failed:', error);
+      const { title, message } = parseError(error);
+      toast({ title, description: message, variant: 'destructive' });
+      setError(message);
+      setIsProcessing(false);
+      setCurrentStage('error');
+    }
+  }, [setPaused, toast, addHistory, addDialogue, sessionState.pendingResume, isProcessing, setPendingResume, runRound, parseError]);
 
   const reset = useCallback(() => {
     resetSession();
     resetDialogue();
     resetTasks();
+    setPendingResume(null);
     setIsProcessing(false);
     setCurrentStage('idle');
     setError(null);
-  }, [resetSession, resetDialogue, resetTasks]);
+  }, [resetSession, resetDialogue, resetTasks, setPendingResume]);
+
+  const hydrateFromStorage = useCallback((data: {
+    generatedSpec?: string;
+    dialogueEntries?: DialogueEntry[];
+    sessionState?: SessionState;
+  } | null) => {
+    if (!data) return;
+
+    if (data.sessionState) {
+      setSessionState(data.sessionState);
+      pendingResumeRef.current = data.sessionState.pendingResume ?? null;
+    }
+
+    if (data.dialogueEntries) {
+      setDialogue(data.dialogueEntries);
+    }
+
+    if (typeof data.generatedSpec === 'string') {
+      setGeneratedSpec(data.generatedSpec);
+      setCurrentStage('complete');
+    } else {
+      setCurrentStage('idle');
+    }
+
+    setIsProcessing(false);
+  }, [setSessionState, setDialogue, setGeneratedSpec]);
 
   const startRefinement = useCallback(async (input: string) => {
     resetSession();
     resetDialogue();
     resetTasks();
+    setPendingResume(null);
     setIsProcessing(true);
     setCurrentStage('refinement');
     startSession();
@@ -534,11 +572,12 @@ export function useSpecFlow({ agentConfigs }: UseSpecFlowProps) {
       setError(message);
       setIsProcessing(false);
     }
-  }, [agentConfigs, resetSession, resetDialogue, resetTasks, startSession, addDialogue, parseError, toast]);
+  }, [agentConfigs, resetSession, resetDialogue, resetTasks, startSession, addDialogue, parseError, toast, setPendingResume]);
 
   const proceedToGeneration = useCallback(async () => {
     setIsProcessing(true);
     setCurrentStage('questions');
+    setPendingResume(null);
     
     // Aggregate context from the dialogue
     const fullContext = dialogueEntries
@@ -555,7 +594,7 @@ export function useSpecFlow({ agentConfigs }: UseSpecFlowProps) {
       setIsProcessing(false);
       setCurrentStage('error');
     }
-  }, [dialogueEntries, runRound, parseError, toast]);
+  }, [dialogueEntries, runRound, parseError, toast, setPendingResume]);
 
   const chatWithAgent = useCallback(async (agentId: string, message: string) => {
     // Add user message to dialogue
@@ -626,6 +665,7 @@ export function useSpecFlow({ agentConfigs }: UseSpecFlowProps) {
     pause,
     resume,
     reset,
+    hydrateFromStorage,
     chatWithAgent,
     shareSpec
   };

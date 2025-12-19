@@ -6,6 +6,7 @@ const initialSessionState: SessionState = {
   rounds: [],
   currentRound: 0,
   isPaused: false,
+  pendingResume: null,
   history: []
 };
 

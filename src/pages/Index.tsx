@@ -12,7 +12,7 @@
  * - Component remains thin orchestrator layer
  */
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { SimpleSpecInput } from "@/components/SimpleSpecInput";
 import { AgentCard } from "@/components/AgentCard";
 import { VotingPanel } from "@/components/VotingPanel";
@@ -101,8 +101,11 @@ const Index = () => {
     pause,
     resume,
     chatWithAgent,
-    shareSpec
+    shareSpec,
+    hydrateFromStorage
   } = useSpecFlow({ agentConfigs });
+
+  const hasHydratedRef = useRef(false);
 
   // Session persistence (debounced localStorage)
   const { hydratedData, isHydrated } = useSessionPersistence({
@@ -114,11 +117,13 @@ const Index = () => {
 
   // Hydrate state from localStorage on mount
   useEffect(() => {
-    if (hydratedData && isHydrated) {
-      // Note: In production, you'd want to dispatch these to the spec generation hook
-      // For now, the hook manages its own state and persistence handles restore notification
+    if (!isHydrated || hasHydratedRef.current) {
+      return;
     }
-  }, [hydratedData, isHydrated]);
+
+    hydrateFromStorage(hydratedData);
+    hasHydratedRef.current = true;
+  }, [hydratedData, isHydrated, hydrateFromStorage]);
 
   // Memoized current round
   const currentRound = useMemo(

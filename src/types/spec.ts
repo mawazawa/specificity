@@ -81,11 +81,18 @@ export interface SpecSection {
   priority: 'critical' | 'high' | 'medium' | 'low';
 }
 
+export interface ResumeContext {
+  input: string;
+  nextRound: number;
+  userComment?: string;
+}
+
 export interface SessionState {
   rounds: Round[];
   currentRound: number;
   isPaused: boolean;
   finalSpec?: SpecOutput;
+  pendingResume?: ResumeContext | null;
   history: HistoryEntry[];
 }
 
