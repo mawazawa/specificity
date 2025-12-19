@@ -95,6 +95,7 @@ const Index = () => {
     generatedSpec,
     techStack,
     dialogueEntries,
+    tasks,
     startRefinement,
     proceedToGeneration,
     pause,

@@ -1,4 +1,4 @@
-import { FileText, Zap, Search, GitBranch, Shield, CheckCircle2, ExternalLink, Users } from "lucide-react";
+import { FileText, Zap, Search, GitBranch, Shield, CheckCircle2, ExternalLink, Users, Sparkles } from "lucide-react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
