@@ -17,7 +17,7 @@ dotenv.config({ path: '.env.local' });
 test.describe('Tasks Destructuring Bug Fix', () => {
   test.beforeEach(async ({ page }) => {
     // Login to access the main application
-    await page.goto('http://localhost:8082/auth');
+    await page.goto('/auth');
     await page.waitForLoadState('networkidle');
 
     const emailInput = page.locator('input[type="email"]');
@@ -29,7 +29,49 @@ test.describe('Tasks Destructuring Bug Fix', () => {
     const submitButton = page.locator('button[type="submit"]');
     await submitButton.click();
 
-    await page.waitForURL('http://localhost:8082/', { timeout: 10000 });
+    await page.waitForURL('/', { timeout: 10000 });
+
+    // Wait for page to stabilize after login
+    await page.waitForTimeout(1500);
+
+    // Dismiss any onboarding/welcome dialogs that may appear
+    // The "Welcome to Specificity AI" modal has an X close button
+    const dismissOnboardingDialog = async () => {
+      try {
+        // Wait for and check if the welcome dialog is present
+        const welcomeDialog = page.locator('[role="dialog"]');
+        if (await welcomeDialog.isVisible({ timeout: 3000 })) {
+          console.log('Onboarding dialog detected, dismissing...');
+
+          // Try pressing Escape first (most reliable way to close Radix dialogs)
+          await page.keyboard.press('Escape');
+          await page.waitForTimeout(500);
+
+          // If dialog is still visible, try clicking the X button
+          if (await welcomeDialog.isVisible({ timeout: 500 })) {
+            // The X button is typically a button with an SVG or sr-only text
+            const closeButton = page.locator('button:has-text("Close")').first();
+            if (await closeButton.isVisible({ timeout: 500 })) {
+              await closeButton.click();
+            } else {
+              // Try clicking any button that looks like a close button (top right area)
+              const xButton = page.locator('[role="dialog"] button').filter({ hasText: /^$/ }).first();
+              if (await xButton.count() > 0) {
+                await xButton.click();
+              }
+            }
+            await page.waitForTimeout(500);
+          }
+
+          console.log('Onboarding dialog dismissed');
+        }
+      } catch (e) {
+        // No dialog present or already closed, continue
+        console.log('No onboarding dialog to dismiss');
+      }
+    };
+
+    await dismissOnboardingDialog();
   });
 
   test('should not throw "tasks is undefined" error when rendering active session', async ({ page }) => {
@@ -55,7 +97,8 @@ test.describe('Tasks Destructuring Bug Fix', () => {
     });
 
     // Start the refinement flow which will trigger ActiveSessionContent rendering
-    const getStartedButton = page.getByText('Get Started');
+    // Use first() since there may be multiple "Get Started" buttons on the landing page
+    const getStartedButton = page.getByText('Get Started').first();
     await expect(getStartedButton).toBeVisible({ timeout: 5000 });
     await getStartedButton.click();
 
@@ -93,7 +136,8 @@ test.describe('Tasks Destructuring Bug Fix', () => {
     });
 
     // Navigate to the session view
-    const getStartedButton = page.getByText('Get Started');
+    // Use first() since there may be multiple "Get Started" buttons on the landing page
+    const getStartedButton = page.getByText('Get Started').first();
     await getStartedButton.click();
 
     // Wait for view to load

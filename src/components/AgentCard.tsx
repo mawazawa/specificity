@@ -31,7 +31,12 @@ interface AgentCardProps {
 }
 
 export const AgentCard = ({ config, onChange }: AgentCardProps) => {
-  const agent = agentInfo[config.agent as keyof typeof agentInfo];
+  const agent = agentInfo[config.agent as keyof typeof agentInfo] ?? {
+    name: config.agent,
+    role: "AI Agent",
+    color: "from-gray-500 via-slate-500 to-zinc-500",
+    avatar: agentPlaceholder
+  };
   const [showAdvanced, setShowAdvanced] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const x = useMotionValue(0);

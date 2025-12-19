@@ -54,7 +54,7 @@ export const VotingPanel = ({ votes, roundNumber }: VotingPanelProps) => {
   const [expandedVotes, setExpandedVotes] = useState<Set<string>>(new Set());
   const approved = votes.filter(v => v.approved);
   const dissented = votes.filter(v => !v.approved);
-  const approvalRate = (approved.length / votes.length) * 100;
+  const approvalRate = votes.length > 0 ? (approved.length / votes.length) * 100 : 0;
 
   const toggleVoteExpansion = (agent: string) => {
     setExpandedVotes(prev => {
