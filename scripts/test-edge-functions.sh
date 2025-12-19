@@ -18,10 +18,20 @@ fi
 
 # Set test environment
 if [ -f ".env.test" ]; then
-  export $(cat .env.test | xargs)
+  set -a
+  source .env.test
+  set +a
+elif [ -f ".env.local" ]; then
+  set -a
+  source .env.local
+  set +a
+elif [ -f ".env" ]; then
+  set -a
+  source .env
+  set +a
 else
-  echo "📝 Using .env.test.example (copy to .env.test for custom config)"
-  export $(cat .env.test.example | xargs)
+  echo "⚠️  No env file found (.env.test, .env.local, .env)"
+  echo "Set SUPABASE_URL, SUPABASE_ANON_KEY, TEST_USER_EMAIL, TEST_USER_PASSWORD"
 fi
 
 echo "Testing against: $SUPABASE_URL"
@@ -31,9 +41,7 @@ echo ""
 echo "Running test suite..."
 deno test \
   --allow-all \
-  --env-file=.env.test.example \
   supabase/functions/tests/multi-agent-spec-test.ts
 
 echo ""
 echo "✅ Tests complete!"
-
