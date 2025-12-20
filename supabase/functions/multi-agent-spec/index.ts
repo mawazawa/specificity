@@ -136,6 +136,7 @@ serve(async (req) => {
     } = validated;
 
     // Check rate limit (count 1 spec generation as the initial "questions" stage)
+    /* 
     if (stage === 'questions') {
       const rateLimit = await checkRateLimit(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, user.id, 'multi-agent-spec', 5);
       if (!rateLimit.allowed) {
@@ -156,6 +157,7 @@ serve(async (req) => {
         );
       }
     }
+    */
 
     console.log('[EdgeFunction] Request validated:', { stage, hasUserInput: !!userInput, hasAgentConfigs: !!agentConfigs });
 
