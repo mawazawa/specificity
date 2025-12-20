@@ -1,6 +1,7 @@
 # Model Evidence Ledger
 **Generated:** December 19, 2025 20:38 PST
-**Verification Method:** Exa Search MCP against OpenRouter, Groq, OpenAI, Google official sources
+**Last Updated:** December 20, 2025 12:35 PST
+**Verification Method:** Exa Search MCP against OpenRouter, Groq, OpenAI, Google, DeepSeek official sources
 **Status:** Production-Ready Verification
 
 ---
@@ -9,14 +10,17 @@
 
 | Model Key | Provider | OpenRouter ID | Status | Verified Date |
 |-----------|----------|---------------|--------|---------------|
-| gpt-5.2 | OpenAI | `openai/gpt-5.2` | **VERIFIED** | Dec 19, 2025 |
+| gpt-5.2 | OpenAI | `openai/gpt-5.2-20251211` | **VERIFIED** | Dec 20, 2025 |
 | gpt-5.2-codex | OpenAI | `openai/gpt-5.2-codex` | **VERIFIED** (API rollout in progress) | Dec 19, 2025 |
 | gemini-3-flash | Google | `google/gemini-3-flash-preview` | **VERIFIED** | Dec 19, 2025 |
 | kimi-k2-thinking | MoonshotAI | `moonshotai/kimi-k2-thinking` | **VERIFIED** | Dec 19, 2025 |
 | deepseek-v3 | DeepSeek | `deepseek/deepseek-chat` | **VERIFIED** | Dec 19, 2025 |
+| deepseek-v3.2 | DeepSeek | `deepseek/deepseek-v3.2` | **VERIFIED** ⚡NEW | Dec 20, 2025 |
+| deepseek-v3.2-speciale | DeepSeek | `deepseek/deepseek-v3.2-speciale` | **VERIFIED** ⚡NEW | Dec 20, 2025 |
 | deepseek-r1-distill | Groq | `deepseek-r1-distill-llama-70b` | **VERIFIED** | Dec 19, 2025 |
-| deepseek-v3.2-speciale | DeepSeek | N/A | **NOT FOUND** | Dec 19, 2025 |
 | claude-opus-4.5 | Anthropic | `anthropic/claude-opus-4-5-20251101` | **VERIFIED** | Dec 19, 2025 |
+
+**⚡ Dec 20, 2025 Update:** DeepSeek V3.2 and V3.2-Speciale are NOW AVAILABLE on OpenRouter (released Dec 1, 2025)
 
 ---
 
@@ -204,19 +208,75 @@
 
 ---
 
-## Models NOT FOUND / Unverified
-
-### DeepSeek V3.2-Speciale
+## DeepSeek V3.2 (DeepSeek) ⚡ NEW - Dec 20, 2025
 
 | Field | Value |
 |-------|-------|
-| **Status** | **NOT FOUND** on OpenRouter |
-| **Action Required** | Remove from code or replace with `deepseek/deepseek-chat` |
+| **Provider** | DeepSeek |
+| **OpenRouter Model ID** | `deepseek/deepseek-v3.2` |
+| **Context Window** | 163,840 tokens |
+| **Input Price** | $0.27 / 1M tokens |
+| **Output Price** | $0.41 / 1M tokens |
+| **Release Date** | December 1, 2025 |
+| **Verification Status** | **VERIFIED** |
 
-**Research Notes:**
-- No OpenRouter listing exists for `deepseek-v3.2-speciale`
-- Only `deepseek/deepseek-chat` (V3) is available
-- May have been a speculative or internal model name
+**Primary Sources:**
+- https://openrouter.ai/deepseek/deepseek-v3.2
+- https://api-docs.deepseek.com/news/news251201
+- https://huggingface.co/deepseek-ai/DeepSeek-V3.2
+
+**Capabilities:**
+- Official successor to V3.2-Exp
+- "GPT-5 level performance" per DeepSeek
+- First model with "thinking in tool-use" integration
+- Supports tool-use in both thinking and non-thinking modes
+- Large-scale agentic task synthesis (1,800+ environments, 85K+ instructions)
+
+---
+
+## DeepSeek V3.2-Speciale (DeepSeek) ⚡ NEW - Dec 20, 2025
+
+| Field | Value |
+|-------|-------|
+| **Provider** | DeepSeek |
+| **OpenRouter Model ID** | `deepseek/deepseek-v3.2-speciale` |
+| **Context Window** | 163,840 tokens |
+| **Input Price** | $0.27 / 1M tokens |
+| **Output Price** | $0.41 / 1M tokens |
+| **Release Date** | December 1, 2025 |
+| **Verification Status** | **VERIFIED** |
+
+**Primary Sources:**
+- https://openrouter.ai/deepseek/deepseek-v3.2-speciale
+- https://api-docs.deepseek.com/news/news251201
+- https://huggingface.co/deepseek-ai/DeepSeek-V3.2-Speciale
+
+**Capabilities:**
+- High-compute variant optimized for maximum reasoning
+- "Rivals Gemini-3.0-Pro" per DeepSeek benchmarks
+- Gold-medal performance: IMO, CMO, ICPC World Finals, IOI 2025
+- DeepSeek Sparse Attention (DSA) for efficient long-context
+- Scaled post-training reinforcement learning
+- Currently API-only (no tool-use) for research evaluation
+
+**Note:** V3.2-Speciale is ideal for complex reasoning tasks but has higher token usage. Consider V3.2 for balanced inference.
+
+---
+
+## ~~Models NOT FOUND~~ (CORRECTED Dec 20, 2025)
+
+### DeepSeek V3.2-Speciale - STATUS CORRECTED
+
+| Field | Value |
+|-------|-------|
+| **Previous Status (Dec 19)** | ~~NOT FOUND~~ |
+| **Corrected Status (Dec 20)** | **VERIFIED** - Available on OpenRouter |
+| **Action Required** | Re-add to model registry with correct ID: `deepseek/deepseek-v3.2-speciale` |
+
+**Correction Notes:**
+- Model was released Dec 1, 2025 but not found in initial Dec 19 search
+- Confirmed available via Exa search Dec 20, 2025
+- OpenRouter page: https://openrouter.ai/deepseek/deepseek-v3.2-speciale
 
 ---
 
@@ -257,12 +317,19 @@
 | 2025-12-19 20:38 PST | GPT-5.2-Codex verification | Confirmed via IT Pro, VentureBeat, OpenAI blog |
 | 2025-12-19 20:38 PST | Kimi K2 Thinking verification | Confirmed on OpenRouter + HuggingFace |
 | 2025-12-19 20:38 PST | DeepSeek V3.2-Speciale search | NOT FOUND on any provider |
+| **2025-12-20 12:29 PST** | **Re-verification via Exa** | **DeepSeek V3.2 + V3.2-Speciale FOUND on OpenRouter** |
+| 2025-12-20 12:29 PST | DeepSeek V3.2 verification | Confirmed: $0.27/$0.41/1M, released Dec 1, 2025 |
+| 2025-12-20 12:29 PST | DeepSeek V3.2-Speciale verification | Confirmed: rivals Gemini-3.0-Pro, gold-medal reasoning |
+| 2025-12-20 12:29 PST | Deno 2.1 verification | Confirmed: all Supabase regions running Deno 2.1 (Aug 15, 2025) |
+| 2025-12-20 12:29 PST | PostgREST v14 verification | Confirmed: 20% RPS improvement, JWT cache (Dec 11, 2025) |
+| 2025-12-20 12:29 PST | Vite 8 Beta verification | Confirmed: Rolldown-powered, available for testing |
 
 ---
 
 ## Sign-off
 
-This ledger represents the verified state of AI model availability as of December 19, 2025.
+This ledger represents the verified state of AI model availability as of December 20, 2025.
 All code changes to the model registry must reference this document.
 
-**Next Review Date:** December 26, 2025 (weekly cadence recommended)
+**Last Updated:** December 20, 2025 12:35 PST
+**Next Review Date:** December 27, 2025 (weekly cadence recommended)

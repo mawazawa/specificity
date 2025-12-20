@@ -14,11 +14,16 @@
 - `anthropic/claude-opus-4-5-20251101` - VERIFIED (current active model)
 - Groq: `deepseek-r1-distill-llama-70b` - VERIFIED (128K context)
 
-**Models NOT FOUND / Removed:**
-- `deepseek-v3.2-speciale` - NOT on OpenRouter, removed from registry
+**Models Previously Marked NOT FOUND (CORRECTED Dec 20, 2025):**
+- ~~`deepseek-v3.2-speciale` - NOT on OpenRouter~~ → **NOW VERIFIED** on OpenRouter ($0.27/$0.41 per 1M)
+- `deepseek-v3.2` - **NOW VERIFIED** on OpenRouter (released Dec 1, 2025, "GPT-5 level performance")
 - `claude-sonnet-4.5` - Renamed to `claude-opus-4.5`
 - `gemini-2.5-flash` - Replaced with `gemini-3-flash`
 - `gpt-5.1` / `gpt-5.1-codex` - Replaced with `gpt-5.2` / `gpt-5.2-codex`
+
+**New Verified Models (Dec 20, 2025 Exa Re-verification):**
+- `deepseek/deepseek-v3.2` - $0.27/$0.41 per 1M, 163K context, thinking-in-tool-use
+- `deepseek/deepseek-v3.2-speciale` - Rivals Gemini-3.0-Pro, gold-medal reasoning performance
 
 ## Current-State Mismatch Snapshot (From Code Scan)
 - `supabase/functions/lib/openrouter-client.ts` references `gpt-5.2`, `gpt-5.2-codex`, `gemini-3-flash`, `deepseek-v3.2-speciale`, `kimi-k2-thinking`.
@@ -554,3 +559,200 @@ Phase 0 -> Phase 1 -> Phase 3 -> Phase 4. Phases 2, 5, and 6 are parallelizable 
 ## Critical Path (Phases 7-11)
 Phase 7 (Data Integrity) → Phase 8 (UX) → Phase 9 (Observability) → Phase 10 (Performance)
 Phase 11 runs in parallel with verification.
+
+---
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PHASE 12: Critical Corrections & Platform Upgrades
+# Date: December 20, 2025 12:35 PST
+# Research Verification: Exa search Dec 20, 2025 - ALL ITEMS VERIFIED
+# ═══════════════════════════════════════════════════════════════════════════════
+
+## Correction Notice
+**This phase addresses 5 critical issues found during temporal metacognition review.**
+All corrections are backed by Exa-verified sources from Dec 20, 2025.
+
+---
+
+## Phase 12.1: Model Registry Corrections (CRITICAL)
+
+### DeepSeek V3.2 Models Now Available
+**Previous Status:** "NOT FOUND on OpenRouter" (Dec 19, 2025)
+**Corrected Status:** **VERIFIED and AVAILABLE** (Dec 20, 2025)
+**Source:** https://openrouter.ai/deepseek/deepseek-v3.2-speciale
+
+- [ ] **12.1.1** Re-add `deepseek-v3.2` to model registry
+  - **Model ID:** `deepseek/deepseek-v3.2`
+  - **Pricing:** $0.27 input / $0.41 output per 1M tokens
+  - **Context:** 163,840 tokens
+  - **Success:** Model entry added with correct OpenRouter ID
+
+- [ ] **12.1.2** Re-add `deepseek-v3.2-speciale` to model registry
+  - **Model ID:** `deepseek/deepseek-v3.2-speciale`
+  - **Pricing:** $0.27 input / $0.41 output per 1M tokens
+  - **Capability:** "Rivals Gemini-3.0-Pro" for complex reasoning
+  - **Success:** Model entry added, configured for review/synthesis stages
+
+- [ ] **12.1.3** Evaluate V3.2-Speciale as claude-opus-4.5 replacement
+  - **Cost Comparison:** V3.2-Speciale ($0.27/$0.41) vs Claude Opus ($15/$75)
+  - **Performance:** Gold-medal on IMO, CMO, ICPC World Finals, IOI 2025
+  - **Success:** Decision documented on whether to swap synthesis model
+
+- [ ] **12.1.4** Update Evidence Ledger with new models
+  - **Success:** `model-evidence-ledger-2025-12-19.md` updated with V3.2 entries
+
+- [ ] **12.1.5** Add verification date to all registry entries
+  - **Success:** Each model has `verifiedDate: '2025-12-20'` field
+
+---
+
+## Phase 12.2: Deno 2.1 Migration (CRITICAL)
+
+### Supabase Edge Functions Now Run Deno 2.1
+**Previous Assumption:** Deno 1.x patterns
+**Corrected Reality:** Deno 2.1 fully rolled out Aug 15, 2025
+**Source:** https://github.com/orgs/supabase/discussions/37941
+
+- [ ] **12.2.1** Update `supabase/config.toml` to set `deno_version = 2`
+  - **Success:** Config explicitly sets Deno 2.1
+
+- [ ] **12.2.2** Migrate imports to `npm:` prefix pattern
+  - **Before:** `import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'`
+  - **After:** `import { createClient } from 'npm:@supabase/supabase-js@2'`
+  - **Success:** All Edge Function imports use npm: prefix
+
+- [ ] **12.2.3** Update `deno.json` with Deno 2 import map syntax
+  - **Success:** Import map follows Deno 2 specification
+
+- [ ] **12.2.4** Remove deprecated `--import-map` CLI flags
+  - **Success:** No deprecation warnings during deployment
+
+- [ ] **12.2.5** Test all Edge Functions with Deno 2.1 runtime
+  - **Success:** All functions deploy and execute without errors
+
+- [ ] **12.2.6** Enable npm compatibility features
+  - **Benefit:** Access to full npm ecosystem in Edge Functions
+  - **Success:** npm packages import successfully
+
+---
+
+## Phase 12.3: PostgREST v14 Performance Upgrade
+
+### 20% RPS Improvement Available
+**Released:** December 11, 2025
+**Source:** https://supabase.com/changelog
+
+- [ ] **12.3.1** Verify project is using PostgREST v14
+  - **Success:** Version confirmed via Supabase Dashboard or API
+
+- [ ] **12.3.2** Enable JWT cache for throughput improvement
+  - **Default:** Enabled with 1000 entries
+  - **Success:** 20% RPS improvement measured
+
+- [ ] **12.3.3** Verify schema cache loading improvement
+  - **Benefit:** 7 minutes → 2 seconds for complex schemas
+  - **Success:** No configuration needed, automatic
+
+- [ ] **12.3.4** Document PostgREST version in project config
+  - **Success:** Version documented in CLAUDE.md
+
+---
+
+## Phase 12.4: Vite 8 Beta Evaluation
+
+### Rolldown-Powered Builds Available
+**Status:** Beta
+**Source:** https://vite.dev/blog/announcing-vite8-beta
+
+- [ ] **12.4.1** Create feature branch for Vite 8 evaluation
+  - **Success:** Branch `feature/vite-8-evaluation` created
+
+- [ ] **12.4.2** Upgrade Vite to v8 beta
+  - **Command:** `pnpm add -D vite@beta`
+  - **Success:** Package installed without conflicts
+
+- [ ] **12.4.3** Benchmark build times: Vite 6 vs Vite 8
+  - **Expected:** 10-100x faster builds with Rolldown
+  - **Success:** Benchmark results documented
+
+- [ ] **12.4.4** Test production build output
+  - **Success:** Bundle size and functionality verified
+
+- [ ] **12.4.5** Decision: Adopt Vite 8 or wait for stable
+  - **Success:** Decision documented with rationale
+
+---
+
+## Phase 12.5: React 19 Pattern Adoption
+
+### Modern React Patterns
+**Source:** https://react.dev/blog/2024/12/05/react-19
+
+- [ ] **12.5.1** Adopt `use()` hook for Suspense data fetching
+  - **Benefit:** Cleaner async data loading without useEffect
+  - **Success:** Key components use `use()` pattern
+
+- [ ] **12.5.2** Implement `useActionState` for forms
+  - **Benefit:** Better form submission state management
+  - **Success:** Form components updated
+
+- [ ] **12.5.3** Add resource hints for performance
+  - **Functions:** `prefetchDNS`, `preconnect`, `preload`, `preinit`
+  - **Success:** Critical resources preloaded
+
+- [ ] **12.5.4** Implement streaming SSR with multiple Suspense boundaries
+  - **Pattern:** Independent sections stream separately
+  - **Success:** LCP improved with parallel streaming
+
+- [ ] **12.5.5** Add `useDeferredValue` for search inputs
+  - **Benefit:** Responsive UI during heavy rendering
+  - **Success:** Search components use deferred values
+
+---
+
+## Phase 12.6: Package Manager Standardization
+
+### pnpm for Frontend, npm: for Deno
+**Rationale:**
+- pnpm: Best for React/Vite frontend (faster, stricter, smaller node_modules)
+- npm: prefix: Required by Deno 2 for Edge Functions (not pnpm CLI)
+
+- [ ] **12.6.1** Ensure pnpm is used for frontend development
+  - **Success:** `pnpm-lock.yaml` is source of truth for frontend
+
+- [ ] **12.6.2** Document package manager distinction
+  - **Frontend:** Use `pnpm install`, `pnpm add`, `pnpm run`
+  - **Edge Functions:** Use `npm:` prefix in imports (Deno native)
+  - **Success:** README updated with package manager guidance
+
+- [ ] **12.6.3** Add `packageManager` field to package.json
+  - **Value:** `"packageManager": "pnpm@9.x"`
+  - **Success:** Corepack enforces pnpm usage
+
+---
+
+## Definition of Done (Phase 12)
+- DeepSeek V3.2 and V3.2-Speciale in model registry
+- Edge Functions migrated to Deno 2.1 patterns
+- PostgREST v14 performance verified
+- Vite 8 evaluation completed
+- React 19 patterns adopted where beneficial
+- pnpm standardized for frontend, npm: for Deno
+
+## Critical Path (Phase 12)
+12.1 (Model Corrections) → 12.2 (Deno 2.1) → 12.3 (PostgREST) can run in parallel
+12.4 (Vite 8) and 12.5 (React 19) can run in parallel after Phase 10 performance baseline
+
+---
+
+## Verification Sources (Dec 20, 2025)
+
+| Finding | Source URL | Verified |
+|---------|------------|----------|
+| DeepSeek V3.2-Speciale on OpenRouter | https://openrouter.ai/deepseek/deepseek-v3.2-speciale | Dec 20, 2025 |
+| DeepSeek V3.2 release announcement | https://api-docs.deepseek.com/news/news251201 | Dec 1, 2025 |
+| Deno 2.1 Supabase rollout | https://github.com/orgs/supabase/discussions/37941 | Aug 15, 2025 |
+| PostgREST v14 release | https://supabase.com/changelog | Dec 11, 2025 |
+| Vite 8 Beta announcement | https://vite.dev/blog/announcing-vite8-beta | Dec 2025 |
+| React 19 release | https://react.dev/blog/2024/12/05/react-19 | Dec 2024 |
+| Supabase Deno 2 docs | https://supabase.com/docs/guides/functions/deno2 | Dec 2025 |

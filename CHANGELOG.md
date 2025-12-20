@@ -10,6 +10,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Phases 7-11 atomic implementation plan with 100+ sub-tasks mapped to success criteria
 - Comprehensive bug tracking for 10 verified issues
+- **Phase 12**: Critical corrections and platform upgrades (Dec 20, 2025)
+  - DeepSeek V3.2 and V3.2-Speciale model entries (NOW AVAILABLE on OpenRouter)
+  - Deno 2.1 migration tasks for Edge Functions
+  - PostgREST v14 performance verification tasks
+  - Vite 8 Beta evaluation tasks
+  - React 19 pattern adoption tasks
+  - pnpm standardization for frontend
+
+### Changed
+- **Model Registry Correction**: DeepSeek V3.2-Speciale is NOW AVAILABLE
+  - Previously marked "NOT FOUND" on Dec 19, 2025
+  - Verified available on OpenRouter Dec 20, 2025 via Exa search
+  - Model ID: `deepseek/deepseek-v3.2-speciale`
+  - Pricing: $0.27/$0.41 per 1M tokens (55x cheaper than Claude Opus 4.5)
+- Updated Evidence Ledger with corrected DeepSeek V3.2 model information
+- Added new verified models:
+  - `deepseek/deepseek-v3.2` - "GPT-5 level performance", thinking-in-tool-use
+  - `deepseek/deepseek-v3.2-speciale` - Rivals Gemini-3.0-Pro, gold-medal reasoning
+
+### Fixed
+- Corrected Evidence Ledger false negative for DeepSeek V3.2-Speciale
+- Updated GPT-5.2 model ID to include date suffix: `openai/gpt-5.2-20251211`
+
+### Documentation
+- Evidence Ledger updated with Dec 20, 2025 re-verification results
+- Added verification audit trail entries for all new findings
+- Documented package manager distinction (pnpm for frontend, npm: for Deno)
 
 ---
 
