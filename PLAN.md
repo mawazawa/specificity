@@ -117,20 +117,20 @@
 
 ---
 
-## Phase 4: Heavy-Model Review and Output Verification
+## Phase 4: Heavy-Model Review and Output Verification ✅ COMPLETED
 *Goal: Use a heavy model to audit lower-cost model outputs before final spec.*
 
-- [ ] **4.1 Add a review gate**
+- [x] **4.1 Add a review gate** ✅
   - **Action:** Introduce a "review" stage that validates research/synthesis with a heavy model (preferred: GPT-5.2 Codex or verified equivalent).
-  - **Success Criteria:** Review stage produces a pass/fail signal with clear remediation notes.
+  - **Completed:** Dec 19, 2025 - Created `review.ts` stage handler with GPT-5.2 Codex. Added 'review' stage to pipeline between synthesis and voting. Returns pass/fail with score, issues array, and remediation notes.
 
-- [ ] **4.2 Cross-check citations**
+- [x] **4.2 Cross-check citations** ✅
   - **Action:** Require at least N citations in research outputs; fail or re-run if missing.
-  - **Success Criteria:** Each expert output includes source evidence or explicit "no source found" flags.
+  - **Completed:** Dec 19, 2025 - Review stage includes `citationAnalysis` with totalCitations, verifiedCitations, missingCitations, and per-expert coverage tracking.
 
-- [ ] **4.3 Model disagreement protocol**
+- [x] **4.3 Model disagreement protocol** ✅
   - **Action:** Define an escalation path if heavy-model review contradicts lower-model outputs.
-  - **Success Criteria:** Clear, deterministic retry rules to converge on a final result.
+  - **Completed:** Dec 19, 2025 - Implemented `handleReviewEscalation` function using Claude-Opus-4.5 as fallback reviewer. Returns resolution: "retry" | "proceed" | "manual" with confirmed/dismissed issues.
 
 ---
 

@@ -2,12 +2,22 @@
  * Enhanced Multi-Agent Specification Generator
  * Hybrid architecture combining Make It Heavy's orchestration with Specificity's expertise
  *
+ * Pipeline Stages (Dec 2025):
+ * 1. questions    - Dynamic question generation (GPT-5.2)
+ * 2. research     - Parallel expert research with tools (multi-model via OpenRouter)
+ * 3. challenge    - Ray Dalio-style productive conflict (GPT-5.2)
+ * 4. synthesis    - Expert synthesis (Groq: deepseek-r1-distill-llama-70b)
+ * 5. review       - Heavy-model review gate (GPT-5.2 Codex) [NEW Phase 4]
+ * 6. voting       - Expert voting (Groq: deepseek-r1-distill-llama-70b)
+ * 7. spec         - Final spec generation (Groq: deepseek-r1-distill-llama-70b)
+ * 8. chat         - 1:1 expert chat (GPT-5.2)
+ *
  * Features:
- * - Dynamic question generation (GPT-5.1)
  * - Intelligent expert assignment
  * - True parallel execution
  * - Hot-swappable tool system (5 core tools)
  * - Multi-model support via OpenRouter
+ * - Heavy-model review gate for output verification
  */
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
@@ -26,6 +36,7 @@ import { handleQuestionsStage } from './lib/stages/questions.ts';
 import { handleResearchStage } from './lib/stages/research.ts';
 import { handleChallengeStage } from './lib/stages/challenge.ts';
 import { handleSynthesisStage } from './lib/stages/synthesis.ts';
+import { handleReviewStage } from './lib/stages/review.ts';
 import { handleVotingStage } from './lib/stages/voting.ts';
 import { handleSpecStageComplete } from './lib/stages/spec.ts';
 import { handleChatStage } from './lib/stages/chat.ts';
@@ -222,6 +233,14 @@ serve(async (req) => {
     // ========================================
     if (stage === 'synthesis') {
       return await handleSynthesisStage(roundData, cleanComment, GROQ_API_KEY!);
+    }
+
+    // ========================================
+    // STAGE 3.5: REVIEW (HEAVY-MODEL GATE)
+    // Phase 4 implementation - GPT-5.2 Codex validates outputs
+    // ========================================
+    if (stage === 'review') {
+      return await handleReviewStage(roundData);
     }
 
     // ========================================

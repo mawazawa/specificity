@@ -132,6 +132,35 @@ export const expertVoteSchema = z.object({
   timestamp: z.string(), // ISO string
 });
 
+// From review.ts - Phase 4 heavy-model review
+export const reviewIssueSchema = z.object({
+  severity: z.enum(['critical', 'major', 'minor']),
+  category: z.enum(['accuracy', 'completeness', 'citation', 'feasibility', 'consistency']),
+  description: z.string(),
+  affectedExpert: z.string().optional(),
+  remediation: z.string(),
+});
+
+export const citationAnalysisSchema = z.object({
+  totalCitations: z.number().int(),
+  verifiedCitations: z.number().int(),
+  missingCitations: z.number().int(),
+  expertCoverage: z.record(z.string(), z.object({
+    citations: z.number().int(),
+    verified: z.boolean(),
+  })),
+});
+
+export const reviewResultSchema = z.object({
+  overallScore: z.number().int().min(0).max(100),
+  passed: z.boolean(),
+  issues: z.array(reviewIssueSchema),
+  recommendations: z.array(z.string()),
+  citationAnalysis: citationAnalysisSchema,
+  timestamp: z.string(),
+  model: z.string(),
+});
+
 
 // Combine into a single roundData schema
 export const roundDataSchema = z.object({
@@ -145,6 +174,7 @@ export const roundDataSchema = z.object({
   challengeMetadata: challengeMetadataSchema.optional(),
   syntheses: z.array(expertSynthesisSchema).optional(),
   synthesisMetadata: synthesisMetadataSchema.optional(),
+  review: reviewResultSchema.optional(), // Phase 4: Heavy-model review
   votes: z.array(expertVoteSchema).optional(),
 });
 
@@ -155,7 +185,7 @@ export const requestSchema = z.object({
         .min(1, 'Input required')
         .max(5000, 'Input too long')
         .optional(),
-    stage: z.enum(['questions', 'research', 'challenge', 'synthesis', 'voting', 'spec', 'chat']),
+    stage: z.enum(['questions', 'research', 'challenge', 'synthesis', 'review', 'voting', 'spec', 'chat']),
     targetAgent: z.string().optional(),
     userComment: z.string().max(1000).optional(),
     agentConfigs: z.array(agentConfigSchema).optional(),
