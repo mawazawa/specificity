@@ -1,0 +1,277 @@
+# Root Allowlist - Enforces Repository Hygiene
+# Lint script: scripts/lint/root-lint.ts
+# Any file not in this list at repo root triggers lint failure
+version: "1.0.0"
+last_updated: "2025-12-20"
+
+# ═══════════════════════════════════════════════════════════════
+# ALLOWED ROOT FILES
+# ═══════════════════════════════════════════════════════════════
+
+allowed_files:
+  # ─────────────────────────────────────────────────────────────
+  # Core Configuration (Required)
+  # ─────────────────────────────────────────────────────────────
+  - name: "package.json"
+    purpose: "Node.js package manifest"
+    required: true
+
+  - name: "package-lock.json"
+    purpose: "Dependency lockfile"
+    required: true
+
+  - name: "bun.lockb"
+    purpose: "Bun lockfile (alternative to npm)"
+    required: false
+
+  - name: "tsconfig.json"
+    purpose: "TypeScript configuration"
+    required: true
+
+  - name: "tsconfig.node.json"
+    purpose: "TypeScript config for Node tooling"
+    required: false
+
+  - name: "vite.config.ts"
+    purpose: "Vite bundler configuration"
+    required: true
+
+  - name: "tailwind.config.ts"
+    purpose: "Tailwind CSS configuration"
+    required: true
+
+  - name: "postcss.config.js"
+    purpose: "PostCSS configuration"
+    required: true
+
+  - name: "eslint.config.js"
+    purpose: "ESLint linter configuration"
+    required: true
+
+  - name: "components.json"
+    purpose: "shadcn/ui component registry"
+    required: true
+
+  - name: "playwright.config.ts"
+    purpose: "E2E test configuration"
+    required: true
+
+  - name: "tsconfig.app.json"
+    purpose: "TypeScript app configuration"
+    required: false
+
+  - name: "vercel.json"
+    purpose: "Vercel deployment configuration"
+    required: false
+
+  # ─────────────────────────────────────────────────────────────
+  # Environment (Required)
+  # ─────────────────────────────────────────────────────────────
+  - name: ".env"
+    purpose: "Local environment variables"
+    required: true
+    gitignored: true
+
+  - name: ".env.example"
+    purpose: "Environment template"
+    required: true
+
+  - name: ".env.local"
+    purpose: "Local overrides"
+    required: false
+    gitignored: true
+
+  # ─────────────────────────────────────────────────────────────
+  # Git & GitHub
+  # ─────────────────────────────────────────────────────────────
+  - name: ".gitignore"
+    purpose: "Git ignore patterns"
+    required: true
+
+  # ─────────────────────────────────────────────────────────────
+  # Entry Points
+  # ─────────────────────────────────────────────────────────────
+  - name: "index.html"
+    purpose: "Application entry point"
+    required: true
+
+  # ─────────────────────────────────────────────────────────────
+  # Documentation (Allowed at Root)
+  # ─────────────────────────────────────────────────────────────
+  - name: "README.md"
+    purpose: "Project overview and quickstart"
+    required: true
+
+  - name: "CHANGELOG.md"
+    purpose: "Version history"
+    required: true
+
+  - name: "PLAN.md"
+    purpose: "Implementation plan with evidence"
+    required: true
+
+  - name: "CLAUDE.md"
+    purpose: "AI assistant instructions"
+    required: true
+
+  - name: "AGENTS.md"
+    purpose: "Multi-agent protocol documentation"
+    required: true
+
+  - name: "GEMINI.md"
+    purpose: "Gemini-specific configuration"
+    required: false
+
+  - name: "PROGRESS.md"
+    purpose: "Progress tracking"
+    required: false
+
+  - name: "SECURITY_ADVISORY.md"
+    purpose: "Security disclosure"
+    required: true
+
+  # ─────────────────────────────────────────────────────────────
+  # Production Deployment Docs
+  # ─────────────────────────────────────────────────────────────
+  - name: "PRODUCTION_DEPLOYMENT.md"
+    purpose: "Deployment guide"
+    required: false
+
+  - name: "PRODUCTION_DEPLOYMENT_CHECKLIST.md"
+    purpose: "Pre-deployment checklist"
+    required: false
+
+  - name: "PRODUCTION_READY_SUMMARY.md"
+    purpose: "Production readiness summary"
+    required: false
+
+  - name: "ENVIRONMENT_SETUP.md"
+    purpose: "Environment configuration guide"
+    required: false
+
+  # ─────────────────────────────────────────────────────────────
+  # Legacy/Archive Candidates
+  # These are allowed but should be reviewed for archival
+  # ─────────────────────────────────────────────────────────────
+  - name: "ARCHITECTURE_COMPARISON.md"
+    purpose: "Architecture analysis"
+    archive_candidate: true
+
+  - name: "IMPLEMENTATION_ROADMAP.md"
+    purpose: "Original implementation roadmap"
+    archive_candidate: true
+
+  - name: "COMPLETE_IMPROVEMENTS_SUMMARY.md"
+    purpose: "Historical improvement log"
+    archive_candidate: true
+
+  - name: "CONVERSION_IMPROVEMENTS.md"
+    purpose: "Conversion optimization notes"
+    archive_candidate: true
+
+  - name: "FIXES_AND_IMPROVEMENTS.md"
+    purpose: "Bug fix history"
+    archive_candidate: true
+
+  - name: "LANDING_PAGE_ANALYSIS.md"
+    purpose: "Landing page audit"
+    archive_candidate: true
+
+  - name: "PERSONAS.md"
+    purpose: "AI persona definitions"
+    archive_candidate: false  # Active reference
+
+  - name: "BUG_FIX_REPORT.md"
+    purpose: "Bug fix documentation"
+    archive_candidate: true
+
+  - name: "BUG_FIX_REPORT_2025-11-17.md"
+    purpose: "Dated bug fix report"
+    archive_candidate: true
+
+  - name: "frontend-integration-patch.md"
+    purpose: "Frontend patch notes"
+    archive_candidate: true
+
+  - name: "STRATEGIC_ANALYSIS_2026.md"
+    purpose: "Strategic planning"
+    archive_candidate: false  # Future planning
+
+  - name: "VERCEL_DEPLOYMENT.md"
+    purpose: "Vercel deployment notes"
+    archive_candidate: true
+
+# ═══════════════════════════════════════════════════════════════
+# ALLOWED DIRECTORIES
+# ═══════════════════════════════════════════════════════════════
+
+allowed_directories:
+  - name: ".claude"
+    purpose: "Claude Code configuration"
+
+  - name: ".git"
+    purpose: "Git repository data"
+
+  - name: ".github"
+    purpose: "GitHub workflows and config"
+
+  - name: ".vercel"
+    purpose: "Vercel deployment config"
+
+  - name: "dist"
+    purpose: "Build output"
+    gitignored: true
+
+  - name: "docs"
+    purpose: "Documentation library"
+
+  - name: "node_modules"
+    purpose: "Dependencies"
+    gitignored: true
+
+  - name: "playwright-report"
+    purpose: "E2E test reports"
+    gitignored: true
+
+  - name: "public"
+    purpose: "Static assets"
+
+  - name: "scripts"
+    purpose: "Build and lint scripts"
+
+  - name: "src"
+    purpose: "Application source code"
+
+  - name: "supabase"
+    purpose: "Supabase configuration and functions"
+
+  - name: "evals"
+    purpose: "Evaluation harness (pending)"
+
+  - name: "tests"
+    purpose: "E2E test files"
+
+  - name: "test-results"
+    purpose: "Playwright test results"
+    gitignored: true
+
+# ═══════════════════════════════════════════════════════════════
+# IGNORED PATTERNS
+# ═══════════════════════════════════════════════════════════════
+
+ignored_patterns:
+  - ".DS_Store"
+  - "*.log"
+  - "*.tmp"
+  - ".env*.local"
+
+# ═══════════════════════════════════════════════════════════════
+# LINT RULES
+# ═══════════════════════════════════════════════════════════════
+
+lint_rules:
+  fail_on_unknown_file: true
+  fail_on_unknown_directory: true
+  warn_on_archive_candidate: true
+  max_root_files: 40
+  max_root_directories: 15

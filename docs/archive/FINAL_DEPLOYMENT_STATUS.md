@@ -59,7 +59,7 @@
 
 1. **Set API Keys in Supabase Dashboard:**
    ```
-   Go to: https://supabase.com/dashboard/project/kxrdxiznaudatxyfrbxe/settings/edge-functions
+   Go to: https://supabase.com/dashboard/project/tkkthpoottlqmdopmtuh/settings/edge-functions
    
    Add:
    - GROQ_API_KEY (from https://console.groq.com)
@@ -77,8 +77,8 @@
    **Option B: Manual CLI**
    ```bash
    supabase login
-   supabase functions deploy multi-agent-spec --project-ref kxrdxiznaudatxyfrbxe --use-api
-   supabase functions deploy voice-to-text --project-ref kxrdxiznaudatxyfrbxe --use-api
+   supabase functions deploy multi-agent-spec --project-ref tkkthpoottlqmdopmtuh --use-api
+   supabase functions deploy voice-to-text --project-ref tkkthpoottlqmdopmtuh --use-api
    ```
 
 3. **Verify Deployment:**
@@ -233,9 +233,9 @@
 
 ## 🔗 PRODUCTION URLS
 
-- **Dashboard:** https://supabase.com/dashboard/project/kxrdxiznaudatxyfrbxe
-- **API Base:** https://kxrdxiznaudatxyfrbxe.supabase.co
-- **Edge Functions:** https://kxrdxiznaudatxyfrbxe.supabase.co/functions/v1/
+- **Dashboard:** https://supabase.com/dashboard/project/tkkthpoottlqmdopmtuh
+- **API Base:** https://tkkthpoottlqmdopmtuh.supabase.co
+- **Edge Functions:** https://tkkthpoottlqmdopmtuh.supabase.co/functions/v1/
 - **GitHub Repo:** https://github.com/mawazawa/specificity
 
 ---
@@ -246,8 +246,8 @@
 # 1. Set API keys in Supabase Dashboard (REQUIRED)
 # 2. Deploy edge functions
 supabase login
-supabase functions deploy multi-agent-spec --project-ref kxrdxiznaudatxyfrbxe --use-api
-supabase functions deploy voice-to-text --project-ref kxrdxiznaudatxyfrbxe --use-api
+supabase functions deploy multi-agent-spec --project-ref tkkthpoottlqmdopmtuh --use-api
+supabase functions deploy voice-to-text --project-ref tkkthpoottlqmdopmtuh --use-api
 
 # 3. Verify deployment
 export SUPABASE_ANON_KEY="your_anon_key"
@@ -257,7 +257,7 @@ export SUPABASE_ANON_KEY="your_anon_key"
 ./scripts/test-edge-functions.sh
 
 # 5. Monitor
-supabase functions logs multi-agent-spec --project-ref kxrdxiznaudatxyfrbxe
+supabase functions logs multi-agent-spec --project-ref tkkthpoottlqmdopmtuh
 ```
 
 ---

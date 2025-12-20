@@ -116,7 +116,7 @@ Specificity AI is **production-ready** with:
 
 ### **1. Set Environment Secrets** (REQUIRED)
 
-Go to: https://supabase.com/dashboard/project/kxrdxiznaudatxyfrbxe/settings/edge-functions
+Go to: https://supabase.com/dashboard/project/tkkthpoottlqmdopmtuh/settings/edge-functions
 
 Set these secrets:
 ```bash
@@ -134,8 +134,8 @@ EXA_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxx
 **Option B: Manual CLI**
 ```bash
 supabase login
-supabase functions deploy multi-agent-spec --project-ref kxrdxiznaudatxyfrbxe --use-api
-supabase functions deploy voice-to-text --project-ref kxrdxiznaudatxyfrbxe --use-api
+supabase functions deploy multi-agent-spec --project-ref tkkthpoottlqmdopmtuh --use-api
+supabase functions deploy voice-to-text --project-ref tkkthpoottlqmdopmtuh --use-api
 ```
 
 ### **3. Verify Deployment**
@@ -153,11 +153,11 @@ npm run dev
 
 ### **4. Monitor**
 
-**Dashboard:** https://supabase.com/dashboard/project/kxrdxiznaudatxyfrbxe/functions
+**Dashboard:** https://supabase.com/dashboard/project/tkkthpoottlqmdopmtuh/functions
 
 **Logs:**
 ```bash
-supabase functions logs multi-agent-spec --project-ref kxrdxiznaudatxyfrbxe
+supabase functions logs multi-agent-spec --project-ref tkkthpoottlqmdopmtuh
 ```
 
 ---
@@ -288,8 +288,8 @@ supabase functions logs multi-agent-spec --project-ref kxrdxiznaudatxyfrbxe
 ---
 
 **Project:** https://github.com/mawazawa/specificity  
-**Dashboard:** https://supabase.com/dashboard/project/kxrdxiznaudatxyfrbxe  
-**Production URL:** https://kxrdxiznaudatxyfrbxe.supabase.co  
+**Dashboard:** https://supabase.com/dashboard/project/tkkthpoottlqmdopmtuh  
+**Production URL:** https://tkkthpoottlqmdopmtuh.supabase.co  
 
 **Last Updated:** 2025-10-27  
 **Status:** 🚀 **PRODUCTION READY**

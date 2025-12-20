@@ -50,7 +50,7 @@
 
 ```bash
 # Connect to your Supabase project
-supabase link --project-ref kxrdxiznaudatxyfrbxe
+supabase link --project-ref tkkthpoottlqmdopmtuh
 
 # Apply all migrations
 supabase db push
@@ -92,7 +92,7 @@ GROQ_API_KEY=gsk_xxxxxxxxxxxxxxxxxxxxx
 EXA_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxx
 
 # Supabase (auto-configured)
-SUPABASE_URL=https://kxrdxiznaudatxyfrbxe.supabase.co
+SUPABASE_URL=https://tkkthpoottlqmdopmtuh.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
@@ -101,7 +101,7 @@ SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 In `.env` (already configured):
 
 ```env
-VITE_SUPABASE_URL=https://kxrdxiznaudatxyfrbxe.supabase.co
+VITE_SUPABASE_URL=https://tkkthpoottlqmdopmtuh.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
@@ -426,7 +426,7 @@ Add to `index.html`:
            script-src 'self' 'unsafe-inline' 'unsafe-eval';
            style-src 'self' 'unsafe-inline';
            img-src 'self' data: https:;
-           connect-src 'self' https://kxrdxiznaudatxyfrbxe.supabase.co https://api.groq.com https://api.exa.ai;">
+           connect-src 'self' https://tkkthpoottlqmdopmtuh.supabase.co https://api.groq.com https://api.exa.ai;">
 ```
 
 ### 2. Security Headers

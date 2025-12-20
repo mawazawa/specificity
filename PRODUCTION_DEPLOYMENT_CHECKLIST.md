@@ -60,8 +60,8 @@ export SUPABASE_ACCESS_TOKEN="your-token-here"
 cd /Users/mathieuwauters/Desktop/code/multi-agent-warp-spec
 
 # Deploy all functions
-supabase functions deploy multi-agent-spec --project-ref kxrdxiznaudatxyfrbxe --use-api
-supabase functions deploy voice-to-text --project-ref kxrdxiznaudatxyfrbxe --use-api
+supabase functions deploy multi-agent-spec --project-ref tkkthpoottlqmdopmtuh --use-api
+supabase functions deploy voice-to-text --project-ref tkkthpoottlqmdopmtuh --use-api
 ```
 
 **Or use the deploy script:**
@@ -73,7 +73,7 @@ supabase functions deploy voice-to-text --project-ref kxrdxiznaudatxyfrbxe --use
 
 ### Option C: Supabase Dashboard (UI)
 
-1. Go to: https://supabase.com/dashboard/project/kxrdxiznaudatxyfrbxe/functions
+1. Go to: https://supabase.com/dashboard/project/tkkthpoottlqmdopmtuh/functions
 2. Click "Deploy a new function"
 3. Upload function code manually
 4. Configure environment variables
@@ -87,7 +87,7 @@ supabase functions deploy voice-to-text --project-ref kxrdxiznaudatxyfrbxe --use
 **multi-agent-spec:**
 ```bash
 curl --request POST \
-  'https://kxrdxiznaudatxyfrbxe.supabase.co/functions/v1/multi-agent-spec' \
+  'https://tkkthpoottlqmdopmtuh.supabase.co/functions/v1/multi-agent-spec' \
   --header 'Authorization: Bearer YOUR_ANON_KEY' \
   --header 'Content-Type: application/json' \
   --data '{
@@ -102,7 +102,7 @@ Expected: JSON response with dialogue array
 **voice-to-text:**
 ```bash
 curl --request POST \
-  'https://kxrdxiznaudatxyfrbxe.supabase.co/functions/v1/voice-to-text' \
+  'https://tkkthpoottlqmdopmtuh.supabase.co/functions/v1/voice-to-text' \
   --header 'Authorization: Bearer YOUR_ANON_KEY' \
   --header 'Content-Type: application/json' \
   --data '{
@@ -147,12 +147,12 @@ npm run dev
 ### View Function Logs
 
 **Dashboard:**
-https://supabase.com/dashboard/project/kxrdxiznaudatxyfrbxe/functions
+https://supabase.com/dashboard/project/tkkthpoottlqmdopmtuh/functions
 
 **CLI:**
 ```bash
-supabase functions logs multi-agent-spec --project-ref kxrdxiznaudatxyfrbxe
-supabase functions logs voice-to-text --project-ref kxrdxiznaudatxyfrbxe
+supabase functions logs multi-agent-spec --project-ref tkkthpoottlqmdopmtuh
+supabase functions logs voice-to-text --project-ref tkkthpoottlqmdopmtuh
 ```
 
 ### Key Metrics to Monitor
@@ -182,13 +182,13 @@ supabase functions logs voice-to-text --project-ref kxrdxiznaudatxyfrbxe
 
 1. **Check logs:**
    ```bash
-   supabase functions logs multi-agent-spec --project-ref kxrdxiznaudatxyfrbxe
+   supabase functions logs multi-agent-spec --project-ref tkkthpoottlqmdopmtuh
    ```
 
 2. **Redeploy previous version:**
    ```bash
    git checkout main~1  # Go back one commit
-   supabase functions deploy multi-agent-spec --project-ref kxrdxiznaudatxyfrbxe --use-api
+   supabase functions deploy multi-agent-spec --project-ref tkkthpoottlqmdopmtuh --use-api
    ```
 
 3. **Or disable function:**
@@ -245,8 +245,8 @@ supabase functions logs voice-to-text --project-ref kxrdxiznaudatxyfrbxe
 ## Contact
 
 - **Project:** https://github.com/mawazawa/specificity
-- **Supabase Project:** kxrdxiznaudatxyfrbxe
-- **Dashboard:** https://supabase.com/dashboard/project/kxrdxiznaudatxyfrbxe
+- **Supabase Project:** tkkthpoottlqmdopmtuh
+- **Dashboard:** https://supabase.com/dashboard/project/tkkthpoottlqmdopmtuh
 
 ---
 

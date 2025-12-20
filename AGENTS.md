@@ -141,12 +141,16 @@ REPORT:
 
 The following entities have been created in the Memory MCP to persist these learnings:
 
-- `Exa-Search-Reliability-Protocol`
+- `Exa-Usage-Discipline-Protocol` (replaces deprecated `Exa-Search-Reliability-Protocol`)
 - `Document-Amendment-Reconciliation-Protocol`
 - `Completion-Claim-Artifact-Verification`
 - `Multi-Agent-Cross-Review-Protocol`
 
 Query with: `mcp__memory__search_nodes({ query: "verification protocol" })`
+
+**Note on Exa-Usage-Discipline-Protocol**: Created Dec 20, 2025 after false negative incident.
+Root cause was lazy usage (skipping actual Exa calls), not tool failure.
+Key lesson: "Exa works. Lazy usage is the problem."
 
 ---
 

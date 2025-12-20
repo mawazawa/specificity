@@ -174,7 +174,7 @@ npm run typecheck
 # Required
 GROQ_API_KEY=gsk_...
 EXA_API_KEY=...
-SUPABASE_URL=https://sbwgkocarqvonkdlitdx.supabase.co
+SUPABASE_URL=https://tkkthpoottlqmdopmtuh.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=...
 
 # Optional (highly recommended for best results)
@@ -183,8 +183,8 @@ OPENROUTER_API_KEY=sk-or-v1-...
 
 **Frontend Environment Variables (`.env`):**
 ```bash
-VITE_SUPABASE_PROJECT_ID=sbwgkocarqvonkdlitdx
-VITE_SUPABASE_URL=https://sbwgkocarqvonkdlitdx.supabase.co
+VITE_SUPABASE_PROJECT_ID=tkkthpoottlqmdopmtuh
+VITE_SUPABASE_URL=https://tkkthpoottlqmdopmtuh.supabase.co
 VITE_SUPABASE_ANON_KEY=...
 ```
 
@@ -211,7 +211,7 @@ Test each stage:
 1. Sign in
 2. Submit a product idea
 3. Monitor edge function logs:
-   - https://supabase.com/dashboard/project/sbwgkocarqvonkdlitdx/logs/edge-functions
+   - https://supabase.com/dashboard/project/tkkthpoottlqmdopmtuh/logs/edge-functions
 4. Verify completion of all 6 stages
 
 ---
@@ -222,7 +222,7 @@ Test each stage:
 
 View real-time logs:
 ```
-https://supabase.com/dashboard/project/sbwgkocarqvonkdlitdx/logs/edge-functions
+https://supabase.com/dashboard/project/tkkthpoottlqmdopmtuh/logs/edge-functions
 ```
 
 Look for log patterns:

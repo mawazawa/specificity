@@ -193,7 +193,7 @@ Phase 0 -> Phase 1 -> Phase 3 -> Phase 4. Phases 2, 5, and 6 are parallelizable 
 
 ## Database Migration Notice
 **CRITICAL CHANGE (Dec 20, 2025):**
-- **Old Database:** `supabase-lime-tree` / `sbwgkocarqvonkdlitdx` (DEPRECATED - shared with 85+ tables from other projects)
+- **Old Database:** `supabase-lime-tree` / `tkkthpoottlqmdopmtuh` (DEPRECATED - shared with 85+ tables from other projects)
 - **New Database:** `specificity` / `tkkthpoottlqmdopmtuh` (DEDICATED - created Dec 20, 2025)
 - All migrations applied, prompts seeded, edge functions deployed to new project
 

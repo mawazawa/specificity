@@ -44,7 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed - BREAKING
 - **Database Migration**: Migrated from shared database to dedicated Supabase project
-  - **Old**: `supabase-lime-tree` / `sbwgkocarqvonkdlitdx` (DEPRECATED)
+  - **Old**: `supabase-lime-tree` / `tkkthpoottlqmdopmtuh` (DEPRECATED)
   - **New**: `specificity` / `tkkthpoottlqmdopmtuh` (DEDICATED)
   - Reason: Old database contained 85+ tables from multiple unrelated projects (JusticeOS, Tabboo, Email/CRM systems)
 
@@ -132,7 +132,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 | Environment | Project Name | Project Ref | Status |
 |-------------|--------------|-------------|--------|
 | Production | `specificity` | `tkkthpoottlqmdopmtuh` | ACTIVE |
-| Legacy | `supabase-lime-tree` | `sbwgkocarqvonkdlitdx` | DEPRECATED |
+| Legacy | `supabase-lime-tree` | `tkkthpoottlqmdopmtuh` | DEPRECATED |
 
 ---
 

@@ -1,0 +1,145 @@
+# Model Registry - Single Source of Truth
+# Syncs with: supabase/functions/lib/openrouter-client.ts
+# Evidence Ledger: docs/reports/model-evidence-ledger-2025-12-19.md
+version: "1.0.0"
+last_verified: "2025-12-20T12:35:00-08:00"
+next_review: "2025-12-27"
+
+models:
+  gpt-5.2:
+    provider: openai
+    openrouter_id: openai/gpt-5.2
+    context_window: 400000
+    cost_per_1m_input: 1.75
+    cost_per_1m_output: 14.00
+    verified_date: "2025-12-20"
+    verified_source: "https://openrouter.ai/openai/gpt-5.2"
+    status: verified
+    strengths:
+      - reasoning
+      - meta-cognition
+      - math
+      - creativity
+      - agentic
+
+  gpt-5.2-codex:
+    provider: openai
+    openrouter_id: openai/gpt-5.2-codex
+    context_window: 400000
+    cost_per_1m_input: 2.00
+    cost_per_1m_output: 15.00
+    verified_date: "2025-12-19"
+    verified_source: "https://openai.com/index/introducing-gpt-5-2-codex/"
+    status: verified
+    note: "API rolling out Dec 2025"
+    strengths:
+      - coding
+      - architecture
+      - refactoring
+      - security
+      - agentic
+
+  claude-opus-4.5:
+    provider: anthropic
+    openrouter_id: anthropic/claude-opus-4-5-20251101
+    context_window: 200000
+    cost_per_1m_input: 15.00
+    cost_per_1m_output: 75.00
+    verified_date: "2025-12-19"
+    verified_source: "https://anthropic.com"
+    status: verified
+    strengths:
+      - nuance
+      - writing
+      - complex_instruction_following
+
+  gemini-3-flash:
+    provider: google
+    openrouter_id: google/gemini-3-flash-preview
+    context_window: 1048576
+    cost_per_1m_input: 0.50
+    cost_per_1m_output: 3.00
+    verified_date: "2025-12-19"
+    verified_source: "https://openrouter.ai/google/gemini-3-flash-preview"
+    status: verified
+    strengths:
+      - speed
+      - multimodal
+      - huge_context
+      - agentic
+
+  deepseek-v3:
+    provider: deepseek
+    openrouter_id: deepseek/deepseek-chat
+    context_window: 163840
+    cost_per_1m_input: 0.30
+    cost_per_1m_output: 1.20
+    verified_date: "2025-12-19"
+    verified_source: "https://openrouter.ai/deepseek/deepseek-chat"
+    status: verified
+    strengths:
+      - balanced
+      - efficiency
+      - general_purpose
+      - coding
+
+  deepseek-v3.2:
+    provider: deepseek
+    openrouter_id: deepseek/deepseek-v3.2
+    context_window: 163840
+    cost_per_1m_input: 0.27
+    cost_per_1m_output: 0.41
+    verified_date: "2025-12-20"
+    verified_source: "https://openrouter.ai/deepseek/deepseek-v3.2"
+    status: verified
+    note: "GPT-5 level performance, thinking-in-tool-use"
+    strengths:
+      - reasoning
+      - tool_use
+      - agentic
+
+  deepseek-v3.2-speciale:
+    provider: deepseek
+    openrouter_id: deepseek/deepseek-v3.2-speciale
+    context_window: 163840
+    cost_per_1m_input: 0.27
+    cost_per_1m_output: 0.41
+    verified_date: "2025-12-20"
+    verified_source: "https://openrouter.ai/deepseek/deepseek-v3.2-speciale"
+    status: verified
+    note: "Rivals Gemini-3.0-Pro, gold-medal reasoning"
+    strengths:
+      - complex_reasoning
+      - math
+      - competition_level
+
+  kimi-k2-thinking:
+    provider: moonshotai
+    openrouter_id: moonshotai/kimi-k2-thinking
+    context_window: 262144
+    cost_per_1m_input: 0.45
+    cost_per_1m_output: 2.35
+    verified_date: "2025-12-19"
+    verified_source: "https://openrouter.ai/moonshotai/kimi-k2-thinking"
+    status: verified
+    strengths:
+      - chain_of_thought
+      - self_correction
+      - planning
+      - tool_use
+
+  deepseek-r1-distill:
+    provider: groq
+    groq_id: deepseek-r1-distill-llama-70b
+    context_window: 128000
+    cost_per_1m_input: 0.10
+    cost_per_1m_output: 0.30
+    verified_date: "2025-12-19"
+    verified_source: "https://console.groq.com/docs/model/deepseek-r1-distill-llama-70b"
+    status: verified
+    note: "Groq direct (not OpenRouter)"
+    strengths:
+      - speed
+      - cost
+      - reasoning_lite
+      - math

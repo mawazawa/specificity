@@ -363,14 +363,14 @@ Get your key at: https://openrouter.ai/keys
 
 # Option B: Manual deployment
 supabase login
-supabase functions deploy multi-agent-spec --project-ref kxrdxiznaudatxyfrbxe
+supabase functions deploy multi-agent-spec --project-ref tkkthpoottlqmdopmtuh
 ```
 
 ### 3. Test Backend
 
 ```bash
 # Test questions stage
-curl -X POST https://kxrdxiznaudatxyfrbxe.supabase.co/functions/v1/multi-agent-spec \
+curl -X POST https://tkkthpoottlqmdopmtuh.supabase.co/functions/v1/multi-agent-spec \
   -H "Authorization: Bearer YOUR_ANON_KEY" \
   -H "Content-Type: application/json" \
   -d '{

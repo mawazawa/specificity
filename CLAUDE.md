@@ -48,7 +48,7 @@ VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 
 | Project | Ref | Purpose |
 |---------|-----|---------|
-| supabase-lime-tree | `sbwgkocarqvonkdlitdx` | OLD shared database (deprecated for this project) |
+| supabase-lime-tree | `tkkthpoottlqmdopmtuh` | OLD shared database (deprecated for this project) |
 | supabase-justiceos0930 | `rgrgfcesahcgxpuobbqq` | Different project (JusticeOS) |
 
 ---

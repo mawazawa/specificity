@@ -23,6 +23,10 @@ jobs:
         
       - name: Type Check
         run: npm run typecheck
-        
+
       - name: Lint
         run: npm run lint
+
+      - name: Governance Lints
+        run: npm run lint:governance
+        continue-on-error: true  # Warn but don't block until PLAN.md is updated

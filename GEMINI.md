@@ -86,3 +86,25 @@ Document: [paste content]
 | Claude marks document "ready" | Request Gemini contradiction scan |
 | Exa returns "NOT FOUND" | Request Gemini direct verification |
 | Config change claimed complete | Request Gemini config file audit |
+
+---
+
+## 🔧 MCP Capability Check
+
+Before relying on Gemini for large-context analysis, verify MCP tools are available:
+
+```javascript
+// Check if Memory MCP is available
+const memoryAvailable = typeof mcp__memory__search_nodes === 'function';
+
+// Check if Exa MCP is available
+const exaAvailable = typeof mcp__exa__web_search_exa === 'function';
+
+// If MCP not available, fall back to direct tool calls
+if (!memoryAvailable) {
+  console.warn('Memory MCP not configured - cross-session learning disabled');
+}
+```
+
+**Runtime Check**: Always verify MCP connectivity before assuming tools will work.
+Absence of MCP tools should not silently fail - it should warn explicitly.

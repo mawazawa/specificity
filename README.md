@@ -82,7 +82,7 @@ Specificity AI solves the **$50K problem**: Bad specs cost companies thousands i
 ### Quick Deploy
 
 1. **Set API Keys** (Required):
-   - Go to [Supabase Dashboard → Edge Functions → Secrets](https://supabase.com/dashboard/project/kxrdxiznaudatxyfrbxe/settings/edge-functions)
+   - Go to [Supabase Dashboard → Edge Functions → Secrets](https://supabase.com/dashboard/project/tkkthpoottlqmdopmtuh/settings/edge-functions)
    - Add:
      - `GROQ_API_KEY` (from https://console.groq.com)
      - `EXA_API_KEY` (from https://exa.ai)
@@ -91,11 +91,11 @@ Specificity AI solves the **$50K problem**: Bad specs cost companies thousands i
    ```bash
    # Option A: GitHub Actions (automated)
    # Set SUPABASE_ACCESS_TOKEN in GitHub Secrets, push to main
-   
+
    # Option B: Manual CLI
    supabase login
-   supabase functions deploy multi-agent-spec --project-ref kxrdxiznaudatxyfrbxe --use-api
-   supabase functions deploy voice-to-text --project-ref kxrdxiznaudatxyfrbxe --use-api
+   supabase functions deploy multi-agent-spec --project-ref tkkthpoottlqmdopmtuh --use-api
+   supabase functions deploy voice-to-text --project-ref tkkthpoottlqmdopmtuh --use-api
    ```
 
 3. **Verify Deployment**:
@@ -121,9 +121,9 @@ Specificity AI solves the **$50K problem**: Bad specs cost companies thousands i
    ```
 
 ### Production URLs
-- **Dashboard:** https://supabase.com/dashboard/project/kxrdxiznaudatxyfrbxe
-- **API Base:** https://kxrdxiznaudatxyfrbxe.supabase.co
-- **Edge Functions:** https://kxrdxiznaudatxyfrbxe.supabase.co/functions/v1/
+- **Dashboard:** https://supabase.com/dashboard/project/tkkthpoottlqmdopmtuh
+- **API Base:** https://tkkthpoottlqmdopmtuh.supabase.co
+- **Edge Functions:** https://tkkthpoottlqmdopmtuh.supabase.co/functions/v1/
 
 ### Documentation
 - **Deployment Checklist:** [PRODUCTION_DEPLOYMENT_CHECKLIST.md](./PRODUCTION_DEPLOYMENT_CHECKLIST.md)

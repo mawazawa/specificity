@@ -19,8 +19,8 @@ A critical security vulnerability was discovered where the `.env` file containin
 The following credentials were committed to git history:
 
 ```
-Project ID: kxrdxiznaudatxyfrbxe
-Supabase URL: https://kxrdxiznaudatxyfrbxe.supabase.co
+Project ID: tkkthpoottlqmdopmtuh
+Supabase URL: https://tkkthpoottlqmdopmtuh.supabase.co
 ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt4cmR4aXpuYXVkYXR4eWZyYnhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA3NjkxODEsImV4cCI6MjA3NjM0NTE4MX0.ukKtcaRiuWyq4rysXdQTgTavZ86_jVPFbVOMTnmF1Nk
 ```
 
@@ -66,7 +66,7 @@ You **MUST** rotate your keys immediately:
 
 1. **Go to Supabase Dashboard:**
    ```
-   https://supabase.com/dashboard/project/kxrdxiznaudatxyfrbxe/settings/api
+   https://supabase.com/dashboard/project/tkkthpoottlqmdopmtuh/settings/api
    ```
 
 2. **Generate New ANON Key:**
@@ -148,7 +148,7 @@ Expected: All tables should have `rowsecurity = true` and proper policies.
 
 Check Supabase logs for any suspicious activity:
 
-1. Go to: `https://supabase.com/dashboard/project/kxrdxiznaudatxyfrbxe/logs/explorer`
+1. Go to: `https://supabase.com/dashboard/project/tkkthpoottlqmdopmtuh/logs/explorer`
 2. Filter by date: Last 7 days
 3. Look for unusual patterns:
    - Unexpected IP addresses

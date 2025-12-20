@@ -10,10 +10,10 @@ Create a `.env` file in the project root with:
 
 ```bash
 # Supabase Configuration
-# Get these from: https://supabase.com/dashboard/project/sbwgkocarqvonkdlitdx/settings/api
+# Get these from: https://supabase.com/dashboard/project/tkkthpoottlqmdopmtuh/settings/api
 
-VITE_SUPABASE_PROJECT_ID="sbwgkocarqvonkdlitdx"
-VITE_SUPABASE_URL="https://sbwgkocarqvonkdlitdx.supabase.co"
+VITE_SUPABASE_PROJECT_ID="tkkthpoottlqmdopmtuh"
+VITE_SUPABASE_URL="https://tkkthpoottlqmdopmtuh.supabase.co"
 VITE_SUPABASE_ANON_KEY="your-anon-key-here"
 ```
 
@@ -26,7 +26,7 @@ These are set in your Supabase project dashboard:
 # Required
 GROQ_API_KEY="gsk_..."           # From https://console.groq.com/keys
 EXA_API_KEY="..."                # From https://exa.ai/
-SUPABASE_URL="https://sbwgkocarqvonkdlitdx.supabase.co"
+SUPABASE_URL="https://tkkthpoottlqmdopmtuh.supabase.co"
 SUPABASE_SERVICE_ROLE_KEY="..."  # From Supabase dashboard
 
 # Optional (falls back to Groq if not set)
@@ -57,7 +57,7 @@ OPENROUTER_API_KEY="sk-or-v1-..." # From https://openrouter.ai/keys
 - If not set, the system falls back to Groq's Llama 3.3 70B
 
 ### 4. Supabase Configuration
-- Visit: https://supabase.com/dashboard/project/sbwgkocarqvonkdlitdx/settings/api
+- Visit: https://supabase.com/dashboard/project/tkkthpoottlqmdopmtuh/settings/api
 - Copy the **Project URL** → `VITE_SUPABASE_URL`
 - Copy the **anon public** key → `VITE_SUPABASE_ANON_KEY`
 - Copy the **service_role** key → `SUPABASE_SERVICE_ROLE_KEY` (for edge functions only)
@@ -79,7 +79,7 @@ The system uses the latest models available as of November 2025:
 ## Setting Edge Function Secrets
 
 ### Using Supabase Dashboard:
-1. Go to https://supabase.com/dashboard/project/sbwgkocarqvonkdlitdx
+1. Go to https://supabase.com/dashboard/project/tkkthpoottlqmdopmtuh
 2. Navigate to **Settings → Edge Functions**
 3. Click **Add Secret**
 4. Enter each secret name and value
@@ -97,7 +97,7 @@ supabase secrets set OPENROUTER_API_KEY=sk-or-v1-...
 After setting up environment variables:
 
 1. **Frontend**: Run `npm run dev` - should not throw environment variable errors
-2. **Edge Function**: Check logs at https://supabase.com/dashboard/project/sbwgkocarqvonkdlitdx/logs/edge-functions
+2. **Edge Function**: Check logs at https://supabase.com/dashboard/project/tkkthpoottlqmdopmtuh/logs/edge-functions
 3. **Test the workflow**:
    - Sign in to the app
    - Submit a product idea
@@ -162,7 +162,7 @@ For production on Vercel or similar:
 ## Support
 
 If you encounter issues:
-1. Check edge function logs: https://supabase.com/dashboard/project/sbwgkocarqvonkdlitdx/logs
+1. Check edge function logs: https://supabase.com/dashboard/project/tkkthpoottlqmdopmtuh/logs
 2. Verify all environment variables are set correctly
 3. Check API service status pages
 4. Review this documentation
@@ -171,4 +171,4 @@ If you encounter issues:
 
 Last updated: November 2025
 Project: Specificity AI
-Supabase Project ID: sbwgkocarqvonkdlitdx
+Supabase Project ID: tkkthpoottlqmdopmtuh

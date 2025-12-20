@@ -1,0 +1,151 @@
+# Temporal Log - Audit Trail for Agent Actions
+# Purpose: Track what was done, when, by whom, with evidence
+# Usage: Append entries via lint scripts or CI
+version: "1.0.0"
+last_updated: "2025-12-20"
+
+# ═══════════════════════════════════════════════════════════════
+# LOG SCHEMA
+# ═══════════════════════════════════════════════════════════════
+
+schema:
+  entry:
+    timestamp: "ISO 8601 datetime"
+    agent: "Agent identifier (claude-opus-4.5, gpt-5.2, human, ci)"
+    action: "Action type (created, modified, verified, fixed, deployed)"
+    target: "File or resource affected"
+    evidence: "Commit SHA, file path, or URL"
+    notes: "Optional context"
+
+# ═══════════════════════════════════════════════════════════════
+# LOG ENTRIES
+# ═══════════════════════════════════════════════════════════════
+
+entries:
+  # ─────────────────────────────────────────────────────────────
+  # December 20, 2025 - Governance System Init
+  # ─────────────────────────────────────────────────────────────
+  - timestamp: "2025-12-20T13:55:00-08:00"
+    agent: "claude-opus-4.5"
+    action: "fixed"
+    target: ".github/workflows/deploy-functions.yml"
+    evidence: "git diff HEAD~1"
+    notes: "Changed project ref from kxrdxiznaudatxyfrbxe to tkkthpoottlqmdopmtuh (line 17)"
+
+  - timestamp: "2025-12-20T13:56:00-08:00"
+    agent: "claude-opus-4.5"
+    action: "fixed"
+    target: "README.md"
+    evidence: "git diff HEAD~1"
+    notes: "Fixed 6 deprecated Supabase project references"
+
+  - timestamp: "2025-12-20T13:56:30-08:00"
+    agent: "claude-opus-4.5"
+    action: "fixed"
+    target: "scripts/verify-production.sh"
+    evidence: "git diff HEAD~1"
+    notes: "Updated PROJECT_REF to tkkthpoottlqmdopmtuh"
+
+  - timestamp: "2025-12-20T13:56:45-08:00"
+    agent: "claude-opus-4.5"
+    action: "fixed"
+    target: "scripts/test-edge-functions.sh"
+    evidence: "git diff HEAD~1"
+    notes: "Updated SUPABASE_URL to correct project"
+
+  - timestamp: "2025-12-20T13:57:00-08:00"
+    agent: "claude-opus-4.5"
+    action: "fixed"
+    target: "index.html"
+    evidence: "git diff HEAD~1"
+    notes: "Updated preconnect URL to correct Supabase project"
+
+  - timestamp: "2025-12-20T13:57:30-08:00"
+    agent: "claude-opus-4.5"
+    action: "created"
+    target: "docs/archive/"
+    evidence: "ls docs/archive/"
+    notes: "Created archive directory for deprecated documentation"
+
+  - timestamp: "2025-12-20T13:57:45-08:00"
+    agent: "claude-opus-4.5"
+    action: "moved"
+    target: "docs/archive/DEPLOYMENT_READY.md"
+    evidence: "git status"
+    notes: "Archived deprecated deployment doc"
+
+  - timestamp: "2025-12-20T13:58:00-08:00"
+    agent: "claude-opus-4.5"
+    action: "moved"
+    target: "docs/archive/FINAL_DEPLOYMENT_STATUS.md"
+    evidence: "git status"
+    notes: "Archived deprecated status doc"
+
+  - timestamp: "2025-12-20T13:58:15-08:00"
+    agent: "claude-opus-4.5"
+    action: "moved"
+    target: "docs/archive/IMPLEMENTATION_COMPLETE.md"
+    evidence: "git status"
+    notes: "Archived deprecated implementation doc"
+
+  - timestamp: "2025-12-20T14:00:00-08:00"
+    agent: "claude-opus-4.5"
+    action: "created"
+    target: "docs/system/"
+    evidence: "ls docs/system/"
+    notes: "Created SSOT governance directory"
+
+  - timestamp: "2025-12-20T14:05:00-08:00"
+    agent: "claude-opus-4.5"
+    action: "created"
+    target: "docs/system/model-registry.yml"
+    evidence: "docs/system/model-registry.yml"
+    notes: "Created model registry with 9 verified models"
+
+  - timestamp: "2025-12-20T14:10:00-08:00"
+    agent: "claude-opus-4.5"
+    action: "created"
+    target: "docs/system/root-allowlist.yml"
+    evidence: "docs/system/root-allowlist.yml"
+    notes: "Created root file allowlist for lint enforcement"
+
+  - timestamp: "2025-12-20T14:12:00-08:00"
+    agent: "claude-opus-4.5"
+    action: "created"
+    target: "docs/system/temporal-log.yml"
+    evidence: "docs/system/temporal-log.yml"
+    notes: "Created temporal log (this file)"
+
+  # ─────────────────────────────────────────────────────────────
+  # Earlier Sessions (Imported from CHANGELOG.md)
+  # ─────────────────────────────────────────────────────────────
+  - timestamp: "2025-12-19T10:00:00-08:00"
+    agent: "claude-opus-4.5"
+    action: "created"
+    target: "supabase/functions/lib/openrouter-client.ts"
+    evidence: "CHANGELOG.md"
+    notes: "OpenRouter client with 8 models"
+
+  - timestamp: "2025-12-19T14:00:00-08:00"
+    agent: "claude-opus-4.5"
+    action: "modified"
+    target: "supabase/config.toml"
+    evidence: "CHANGELOG.md"
+    notes: "Fixed project_id to tkkthpoottlqmdopmtuh"
+
+  - timestamp: "2025-12-20T12:35:00-08:00"
+    agent: "claude-opus-4.5"
+    action: "verified"
+    target: "OpenRouter model availability"
+    evidence: "docs/reports/model-evidence-ledger-2025-12-19.md"
+    notes: "Re-verified all models via Exa web search"
+
+# ═══════════════════════════════════════════════════════════════
+# LOG MAINTENANCE
+# ═══════════════════════════════════════════════════════════════
+
+maintenance:
+  max_entries: 500
+  archive_after_days: 90
+  archive_location: "docs/archive/temporal-logs/"
+  compression: true

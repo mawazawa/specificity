@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-PROJECT_REF="kxrdxiznaudatxyfrbxe"
+PROJECT_REF="tkkthpoottlqmdopmtuh"
 PROD_URL="https://$PROJECT_REF.supabase.co"
 
 echo "🔍 Verifying Production Deployment"

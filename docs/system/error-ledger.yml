@@ -1,0 +1,235 @@
+# Error Ledger - Root Cause Tracking with Fix Evidence
+# Purpose: Prevent recurrence via documented lessons
+# Syncs with: Memory MCP entities for cross-session learning
+version: "1.0.0"
+last_updated: "2025-12-20"
+
+# ═══════════════════════════════════════════════════════════════
+# ERROR SCHEMA
+# ═══════════════════════════════════════════════════════════════
+
+schema:
+  error:
+    id: "Unique error identifier (ERR-YYYYMMDD-NNN)"
+    severity: "critical | high | medium | low"
+    category: "Category (config, code, data, process, external)"
+    title: "Short description"
+    discovered_date: "ISO 8601 date"
+    discovered_by: "Agent or user who found it"
+    root_cause: "What actually caused the issue"
+    symptoms: "How the error manifested"
+    fix_applied: "What was done to resolve"
+    fix_evidence: "Commit SHA, file path, or verification"
+    prevention: "How to prevent recurrence"
+    related_errors: "Array of related error IDs"
+    status: "open | fixed | wontfix | monitoring"
+
+# ═══════════════════════════════════════════════════════════════
+# ERROR ENTRIES
+# ═══════════════════════════════════════════════════════════════
+
+errors:
+  # ─────────────────────────────────────────────────────────────
+  # Critical: Configuration Drift
+  # ─────────────────────────────────────────────────────────────
+  - id: "ERR-20251220-001"
+    severity: "critical"
+    category: "config"
+    title: "Deploy workflow pointed to deprecated Supabase project"
+    discovered_date: "2025-12-20"
+    discovered_by: "gpt-5.2-codex (audit)"
+    root_cause: |
+      .github/workflows/deploy-functions.yml line 17 had PROJECT_ID: kxrdxiznaudatxyfrbxe
+      instead of the correct project tkkthpoottlqmdopmtuh. This was left over from
+      initial project setup and never updated when migrating to dedicated Supabase.
+    symptoms:
+      - "Deployments would target wrong Supabase project"
+      - "Edge functions would not update on correct environment"
+    fix_applied: |
+      Changed line 17 from:
+        PROJECT_ID: kxrdxiznaudatxyfrbxe
+      To:
+        PROJECT_ID: tkkthpoottlqmdopmtuh
+    fix_evidence: "git diff HEAD~1 -- .github/workflows/deploy-functions.yml"
+    prevention:
+      - "doc-lint.ts checks for deprecated project refs"
+      - "CI runs lint on every PR"
+    related_errors:
+      - "ERR-20251220-002"
+    status: "fixed"
+
+  - id: "ERR-20251220-002"
+    severity: "high"
+    category: "config"
+    title: "Multiple files referenced deprecated Supabase project"
+    discovered_date: "2025-12-20"
+    discovered_by: "claude-opus-4.5"
+    root_cause: |
+      10 files across the codebase contained the deprecated project ref
+      kxrdxiznaudatxyfrbxe. This was never caught because no lint existed.
+    symptoms:
+      - "Documentation pointed to wrong Supabase dashboard"
+      - "Scripts would hit wrong API endpoints"
+      - "DNS preconnect optimizations targeted wrong domain"
+    fix_applied: |
+      Updated all 10 files:
+      - README.md (6 occurrences)
+      - scripts/verify-production.sh
+      - scripts/test-edge-functions.sh
+      - index.html (preconnect)
+      - .github/workflows/deploy-functions.yml
+    fix_evidence: "grep -r 'kxrdxiznaudatxyfrbxe' . returns 0 matches"
+    prevention:
+      - "doc-lint.ts scans for deprecated project refs"
+      - "root-allowlist.yml tracks all allowed root files"
+    related_errors:
+      - "ERR-20251220-001"
+    status: "fixed"
+
+  # ─────────────────────────────────────────────────────────────
+  # Process: Documentation vs Reality Gap
+  # ─────────────────────────────────────────────────────────────
+  - id: "ERR-20251220-003"
+    severity: "high"
+    category: "process"
+    title: "PLAN.md marked items complete without evidence"
+    discovered_date: "2025-12-20"
+    discovered_by: "gpt-5.2-codex (audit)"
+    root_cause: |
+      PLAN.md used [x] checkboxes to mark items complete but did not
+      include file paths, commit SHAs, or verification evidence. This
+      allowed false-positive completion claims.
+    symptoms:
+      - "Audit found items marked [x] that didn't exist in repo"
+      - "Phase 0.5 and Phase 12 had contradictory claims about same model"
+    fix_applied: |
+      1. Updated PLAN.md to correct completion claims
+      2. Added evidence paths to verified completions
+      3. Created plan-lint.ts to enforce evidence on [x] items
+    fix_evidence: "scripts/lint/plan-lint.ts"
+    prevention:
+      - "plan-lint.ts requires evidence for every [x] COMPLETED item"
+      - "CI blocks merge if plan-lint fails"
+    related_errors: []
+    status: "fixed"
+
+  # ─────────────────────────────────────────────────────────────
+  # Process: Exa Usage Discipline
+  # ─────────────────────────────────────────────────────────────
+  - id: "ERR-20251219-001"
+    severity: "high"
+    category: "process"
+    title: "False negative on model verification due to lazy Exa usage"
+    discovered_date: "2025-12-19"
+    discovered_by: "mathieuwauters (user)"
+    root_cause: |
+      On Dec 19, claude-opus-4.5 marked deepseek-v3.2-speciale as "NOT FOUND"
+      without actually calling Exa. When properly called on Dec 20, Exa
+      immediately returned the correct OpenRouter page.
+
+      The error was NOT Exa's fault - Exa works perfectly.
+      The error was lazy/skipped verification.
+    symptoms:
+      - "Model incorrectly removed from registry"
+      - "False negative recorded in evidence ledger"
+      - "Claude initially blamed Exa for the failure"
+    fix_applied: |
+      1. Correctly attributed failure to lazy usage, not Exa
+      2. Re-ran verification with actual Exa calls
+      3. Updated Memory MCP with correct attribution
+      4. Added model back to registry with verified status
+    fix_evidence: "mcp__memory__search_nodes({ query: 'Exa-Usage-Discipline' })"
+    prevention:
+      - "CLAUDE.md rule: Always call Exa before claiming 'not found'"
+      - "Temporal metacognition skill enforces research-before-claims"
+      - "Never blame tools for operator error"
+    related_errors: []
+    status: "fixed"
+    lesson_learned: |
+      Exa works. Lazy usage is the problem. Never blame tools for
+      incomplete verification. When something is "not found", the
+      question is always: "Did I actually search, or did I skip it?"
+
+  # ─────────────────────────────────────────────────────────────
+  # Data: Evidence Ledger Self-Contradiction
+  # ─────────────────────────────────────────────────────────────
+  - id: "ERR-20251220-004"
+    severity: "medium"
+    category: "data"
+    title: "Evidence ledger had internal contradiction"
+    discovered_date: "2025-12-20"
+    discovered_by: "gpt-5.2-codex (audit)"
+    root_cause: |
+      docs/reports/model-evidence-ledger-2025-12-19.md line 158 said
+      deepseek-v3.2-speciale was "NOT FOUND", but later sections in
+      the same document said "VERIFIED". This was caused by appending
+      corrections without removing the original false claim.
+    symptoms:
+      - "Document self-contradicted"
+      - "Auditor confusion about actual status"
+    fix_applied: |
+      Removed the contradictory "NOT FOUND" claim and kept only
+      the verified status with evidence.
+    fix_evidence: "git diff HEAD~1 -- docs/reports/model-evidence-ledger-2025-12-19.md"
+    prevention:
+      - "When correcting errors, DELETE the false claim, don't append"
+      - "Evidence ledgers should be append-only for additions, not corrections"
+    related_errors:
+      - "ERR-20251219-001"
+    status: "fixed"
+
+# ═══════════════════════════════════════════════════════════════
+# ERROR PATTERNS (for prevention)
+# ═══════════════════════════════════════════════════════════════
+
+patterns:
+  config_drift:
+    description: "Configuration values become stale across environments"
+    prevention:
+      - "Single source of truth (SSOT) files"
+      - "Lint scripts that validate sync"
+      - "CI enforcement"
+
+  evidence_gap:
+    description: "Claims made without verification evidence"
+    prevention:
+      - "plan-lint.ts enforces evidence paths"
+      - "Temporal log tracks all actions"
+      - "Error ledger documents root causes"
+
+  tool_blame:
+    description: "Blaming tools for operator error"
+    prevention:
+      - "Always verify tool was actually called"
+      - "Check logs before claiming tool failure"
+      - "CLAUDE.md explicit rule: tools work, lazy usage doesn't"
+
+  doc_contradiction:
+    description: "Documents that contradict themselves"
+    prevention:
+      - "Delete false claims, don't append corrections"
+      - "Single authoritative section per topic"
+      - "Lint for duplicate/conflicting assertions"
+
+# ═══════════════════════════════════════════════════════════════
+# METRICS
+# ═══════════════════════════════════════════════════════════════
+
+metrics:
+  total_errors: 5
+  by_severity:
+    critical: 1
+    high: 3
+    medium: 1
+    low: 0
+  by_status:
+    fixed: 5
+    open: 0
+    monitoring: 0
+  by_category:
+    config: 2
+    process: 2
+    data: 1
+    code: 0
+    external: 0
+  mttr_hours: 2  # Mean time to resolution
