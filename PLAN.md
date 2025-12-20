@@ -134,20 +134,20 @@
 
 ---
 
-## Phase 5: Tooling, Observability, and Testing
+## Phase 5: Tooling, Observability, and Testing ✅ COMPLETED
 *Goal: Make the pipeline testable and measurable.*
 
-- [ ] **5.1 Add a pipeline smoke test**
+- [x] **5.1 Add a pipeline smoke test** ✅
   - **Action:** Create `scripts/smoke-test-pipeline.ts` to exercise all stages end-to-end.
-  - **Success Criteria:** Script completes with a summary table and exit code 0.
+  - **Completed:** Dec 19, 2025 - Created TypeScript smoke test script that exercises all 7 pipeline stages with summary table output.
 
-- [ ] **5.2 Add structured logs**
+- [x] **5.2 Add structured logs** ✅
   - **Action:** Standardize stage logs with request IDs, model IDs, and latency.
-  - **Success Criteria:** Logs can be used to trace a single request across stages.
+  - **Completed:** Dec 19, 2025 - Created `structured-logger.ts` with createLogger, createTimer, and PipelineTrace utilities.
 
-- [ ] **5.3 Add regression tests for model routing**
+- [x] **5.3 Add regression tests for model routing** ✅
   - **Action:** Unit test the registry and routing decisions (fallbacks, provider mapping).
-  - **Success Criteria:** Tests cover all model IDs and fallback branches.
+  - **Completed:** Dec 19, 2025 - Created `model-routing.spec.ts` with 17 tests covering model registry, expert routing, stage routing, and fallback chains.
 
 ---
 
