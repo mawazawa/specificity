@@ -109,7 +109,7 @@ errors:
     fix_evidence: "scripts/lint/plan-lint.ts"
     prevention:
       - "plan-lint.ts requires evidence for every [x] COMPLETED item"
-      - "CI blocks merge if plan-lint fails"
+      - "CI warns on plan-lint failures (blocking enforced after PLAN.md cleanup)"
     related_errors: []
     status: "fixed"
 

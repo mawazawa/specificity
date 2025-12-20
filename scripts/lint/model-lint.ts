@@ -52,33 +52,53 @@ function isFalsePositive(value: string): boolean {
   return FALSE_POSITIVE_PATTERNS.some(pattern => pattern.test(value));
 }
 
-function extractModelsFromCode(content: string): Map<string, string> {
-  const models = new Map<string, string>();
+interface CodeModelEntry {
+  name: string;
+  provider: string;
+  model: string;
+  openrouterId: string;
+}
 
-  // Look for MODELS constant with OpenRouter model IDs
-  // Pattern: "key": "provider/model-id"
-  const modelsMatch = content.match(/const\s+MODELS\s*[:=]\s*\{([^}]+)\}/s);
-  if (modelsMatch) {
-    const block = modelsMatch[1];
-    // Match entries like: "gpt-4": "openai/gpt-4"
-    const entryRegex = /["']([^"']+)["']\s*:\s*["']([a-zA-Z0-9_-]+\/[a-zA-Z0-9._-]+)["']/g;
-    let match;
-    while ((match = entryRegex.exec(block)) !== null) {
-      const [, key, value] = match;
-      if (!isFalsePositive(value)) {
-        models.set(key, value);
-      }
-    }
+function extractModelsFromCode(content: string): CodeModelEntry[] {
+  const models: CodeModelEntry[] = [];
+
+  // Parse MODELS object entries - actual format is:
+  // 'gpt-5.2': {
+  //   provider: 'openai',
+  //   model: 'gpt-5.2',
+  //   ...
+  // }
+
+  // Find MODELS declaration
+  const modelsBlockMatch = content.match(/export\s+const\s+MODELS\s*[:=]\s*Record[^{]*\{([\s\S]*?)\n\};\s*\n/);
+  if (!modelsBlockMatch) {
+    // Try alternative pattern
+    const altMatch = content.match(/const\s+MODELS\s*[:=]\s*\{([\s\S]*?)\n\};\s*\n/);
+    if (!altMatch) return models;
   }
 
-  // Also look for model definitions in function calls
-  // Pattern: model: "provider/model-id"
-  const modelPropRegex = /model\s*:\s*["']([a-zA-Z0-9_-]+\/[a-zA-Z0-9._-]+)["']/g;
-  let propMatch;
-  while ((propMatch = modelPropRegex.exec(content)) !== null) {
-    const value = propMatch[1];
-    if (!isFalsePositive(value)) {
-      models.set(value, value);
+  // Parse each model entry using regex for the object structure
+  // Match pattern: 'model-name': { provider: 'x', model: 'y', ... }
+  const entryRegex = /['"]([^'"]+)['"]\s*:\s*\{\s*([^}]+)\}/g;
+  let match;
+
+  while ((match = entryRegex.exec(content)) !== null) {
+    const name = match[1];
+    const block = match[2];
+
+    // Extract provider and model fields
+    const providerMatch = block.match(/provider\s*:\s*['"]([^'"]+)['"]/);
+    const modelMatch = block.match(/model\s*:\s*['"]([^'"]+)['"]/);
+
+    if (providerMatch && modelMatch) {
+      const provider = providerMatch[1];
+      const model = modelMatch[1];
+      const openrouterId = `${provider}/${model}`;
+
+      // Skip false positives
+      if (!isFalsePositive(openrouterId)) {
+        models.push({ name, provider, model, openrouterId });
+      }
     }
   }
 
@@ -122,24 +142,37 @@ function lintModels(): LintResult {
   // Build registry lookup
   const registryModels = new Map<string, ModelRegistryEntry>();
   const registryOpenRouterIds = new Set<string>();
+  const registryModelNames = new Set<string>();
 
   for (const [name, entry] of Object.entries(registry.models)) {
     registryModels.set(name, entry);
+    registryModelNames.add(name);
     if (entry.openrouter_id) {
       registryOpenRouterIds.add(entry.openrouter_id);
     }
     if (entry.groq_id) {
-      registryOpenRouterIds.add(entry.groq_id);
+      registryOpenRouterIds.add(`groq/${entry.groq_id}`);
     }
   }
 
-  // Check: All code models exist in registry
-  for (const [codeName, codeId] of codeModels) {
-    if (!registryOpenRouterIds.has(codeId)) {
-      // Check if it's a valid OpenRouter ID pattern
-      if (codeId.includes('/')) {
+  // Check: All code models exist in registry (by name and OpenRouter ID)
+  for (const codeModel of codeModels) {
+    // Check if model name exists in registry
+    if (!registryModelNames.has(codeModel.name)) {
+      result.errors.push(
+        `Model "${codeModel.name}" in code not found in model-registry.yml`
+      );
+      result.passed = false;
+      continue;
+    }
+
+    // Check if OpenRouter ID matches
+    const registryEntry = registry.models[codeModel.name];
+    if (registryEntry) {
+      const expectedId = registryEntry.openrouter_id || (registryEntry.groq_id ? `groq/${registryEntry.groq_id}` : null);
+      if (expectedId && expectedId !== codeModel.openrouterId) {
         result.errors.push(
-          `Model ID "${codeId}" in code not found in model-registry.yml`
+          `Model "${codeModel.name}" OpenRouter ID mismatch: code="${codeModel.openrouterId}" registry="${expectedId}"`
         );
         result.passed = false;
       }
@@ -148,7 +181,7 @@ function lintModels(): LintResult {
 
   // Check: Registry models with 'verified' status
   for (const [name, entry] of registryModels) {
-    if (entry.status !== 'verified') {
+    if (entry.status !== 'verified' && entry.status !== 'alias') {
       result.warnings.push(
         `Model "${name}" has status "${entry.status}" (not verified)`
       );
@@ -169,7 +202,7 @@ function lintModels(): LintResult {
 
   // Summary
   console.log(`\nRegistry: ${registryModels.size} models defined`);
-  console.log(`Code: ${codeModels.size} model IDs found\n`);
+  console.log(`Code: ${codeModels.length} model entries found\n`);
 
   return result;
 }

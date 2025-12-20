@@ -83,35 +83,20 @@ models:
       - general_purpose
       - coding
 
+  # LEGACY ALIAS - do not use directly
   deepseek-v3.2:
     provider: deepseek
-    openrouter_id: deepseek/deepseek-v3.2
+    openrouter_id: deepseek/deepseek-chat
     context_window: 163840
-    cost_per_1m_input: 0.27
-    cost_per_1m_output: 0.41
+    cost_per_1m_input: 0.30
+    cost_per_1m_output: 1.20
     verified_date: "2025-12-20"
-    verified_source: "https://openrouter.ai/deepseek/deepseek-v3.2"
-    status: verified
-    note: "GPT-5 level performance, thinking-in-tool-use"
-    strengths:
-      - reasoning
-      - tool_use
-      - agentic
+    status: alias
+    note: "ALIAS for deepseek-v3 - no V3.2 exists on OpenRouter"
+    alias_of: deepseek-v3
 
-  deepseek-v3.2-speciale:
-    provider: deepseek
-    openrouter_id: deepseek/deepseek-v3.2-speciale
-    context_window: 163840
-    cost_per_1m_input: 0.27
-    cost_per_1m_output: 0.41
-    verified_date: "2025-12-20"
-    verified_source: "https://openrouter.ai/deepseek/deepseek-v3.2-speciale"
-    status: verified
-    note: "Rivals Gemini-3.0-Pro, gold-medal reasoning"
-    strengths:
-      - complex_reasoning
-      - math
-      - competition_level
+  # REMOVED - not found on any provider
+  # deepseek-v3.2-speciale: REMOVED Dec 2025
 
   kimi-k2-thinking:
     provider: moonshotai

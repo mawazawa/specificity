@@ -143,40 +143,116 @@ export function gradeSectionPresence(
 }
 
 /**
- * LLM Judge grader - uses LLM to score output
- * Returns a Promise that would call the LLM in production
+ * Metadata field >= grader - checks nested metadata fields
+ * Supports dot notation: 'metadata.totalToolsUsed'
+ */
+export function gradeMetadataFieldGte(
+  output: Record<string, unknown>,
+  field: string,
+  min: number
+): GradeResult {
+  // Parse dot-notation path
+  const parts = field.split('.');
+  let value: unknown = output;
+
+  for (const part of parts) {
+    if (value && typeof value === 'object' && part in (value as Record<string, unknown>)) {
+      value = (value as Record<string, unknown>)[part];
+    } else {
+      return {
+        score: 0,
+        passed: false,
+        details: `Field not found: ${field}`,
+      };
+    }
+  }
+
+  const numValue = typeof value === 'number' ? value : 0;
+  const passed = numValue >= min;
+  const score = passed ? 100 : Math.round((numValue / min) * 100);
+
+  return {
+    score,
+    passed,
+    details: `${field}: ${numValue} (min: ${min})`,
+  };
+}
+
+/**
+ * LLM Judge grader - uses LLM to score output or deterministic heuristics
+ * When no LLM client is provided, uses content-based heuristics for scoring
  */
 export async function gradeLlmJudge(
   output: unknown,
   prompt: string,
   llmClient?: (prompt: string) => Promise<string>
 ): Promise<GradeResult> {
-  // In test mode, return a default score
-  if (!llmClient) {
-    return {
-      score: 75,
-      passed: true,
-      details: 'LLM judge skipped (no client provided)',
-    };
+  // If LLM client available, use it
+  if (llmClient) {
+    try {
+      const fullPrompt = `${prompt}\n\nContent to evaluate:\n${JSON.stringify(output, null, 2)}`;
+      const response = await llmClient(fullPrompt);
+      const score = parseInt(response.trim(), 10) * 10;  // Convert 1-10 to 0-100
+
+      return {
+        score: Math.min(100, Math.max(0, score)),
+        passed: score >= 70,
+        details: `LLM score: ${score / 10}/10`,
+      };
+    } catch (error) {
+      return {
+        score: 0,
+        passed: false,
+        details: `LLM judge error: ${error}`,
+      };
+    }
   }
 
-  try {
-    const fullPrompt = `${prompt}\n\nContent to evaluate:\n${JSON.stringify(output, null, 2)}`;
-    const response = await llmClient(fullPrompt);
-    const score = parseInt(response.trim(), 10) * 10;  // Convert 1-10 to 0-100
+  // Deterministic heuristics when no LLM client
+  const outputStr = typeof output === 'string' ? output : JSON.stringify(output);
+  let score = 50;  // Base score
+  const factors: string[] = [];
 
-    return {
-      score: Math.min(100, Math.max(0, score)),
-      passed: score >= 70,
-      details: `LLM score: ${score / 10}/10`,
-    };
-  } catch (error) {
-    return {
-      score: 0,
-      passed: false,
-      details: `LLM judge error: ${error}`,
-    };
+  // Content length scoring (more content = higher score, up to a point)
+  const wordCount = outputStr.split(/\s+/).length;
+  if (wordCount > 100) {
+    score += 10;
+    factors.push(`good length (${wordCount} words)`);
   }
+  if (wordCount > 500) {
+    score += 10;
+    factors.push('comprehensive');
+  }
+
+  // Structure scoring (has lists, headers, or JSON structure)
+  if (outputStr.includes('- ') || outputStr.includes('* ') || outputStr.includes('1.')) {
+    score += 5;
+    factors.push('has lists');
+  }
+  if (outputStr.includes('#') || outputStr.includes('**')) {
+    score += 5;
+    factors.push('has structure');
+  }
+
+  // Specificity scoring (numbers, dates, technical terms)
+  if (/\d+%|\$\d+|\d{4}/.test(outputStr)) {
+    score += 10;
+    factors.push('has specifics');
+  }
+
+  // No empty or minimal output
+  if (wordCount < 20) {
+    score = 20;
+    factors.length = 0;
+    factors.push('too brief');
+  }
+
+  const passed = score >= 70;
+  return {
+    score: Math.min(100, score),
+    passed,
+    details: `Heuristic score: ${score}% (${factors.join(', ') || 'baseline'})`,
+  };
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -189,7 +265,8 @@ export type ScorerType =
   | 'count_gte'
   | 'word_count_gte'
   | 'section_presence'
-  | 'llm_judge';
+  | 'llm_judge'
+  | 'metadata_field_gte';
 
 export async function grade(
   scorer: ScorerType,
@@ -219,6 +296,13 @@ export async function grade(
 
     case 'llm_judge':
       return gradeLlmJudge(output, params.prompt as string, llmClient);
+
+    case 'metadata_field_gte':
+      return gradeMetadataFieldGte(
+        output as Record<string, unknown>,
+        params.field as string,
+        params.min as number
+      );
 
     default:
       return {

@@ -14,7 +14,7 @@ export interface Rubric {
 export interface RubricCriterion {
   name: string;
   weight: number;  // 0-1, must sum to 1
-  scorer: 'exact_match' | 'contains' | 'count_gte' | 'word_count_gte' | 'section_presence' | 'llm_judge';
+  scorer: 'exact_match' | 'contains' | 'count_gte' | 'word_count_gte' | 'section_presence' | 'llm_judge' | 'metadata_field_gte';
   params?: Record<string, unknown>;
 }
 
@@ -37,7 +37,8 @@ export const questionGenerationRubric: Rubric = {
       name: 'domain_coverage',
       weight: 0.4,
       scorer: 'contains',
-      params: { field: 'questions', required: ['technical', 'market'] },
+      // Valid domains: technical, design, market, legal, growth, security
+      params: { required: ['technical', 'market'] },
     },
     {
       name: 'question_quality',
@@ -54,6 +55,9 @@ export const questionGenerationRubric: Rubric = {
 
 // ═══════════════════════════════════════════════════════════════
 // RESEARCH CITATIONS RUBRIC
+// Maps to actual research stage output schema:
+// - researchResults: Array<{ expertId, findings, toolsUsed: Array<{tool, success, duration}> }>
+// - metadata: { totalToolsUsed, totalCost, totalTokens, duration }
 // ═══════════════════════════════════════════════════════════════
 
 export const researchCitationsRubric: Rubric = {
@@ -62,24 +66,25 @@ export const researchCitationsRubric: Rubric = {
   threshold: 70,  // 70% to pass
   criteria: [
     {
-      name: 'citation_count',
+      name: 'research_results_count',
       weight: 0.4,
       scorer: 'count_gte',
-      params: { field: 'citations', min: 3 },
+      params: { field: 'researchResults', min: 2 },  // At least 2 expert results
     },
     {
       name: 'tool_usage',
       weight: 0.3,
-      scorer: 'count_gte',
-      params: { field: 'tools_used', min: 2 },
+      scorer: 'metadata_field_gte',  // Custom scorer for nested metadata
+      params: { field: 'metadata.totalToolsUsed', min: 2 },
     },
     {
-      name: 'citation_recency',
+      name: 'findings_quality',
       weight: 0.3,
       scorer: 'llm_judge',
       params: {
-        prompt: `Evaluate whether these citations are from 2024-2025 (recent) or older.
-                 Return a score 1-10 where 10 = all citations from 2024-2025.`,
+        prompt: `Evaluate the quality of these research findings on a scale of 1-10.
+                 Good findings are: specific, cite sources, provide actionable insights.
+                 Return ONLY a number 1-10.`,
       },
     },
   ],

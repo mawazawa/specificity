@@ -8,8 +8,13 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
 import { getRubric, type Rubric, type RubricCriterion } from '../scoring/rubrics';
 import { grade, type GradeResult } from '../scoring/graders';
+
+// ES module compatibility for __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // ═══════════════════════════════════════════════════════════════
 // TYPES
@@ -71,6 +76,11 @@ interface Baseline {
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://tkkthpoottlqmdopmtuh.supabase.co';
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || '';
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+
+// For CI evals, we need a test user JWT or service role bypass
+// The edge function expects a valid JWT; for evals we use a dedicated test token
+const EVAL_AUTH_TOKEN = process.env.EVAL_AUTH_TOKEN || SUPABASE_ANON_KEY;
 
 const STAGE_MAPPINGS: Record<string, { rubric: string; endpoint: string }> = {
   questions: { rubric: 'question-generation', endpoint: 'multi-agent-spec' },
@@ -79,41 +89,93 @@ const STAGE_MAPPINGS: Record<string, { rubric: string; endpoint: string }> = {
 };
 
 // ═══════════════════════════════════════════════════════════════
+// DEFAULT AGENT CONFIGS (for research stage)
+// ═══════════════════════════════════════════════════════════════
+
+const DEFAULT_AGENT_CONFIGS = [
+  {
+    agent: 'Technical Architect',
+    systemPrompt: 'You are a senior technical architect. Focus on system design, scalability, and technical feasibility.',
+    temperature: 0.7,
+    enabled: true,
+  },
+  {
+    agent: 'Market Analyst',
+    systemPrompt: 'You are a market research analyst. Focus on market size, competition, and business viability.',
+    temperature: 0.7,
+    enabled: true,
+  },
+  {
+    agent: 'Security Expert',
+    systemPrompt: 'You are a security specialist. Focus on security requirements, compliance, and risk mitigation.',
+    temperature: 0.6,
+    enabled: true,
+  },
+];
+
+// ═══════════════════════════════════════════════════════════════
 // EDGE FUNCTION CALLER
 // ═══════════════════════════════════════════════════════════════
+
+interface StageOutput {
+  questions?: Array<{ id: string; question: string; domain: string }>;
+  researchResults?: Array<{ expertId: string; findings: string; toolsUsed: unknown[] }>;
+  metadata?: { totalToolsUsed?: number; model?: string };
+  spec?: string;
+  [key: string]: unknown;
+}
 
 async function callEdgeFunction(
   stage: string,
   input: string,
-  previousData?: Record<string, unknown>
-): Promise<{ data: unknown; duration: number; model?: string }> {
+  previousStageOutput?: StageOutput
+): Promise<{ data: StageOutput; duration: number; model?: string }> {
   const mapping = STAGE_MAPPINGS[stage];
   if (!mapping) throw new Error(`Unknown stage: ${stage}`);
 
   const url = `${SUPABASE_URL}/functions/v1/${mapping.endpoint}`;
   const start = Date.now();
 
+  // Build payload per stage requirements (see multi-agent-spec/lib/types.ts)
+  let payload: Record<string, unknown> = { stage };
+
+  if (stage === 'questions') {
+    // Questions stage: just needs userInput
+    payload.userInput = input;
+  } else if (stage === 'research') {
+    // Research stage: needs agentConfigs and roundData with questions
+    payload.userInput = input;
+    payload.agentConfigs = DEFAULT_AGENT_CONFIGS;
+    payload.roundData = {
+      questions: previousStageOutput?.questions || [],
+    };
+  } else if (stage === 'spec') {
+    // Spec stage: needs full roundData from synthesis
+    payload.roundData = previousStageOutput || {};
+  }
+
   try {
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Authorization': `Bearer ${EVAL_AUTH_TOKEN}`,
       },
-      body: JSON.stringify({
-        userInput: input,
-        stage,
-        ...previousData,
-      }),
+      body: JSON.stringify(payload),
     });
 
-    const data = await response.json();
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP ${response.status}: ${errorText}`);
+    }
+
+    const data = await response.json() as StageOutput;
     const duration = Date.now() - start;
 
     return {
       data,
       duration,
-      model: data?.metadata?.model || data?.model,
+      model: data?.metadata?.model,
     };
   } catch (error) {
     throw new Error(`Edge function call failed: ${error}`);
@@ -304,9 +366,9 @@ async function main(): Promise<void> {
       stage,
       tests: stageTests.length,
       passed: stageTests.filter(r => r.passed).length,
-      averageScore: Math.round(
-        stageTests.reduce((sum, r) => sum + r.score, 0) / stageTests.length
-      ),
+      averageScore: stageTests.length > 0
+        ? Math.round(stageTests.reduce((sum, r) => sum + r.score, 0) / stageTests.length)
+        : 0,
       threshold: rubric.threshold,
     };
   });
@@ -318,9 +380,9 @@ async function main(): Promise<void> {
     totalTests: results.length,
     passed: results.filter(r => r.passed).length,
     failed: results.filter(r => !r.passed).length,
-    aggregateScore: Math.round(
-      results.reduce((sum, r) => sum + r.score, 0) / results.length
-    ),
+    aggregateScore: results.length > 0
+      ? Math.round(results.reduce((sum, r) => sum + r.score, 0) / results.length)
+      : 0,
     stages: stageResults,
   };
 
