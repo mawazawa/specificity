@@ -155,7 +155,7 @@
 - Outperforms other open-source models
 - Rivals leading closed-source models
 
-**Note:** This is the latest stable DeepSeek V3. No "V3.2" or "V3.2-Speciale" variants found on OpenRouter.
+**Note:** This is the stable DeepSeek V3 (Dec 2024). For newer V3.2 variants released Dec 1, 2025, see sections below.
 
 ---
 

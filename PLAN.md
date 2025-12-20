@@ -55,7 +55,8 @@
 
 - [x] **0.5 Remove or gate unverified claims** ✅
   - **Action:** Remove or feature-flag any model IDs without verified listings (e.g., `gemini-3-flash` if unverified).
-  - **Completed:** `deepseek-v3.2-speciale` removed. All remaining models verified.
+  - **Completed (Dec 19):** `deepseek-v3.2-speciale` initially removed due to failed Exa search.
+  - **Corrected (Dec 20):** Re-verified via Exa - model IS available on OpenRouter. See Phase 12.1 for re-addition.
 
 ---
 
