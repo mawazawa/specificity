@@ -96,24 +96,24 @@
 
 ---
 
-## Phase 3: Runtime Stability and Deno Hygiene
+## Phase 3: Runtime Stability and Deno Hygiene ✅ COMPLETED
 *Goal: Make edge functions compile and run predictably.*
 
-- [ ] **3.1 Add Deno config**
+- [x] **3.1 Add Deno config** ✅
   - **Action:** Create `supabase/functions/deno.json` with imports and tasks.
-  - **Success Criteria:** LSP errors for Deno/imports disappear and `deno check` is clean.
+  - **Completed:** Dec 19, 2025 - Created deno.json with imports map for @supabase/supabase-js and zod.
 
-- [ ] **3.2 Normalize import sources**
+- [x] **3.2 Normalize import sources** ✅
   - **Action:** Align `jsr:` vs `esm.sh` usage for Supabase client and shared deps.
-  - **Success Criteria:** No duplicate dependency versions or resolution failures.
+  - **Completed:** Dec 19, 2025 - Imports already consistent (esm.sh for Supabase, deno.land for zod/std).
 
-- [ ] **3.3 Validate RPC signatures**
+- [x] **3.3 Validate RPC signatures** ✅
   - **Action:** Confirm `check_and_increment_rate_limit` parameters match SQL signature for all callers.
-  - **Success Criteria:** No "Invalid arguments" or RPC signature mismatch errors.
+  - **Completed:** Dec 19, 2025 - Applied add_rate_limiting migration to create missing RPC function. Signature matches: `(p_user_id uuid, p_endpoint text, p_max_requests integer, p_window_hours integer)`.
 
-- [ ] **3.4 Harden JSON parsing paths**
+- [x] **3.4 Harden JSON parsing paths** ✅
   - **Action:** Add robust parsing fallback for tool calls and completion JSON.
-  - **Success Criteria:** No unhandled JSON parse errors in research/challenge stages.
+  - **Completed:** Dec 19, 2025 - Added `safeJsonParse` utility to challenge-generator.ts with markdown code block extraction and fallback defaults.
 
 ---
 

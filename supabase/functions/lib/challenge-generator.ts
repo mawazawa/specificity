@@ -3,6 +3,36 @@ import { callOpenRouter, retryWithBackoff } from './openrouter-client.ts';
 import { AgentResearchResult } from './parallel-executor.ts';
 import { renderPrompt, trackPromptUsage } from './prompt-service.ts';
 
+/**
+ * Safely parse JSON from LLM response, handling markdown code blocks
+ */
+function safeJsonParse<T>(content: string, fallback: T): T {
+  try {
+    return JSON.parse(content);
+  } catch {
+    // Try to extract JSON from markdown code blocks
+    const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/);
+    if (jsonMatch) {
+      try {
+        return JSON.parse(jsonMatch[1]);
+      } catch {
+        console.warn('[JSON Parse] Failed to parse extracted JSON block');
+      }
+    }
+    // Try to find raw JSON object/array
+    const rawMatch = content.match(/[\[{][\s\S]*[\]}]/);
+    if (rawMatch) {
+      try {
+        return JSON.parse(rawMatch[0]);
+      } catch {
+        console.warn('[JSON Parse] Failed to parse raw JSON match');
+      }
+    }
+    console.error('[JSON Parse] All parsing attempts failed, using fallback');
+    return fallback;
+  }
+}
+
 export const ChallengeQuestionSchema = z.object({
   id: z.string(),
   type: z.enum(['feasibility', 'risk', 'alternative', 'assumption', 'vision', 'cost']),
@@ -81,14 +111,14 @@ export async function generateChallenges(
     })
   );
 
-  const parsed = JSON.parse(response.content);
+  const parsed = safeJsonParse<{ challenges: any[] }>(response.content, { challenges: [] });
   const challenges: ChallengeQuestion[] = parsed.challenges.map((c: any, idx: number) => ({
     id: `challenge_${idx}`,
-    type: c.type,
-    question: c.question,
+    type: c.type || 'feasibility',
+    question: c.question || 'Challenge question unavailable',
     targetFindings: researchResults[c.targetFindingIndex]?.expertId || 'general',
-    challenger: assignChallenger(c.type),
-    priority: c.priority
+    challenger: assignChallenger(c.type || 'feasibility'),
+    priority: c.priority || 5
   }));
 
   await trackPromptUsage('challenge_generation', {
@@ -173,7 +203,16 @@ async function executeChallenge(
     })
   );
 
-  const parsed = JSON.parse(response.content);
+  const parsed = safeJsonParse<{
+    challenge: string;
+    evidenceAgainst: string[];
+    alternativeApproach?: string;
+    riskScore: number;
+  }>(response.content, {
+    challenge: 'Challenge parsing failed',
+    evidenceAgainst: [],
+    riskScore: 5
+  });
 
   await trackPromptUsage('challenge_execution', {
     cost_cents: Math.round(response.cost * 100),
@@ -186,10 +225,10 @@ async function executeChallenge(
   return {
     challengeId: challenge.id,
     challenger: challenge.challenger,
-    challenge: parsed.challenge,
-    evidenceAgainst: parsed.evidenceAgainst,
+    challenge: parsed.challenge || 'Challenge unavailable',
+    evidenceAgainst: parsed.evidenceAgainst || [],
     alternativeApproach: parsed.alternativeApproach,
-    riskScore: parsed.riskScore,
+    riskScore: parsed.riskScore ?? 5,
     model,
     cost: response.cost
   };
@@ -259,7 +298,15 @@ async function resolveDebate(
     })
   );
 
-  const parsed = JSON.parse(response.content);
+  const parsed = safeJsonParse<{
+    resolution: string;
+    confidenceChange: number;
+    adoptedAlternatives: string[];
+  }>(response.content, {
+    resolution: research.findings,
+    confidenceChange: 0,
+    adoptedAlternatives: []
+  });
 
   await trackPromptUsage('debate_resolution', {
     cost_cents: Math.round(response.cost * 100),
@@ -272,9 +319,9 @@ async function resolveDebate(
   return {
     originalPosition: research.findings,
     challenges: relevantChallenges.map(c => c.challenge),
-    resolution: parsed.resolution,
-    confidenceChange: parsed.confidenceChange,
-    adoptedAlternatives: parsed.adoptedAlternatives
+    resolution: parsed.resolution || research.findings,
+    confidenceChange: parsed.confidenceChange ?? 0,
+    adoptedAlternatives: parsed.adoptedAlternatives || []
   };
 }
 
