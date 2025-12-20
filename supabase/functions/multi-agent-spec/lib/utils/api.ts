@@ -19,7 +19,15 @@ export const getUserMessage = (error: unknown): string => {
     return 'An unexpected error occurred. Please try again.';
 };
 
-// Legacy Groq fallback for synthesis/voting/spec stages
+/**
+ * Groq API call for synthesis/voting/spec stages
+ * Model: deepseek-r1-distill-llama-70b (VERIFIED Dec 19, 2025)
+ * - 128K context window
+ * - $0.10/M input, $0.30/M output
+ * - Source: https://console.groq.com/docs/model/deepseek-r1-distill-llama-70b
+ */
+export const GROQ_MODEL = 'deepseek-r1-distill-llama-70b';
+
 export async function callGroq(
     apiKey: string,
     systemPrompt: string,
@@ -34,7 +42,7 @@ export async function callGroq(
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            model: 'llama-3.3-70b-versatile',
+            model: GROQ_MODEL,
             messages: [
                 { role: 'system', content: systemPrompt },
                 { role: 'user', content: userMessage }

@@ -23,7 +23,7 @@ export async function generateDynamicQuestions(
   } = {}
 ): Promise<ResearchQuestion[]> {
   const {
-    model = 'gpt-5.1',
+    model = 'gpt-5.2', // Verified Dec 19, 2025 (openai/gpt-5.2)
     count = 7
   } = options;
 

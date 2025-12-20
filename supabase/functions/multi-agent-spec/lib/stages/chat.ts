@@ -43,9 +43,8 @@ export const handleChatStage = async (
         const userPrompt = message;
 
         // Determine model based on agent type (similar to expert-matcher logic)
-        // For simplicity, we can default to a good chat model or map it if needed.
-        // Let's use gpt-5.1 for high quality chat, or allow config to override.
-        const model = 'gpt-5.1'; 
+        // Using GPT-5.2 for high quality chat (verified Dec 19, 2025)
+        const model = 'gpt-5.2'; 
 
         const response = await callOpenRouter({
             model,

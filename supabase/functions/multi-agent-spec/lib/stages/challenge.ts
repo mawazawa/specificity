@@ -24,7 +24,7 @@ export const handleChallengeStage = async (
         researchResults,
         cleanInput,
         {
-            model: 'gpt-5.1',
+            model: 'gpt-5.2', // Verified Dec 19, 2025 (openai/gpt-5.2)
             challengesPerFinding: 2 // 2 challenges per research finding
         }
     );
@@ -59,7 +59,7 @@ export const handleChallengeStage = async (
     const debateResolutions = await resolveDebates(
         researchResults,
         challengeResponses,
-        { model: 'claude-sonnet-4.5' } // Claude excels at synthesis
+        { model: 'claude-opus-4.5' } // Claude excels at synthesis (verified Dec 19, 2025)
     );
 
     console.log(`[Ray Dalio] Resolved ${debateResolutions.length} debates`);

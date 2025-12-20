@@ -1,8 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { assignQuestionsToExperts, balanceWorkload } from '../../lib/expert-matcher.ts';
-import { executeParallelResearch } from '../../lib/parallel-executor.ts';
+import { assignQuestionsToExperts, balanceWorkload } from '../../../lib/expert-matcher.ts';
+import { executeParallelResearch } from '../../../lib/parallel-executor.ts';
 import { corsHeaders } from '../utils/api.ts';
-import { ToolRegistry } from '../../tools/registry.ts';
+import { ToolRegistry } from '../../../tools/registry.ts';
 import { AgentConfig, RoundData } from '../types.ts';
 
 export const handleResearchStage = async (

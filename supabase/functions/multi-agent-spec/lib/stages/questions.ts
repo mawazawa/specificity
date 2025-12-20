@@ -5,7 +5,7 @@ export const handleQuestionsStage = async (cleanInput: string) => {
     console.log('[Enhanced] Generating dynamic research questions...');
 
     const questions = await generateDynamicQuestions(cleanInput, {
-        model: 'gpt-5.1',
+        model: 'gpt-5.2', // Verified Dec 19, 2025 (openai/gpt-5.2)
         count: 7
     });
 

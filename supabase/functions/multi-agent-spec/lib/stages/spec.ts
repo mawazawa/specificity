@@ -1,7 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { corsHeaders } from '../utils/api.ts';
-import { callGroq } from '../utils/api.ts';
-import { Prompts } from '../../../lib/prompts.ts';
+import { corsHeaders, callGroq, GROQ_MODEL } from '../utils/api.ts';
 import { RoundData } from '../types.ts';
 import { renderPrompt, trackPromptUsage } from '../../../lib/prompt-service.ts';
 
@@ -42,13 +40,37 @@ export const handleSpecStage = async (roundData: RoundData | undefined) => {
     return { specPrompt };
 };
 
+// Hardcoded system prompt to replace Prompts.SpecGeneration.system
+const SPEC_SYSTEM_PROMPT = "You are a Principal Software Architect. Generate the final specification.";
+
+// Helper to generate tech stack extraction prompt
+const generateTechStackPrompt = (specText: string) => `Analyze the following technical specification and extract the recommended Technology Stack into a structured JSON format.
+
+SPECIFICATION:
+${specText.substring(0, 15000)}... [truncated]
+
+Extract the key technology decisions for these categories: Frontend, Backend, Database, AI/ML, DevOps.
+For each decision, identify the "Selected" tech and 1-2 "Alternatives" mentioned (or reasonable alternatives if not explicit).
+
+Output ONLY JSON with this schema:
+[
+  {
+    "category": "Frontend",
+    "selected": { "name": "React", "rating": 5, "pros": ["Ecosystem", "Components"], "cons": ["Complexity"], "logo": "https://..." },
+    "alternatives": [{ "name": "Vue", "rating": 4, "pros": [...], "cons": [...] }]
+  },
+  ...
+]
+
+Try to find real logo URLs if possible, or use placeholder. Ensure "rating" is 1-5.`;
+
 export const handleSpecStageComplete = async (roundData: RoundData | undefined, groqApiKey: string) => {
     const { specPrompt } = await handleSpecStage(roundData);
 
     const specStart = Date.now();
     const spec = await callGroq(
         groqApiKey,
-        Prompts.SpecGeneration.system,
+        SPEC_SYSTEM_PROMPT,
         specPrompt,
         0.7,
         4000
@@ -56,13 +78,13 @@ export const handleSpecStageComplete = async (roundData: RoundData | undefined, 
 
     await trackPromptUsage('specification_generation', {
         latency_ms: Date.now() - specStart,
-        model_used: 'llama-3.3-70b-versatile'
+        model_used: GROQ_MODEL
     });
 
     // Extract Tech Stack
     console.log('[Enhanced] Extracting structured tech stack...');
-    const techStackPrompt = Prompts.SpecGeneration.techStackExtraction(spec);
-    
+    const techStackPrompt = generateTechStackPrompt(spec);
+
     let techStack = [];
     try {
         const techStackJson = await callGroq(

@@ -1,102 +1,178 @@
-# Specificity AI - Atomic Task Plan (World-Class Readiness)
+# Execution Plan: Specificity AI Stack Verification and Integration
+**Date:** December 19, 2025
+**Objective:** Stabilize runtime, reconcile model registry with verified availability, and harden the multi-agent pipeline for correct, reproducible outputs.
 
-## Timestamp
-2025-12-19 11:50:24 PST
+## Evidence Ledger (Exa-Verified, Dec 19 2025 20:38 PST)
+**Full Evidence Ledger:** `docs/reports/model-evidence-ledger-2025-12-19.md`
 
-## Scope
-This plan focuses on removing runtime blockers, stabilizing the multi-agent pipeline, tightening UX flows, and setting a foundation for scalable, world-class delivery.
+**Verified Models (with OpenRouter IDs):**
+- `openai/gpt-5.2` - VERIFIED (released Dec 10, 2025, 400K context, $1.75/$14 per 1M tokens)
+- `openai/gpt-5.2-codex` - VERIFIED (announced Dec 18, 2025, API rolling out)
+- `google/gemini-3-flash-preview` - VERIFIED (released Dec 17, 2025, 1M context, $0.50/$3 per 1M tokens)
+- `moonshotai/kimi-k2-thinking` - VERIFIED (released Nov 6, 2025, 256K context, $0.45/$2.35 per 1M tokens)
+- `deepseek/deepseek-chat` - VERIFIED (DeepSeek V3, 163K context, $0.30/$1.20 per 1M tokens)
+- `anthropic/claude-opus-4-5-20251101` - VERIFIED (current active model)
+- Groq: `deepseek-r1-distill-llama-70b` - VERIFIED (128K context)
 
-## Temporal Metacognition Notes
-- Critical path: fix edge-function blockers first (prompts, imports, rate-limit signature, spec stage).
-- Fast feedback loop: add smoke tests right after blockers to verify runtime quickly.
-- Risk buffers: 20-30 percent buffer on edge function changes due to deployment/test latency.
-- Parallelization: frontend wiring fixes can run in parallel with backend fixes, but should not block prompt seeding and spec stage correctness.
+**Models NOT FOUND / Removed:**
+- `deepseek-v3.2-speciale` - NOT on OpenRouter, removed from registry
+- `claude-sonnet-4.5` - Renamed to `claude-opus-4.5`
+- `gemini-2.5-flash` - Replaced with `gemini-3-flash`
+- `gpt-5.1` / `gpt-5.1-codex` - Replaced with `gpt-5.2` / `gpt-5.2-codex`
 
----
-
-## Phase 0 - Runtime Blockers (Critical Path)
-- [ ] P0-1 Add prompt seed: research_stage
-  - Success: `prompts` table contains `research_stage` and `renderPrompt('research_stage')` returns non-empty content.
-- [ ] P0-2 Add prompt seed: synthesis_stage
-  - Success: `prompts` table contains `synthesis_stage` and `renderPrompt('synthesis_stage')` returns non-empty content.
-- [ ] P0-3 Add prompt seed: voting_stage
-  - Success: `prompts` table contains `voting_stage` and `renderPrompt('voting_stage')` returns non-empty content.
-- [ ] P0-4 Fix spec stage import or prompt source
-  - Success: `supabase/functions/multi-agent-spec/lib/stages/spec.ts` references a defined `Prompts` or uses `renderPrompt`, and builds without runtime errors.
-- [ ] P0-5 Remove invalid duplicate import in research stage
-  - Success: `supabase/functions/multi-agent-spec/lib/stages/research.ts` has a single valid `AgentConfig` import and typecheck passes.
-- [ ] P0-6 Fix rate-limit RPC signature in voice-to-text
-  - Success: `supabase/functions/voice-to-text/index.ts` calls `check_and_increment_rate_limit` with `p_window_hours`, returning `allowed` without errors.
-- [ ] P0-7 Wire refinement continuation in chat view
-  - Success: `ChatView` receives `currentStage` and `onProceedToGeneration` and displays the "Start Expert Panel Analysis" button when appropriate.
+## Current-State Mismatch Snapshot (From Code Scan)
+- `supabase/functions/lib/openrouter-client.ts` references `gpt-5.2`, `gpt-5.2-codex`, `gemini-3-flash`, `deepseek-v3.2-speciale`, `kimi-k2-thinking`.
+- Stage logic and prompt metadata still use older IDs: `gpt-5.1`, `gpt-5.1-codex`, `gemini-2.5-flash`, `claude-sonnet-4.5`.
+- `synthesis`, `voting`, and `spec` stages bypass OpenRouter and call Groq directly with `deepseek-r1-distill-llama-70b`.
+- Prompt seeds exist in `supabase/migrations/20251217015651_seed_prompts.sql` but recommended_model values are older.
+- Docs (e.g., `docs/reports/ai-stack-update-dec-2025.md`) claim model availability that is not yet verified in Exa results.
 
 ---
 
-## Phase 1 - Pause/Resume Correctness
-- [ ] P1-1 Track last input and next round in spec flow
-  - Success: `useSpecFlow` stores `lastInput` and `nextRoundNumber` across pause/resume.
-- [ ] P1-2 Resume re-enters the pipeline
-  - Success: calling `resume()` triggers `runRound(lastInput, nextRoundNumber)` when paused and not processing.
-- [ ] P1-3 Persist pause context to session state
-  - Success: session state includes pause context (input + round) and survives reload via `useSessionPersistence`.
+## Phase 0: Evidence-Backed Model Contract (Blocker for model changes) ✅ COMPLETED
+*Goal: Lock model IDs, providers, pricing, context, and availability to a verified source of truth.*
+
+- [x] **0.1 Create a Model Evidence Ledger** ✅
+  - **Action:** Add `docs/reports/model-evidence-ledger-2025-12-19.md` with per-model fields: provider, model ID, context window, pricing, release date, source URLs, verification date.
+  - **Completed:** Dec 19, 2025 20:38 PST - Full ledger created with Exa-verified sources.
+
+- [x] **0.2 Verify OpenRouter model availability** ✅
+  - **Action:** Check OpenRouter model pages and/or API model list for each model ID used in code.
+  - **Completed:** All 7 models verified via Exa search against OpenRouter listings.
+
+- [x] **0.3 Verify Groq model availability** ✅
+  - **Action:** Confirm GroqCloud model IDs and naming via Groq docs/announcements.
+  - **Completed:** `deepseek-r1-distill-llama-70b` verified via Groq docs and HuggingFace.
+
+- [x] **0.4 Resolve naming conflicts** ✅
+  - **Action:** Decide whether to use `gpt-5.2`, `gpt-5.1`, or `gpt-5-codex` family based on verified listings.
+  - **Completed:** Standardized on `gpt-5.2` family, `claude-opus-4.5`, `gemini-3-flash` across all code.
+
+- [x] **0.5 Remove or gate unverified claims** ✅
+  - **Action:** Remove or feature-flag any model IDs without verified listings (e.g., `gemini-3-flash` if unverified).
+  - **Completed:** `deepseek-v3.2-speciale` removed. All remaining models verified.
 
 ---
 
-## Phase 2 - Prompt Ops and Analytics
-- [ ] P2-1 Track prompt usage for question generation
-  - Success: a question generation call inserts a row in `prompt_usage` with model, tokens, and latency.
-- [ ] P2-2 Track prompt usage for research stage
-  - Success: each research agent inserts a row in `prompt_usage` for `research_stage`.
-- [ ] P2-3 Track prompt usage for challenge generation/execution
-  - Success: `challenge_generation` and `challenge_execution` are recorded in `prompt_usage`.
-- [ ] P2-4 Track prompt usage for synthesis, voting, and spec
-  - Success: rows are inserted for `synthesis_stage`, `voting_stage`, and `specification_generation`.
+## Phase 1: Model Registry and Routing Alignment ✅ COMPLETED
+*Goal: One source of truth for model IDs and routing across all stages.*
+
+- [x] **1.1 Centralize model configuration** ✅
+  - **Action:** Create a `model-registry.ts` (or update `openrouter-client.ts`) as the only source of model IDs, capabilities, and pricing.
+  - **Completed:** `openrouter-client.ts` updated with verified MODELS registry (Dec 19, 2025).
+
+- [x] **1.2 Replace hardcoded model IDs in stage handlers** ✅
+  - **Action:** Update `question-generator.ts`, `challenge-generator.ts`, `expert-matcher.ts`, and `stages/*.ts` to read from the registry.
+  - **Completed:** All files updated to use verified model IDs (gpt-5.2, claude-opus-4.5, gemini-3-flash).
+
+- [x] **1.3 Align prompt metadata with registry** ✅
+  - **Action:** Update prompt seed metadata (`recommended_model`) to match the registry model IDs.
+  - **Completed:** Migration `20251219203845_update_model_references.sql` created to update prompt metadata.
+
+- [x] **1.4 Normalize Groq vs OpenRouter usage** ✅
+  - **Action:** Decide whether synthesis/voting/spec should use OpenRouter (with fallback) or Groq directly, then implement consistently.
+  - **Completed:** Groq (`deepseek-r1-distill-llama-70b`) used for synthesis/voting/spec. GROQ_MODEL constant exported from api.ts.
+
+- [x] **1.5 Track model usage consistently** ✅
+  - **Action:** Ensure all stages record `model_used` with the canonical ID in usage tracking.
+  - **Completed:** All `trackPromptUsage` calls now use GROQ_MODEL constant or verified model IDs.
 
 ---
 
-## Phase 3 - UX Completion and Consistency
-- [ ] P3-1 Consolidate voice input into the active spec entry component
-  - Success: voice input button appears in `SimpleSpecInput` and successful transcription appends text.
-- [ ] P3-2 Handle voice input errors in the UI
-  - Success: user sees a descriptive toast on transcription errors and can retry without reload.
-- [ ] P3-3 Add "My Specs" entry point
-  - Success: a new route lists user specs from `specifications` with open + delete actions.
+## Phase 2: Prompt and Database Alignment
+*Goal: Ensure prompts exist, match stage names, and enforce research discipline.*
+
+- [ ] **2.1 Audit prompt availability**
+  - **Action:** Verify `prompts` table contains `research_stage`, `challenge_generation`, `challenge_execution`, `debate_resolution`, `synthesis_stage`, `voting_stage`, `specification_generation`, and `question_generation`.
+  - **Success Criteria:** No missing prompt lookup errors at runtime.
+
+- [ ] **2.2 Validate prompt variables**
+  - **Action:** Confirm `supports_variables` and `variables` fields align with actual render variables.
+  - **Success Criteria:** Zero unresolved variable warnings in logs.
+
+- [ ] **2.3 Update prompt content for verified model behavior**
+  - **Action:** Adjust prompts if model capabilities differ from assumptions (e.g., tool-use guidance for Kimi K2).
+  - **Success Criteria:** Prompts reflect verified capabilities and do not rely on unsupported features.
 
 ---
 
-## Phase 4 - Asset and Production Hardening
-- [ ] P4-1 Replace `/src/assets/...` paths with imported assets in chat
-  - Success: `ChatMessage` and `mentorProfiles` use imported image modules and render in production builds.
-- [ ] P4-2 Use optimized WebP assets in chat
-  - Success: chat avatars use `/src/assets/optimized/*.webp` where available.
+## Phase 3: Runtime Stability and Deno Hygiene
+*Goal: Make edge functions compile and run predictably.*
+
+- [ ] **3.1 Add Deno config**
+  - **Action:** Create `supabase/functions/deno.json` with imports and tasks.
+  - **Success Criteria:** LSP errors for Deno/imports disappear and `deno check` is clean.
+
+- [ ] **3.2 Normalize import sources**
+  - **Action:** Align `jsr:` vs `esm.sh` usage for Supabase client and shared deps.
+  - **Success Criteria:** No duplicate dependency versions or resolution failures.
+
+- [ ] **3.3 Validate RPC signatures**
+  - **Action:** Confirm `check_and_increment_rate_limit` parameters match SQL signature for all callers.
+  - **Success Criteria:** No "Invalid arguments" or RPC signature mismatch errors.
+
+- [ ] **3.4 Harden JSON parsing paths**
+  - **Action:** Add robust parsing fallback for tool calls and completion JSON.
+  - **Success Criteria:** No unhandled JSON parse errors in research/challenge stages.
 
 ---
 
-## Phase 5 - Scalability Foundation
-- [ ] P5-1 Add `spec_jobs` table (queued spec generation)
-  - Success: migration creates `spec_jobs` with status, payload, result, and timestamps.
-- [ ] P5-2 Add enqueue endpoint
-  - Success: edge function can create a job and return `job_id` without blocking.
-- [ ] P5-3 Add worker execution path
-  - Success: a worker processes `spec_jobs` to completion and updates status.
-- [ ] P5-4 Add UI job status polling
-  - Success: UI shows live progress and transitions to spec view on completion.
+## Phase 4: Heavy-Model Review and Output Verification
+*Goal: Use a heavy model to audit lower-cost model outputs before final spec.*
+
+- [ ] **4.1 Add a review gate**
+  - **Action:** Introduce a "review" stage that validates research/synthesis with a heavy model (preferred: GPT-5.2 Codex or verified equivalent).
+  - **Success Criteria:** Review stage produces a pass/fail signal with clear remediation notes.
+
+- [ ] **4.2 Cross-check citations**
+  - **Action:** Require at least N citations in research outputs; fail or re-run if missing.
+  - **Success Criteria:** Each expert output includes source evidence or explicit "no source found" flags.
+
+- [ ] **4.3 Model disagreement protocol**
+  - **Action:** Define an escalation path if heavy-model review contradicts lower-model outputs.
+  - **Success Criteria:** Clear, deterministic retry rules to converge on a final result.
 
 ---
 
-## Phase 6 - QA and Regression Safety
-- [ ] P6-1 Add edge-function smoke test script for all stages
-  - Success: script exercises `questions`, `research`, `challenge`, `synthesis`, `voting`, and `spec` with 200 responses.
-- [ ] P6-2 Add Playwright test for refinement -> proceed flow
-  - Success: test reaches refinement, clicks proceed, and sees stage transition.
-- [ ] P6-3 Add Playwright test for share link
-  - Success: test creates a spec, clicks share, and loads `/spec/:id` successfully.
+## Phase 5: Tooling, Observability, and Testing
+*Goal: Make the pipeline testable and measurable.*
+
+- [ ] **5.1 Add a pipeline smoke test**
+  - **Action:** Create `scripts/smoke-test-pipeline.ts` to exercise all stages end-to-end.
+  - **Success Criteria:** Script completes with a summary table and exit code 0.
+
+- [ ] **5.2 Add structured logs**
+  - **Action:** Standardize stage logs with request IDs, model IDs, and latency.
+  - **Success Criteria:** Logs can be used to trace a single request across stages.
+
+- [ ] **5.3 Add regression tests for model routing**
+  - **Action:** Unit test the registry and routing decisions (fallbacks, provider mapping).
+  - **Success Criteria:** Tests cover all model IDs and fallback branches.
 
 ---
 
-## Definition of Done (Global)
-- No runtime exceptions in edge functions for the full pipeline.
-- All prompt stages resolve via database-backed prompts.
-- Chat refinement flow fully reaches spec generation.
-- Voice input works in the primary entry path.
-- New tests pass in CI and locally.
+## Phase 6: UI and Documentation Alignment
+*Goal: Frontend and docs reflect the real, verified model stack.*
+
+- [ ] **6.1 Update UI model labels**
+  - **Action:** Drive UI "Models Used" from backend response metadata, not hardcoded strings.
+  - **Success Criteria:** UI displays actual models used per stage.
+
+- [ ] **6.2 Update AI stack docs**
+  - **Action:** Revise `docs/reports/ai-stack-update-dec-2025.md` with verified sources and remove unverified claims.
+  - **Success Criteria:** Docs match the Model Evidence Ledger.
+
+- [ ] **6.3 Add a model update runbook**
+  - **Action:** Document the steps to add/replace models safely (verification, registry updates, prompt updates, tests).
+  - **Success Criteria:** A new model can be swapped in without touching multiple files.
+
+---
+
+## Definition of Done
+- All model IDs in code are verified in the Evidence Ledger or gated behind feature flags.
+- All pipeline stages compile, run, and record `model_used` consistently.
+- A heavy-model review gate is in place for final output verification.
+- Docs and UI match the real model stack and routing.
+
+## Critical Path
+Phase 0 -> Phase 1 -> Phase 3 -> Phase 4. Phases 2, 5, and 6 are parallelizable after Phase 1.

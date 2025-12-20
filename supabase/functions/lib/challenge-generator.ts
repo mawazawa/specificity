@@ -50,7 +50,7 @@ export async function generateChallenges(
   } = {}
 ): Promise<ChallengeQuestion[]> {
   const {
-    model = 'gpt-5.1',
+    model = 'gpt-5.2', // Verified Dec 19, 2025
     challengesPerFinding = 2
   } = options;
 
@@ -203,7 +203,7 @@ export async function resolveDebates(
   challenges: ChallengeResponse[],
   options: { model?: string } = {}
 ): Promise<DebateResolution[]> {
-  const { model = 'claude-sonnet-4.5' } = options; // Claude is great at synthesis
+  const { model = 'claude-opus-4.5' } = options; // Claude is great at synthesis (verified Dec 19, 2025)
 
   const resolutions = await Promise.all(
     researchResults.map(research =>
@@ -280,17 +280,18 @@ async function resolveDebate(
 
 /**
  * Select best model for each challenger
+ * Verified: December 19, 2025
  */
 function getModelForChallenger(expertId: string): string {
   const modelAssignments: Record<string, string> = {
-    'elon': 'gpt-5.1', // Strong reasoning for tech challenges
-    'steve': 'gpt-5.1', // Visionary challenges
-    'jony': 'claude-sonnet-4.5', // Design/UX challenges
-    'amal': 'gpt-5.1', // Legal/risk challenges
-    'bartlett': 'gemini-2.5-flash', // Business/market challenges
-    'zaha': 'claude-sonnet-4.5', // Architectural/vision challenges
-    'oprah': 'gemini-2.5-flash' // User empathy challenges
+    'elon': 'gpt-5.2', // Strong reasoning for tech challenges
+    'steve': 'gpt-5.2', // Visionary challenges
+    'jony': 'claude-opus-4.5', // Design/UX challenges
+    'amal': 'gpt-5.2', // Legal/risk challenges
+    'bartlett': 'gemini-3-flash', // Business/market challenges
+    'zaha': 'claude-opus-4.5', // Architectural/vision challenges
+    'oprah': 'gemini-3-flash' // User empathy challenges
   };
 
-  return modelAssignments[expertId] || 'gpt-5.1';
+  return modelAssignments[expertId] || 'gpt-5.2';
 }

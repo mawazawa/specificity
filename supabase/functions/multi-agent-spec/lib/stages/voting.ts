@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { callGroq, corsHeaders } from '../utils/api.ts';
+import { callGroq, corsHeaders, GROQ_MODEL } from '../utils/api.ts';
 import { AgentConfig, RoundData } from '../types.ts';
 import { renderPrompt, trackPromptUsage } from '../../../lib/prompt-service.ts';
 
@@ -39,7 +39,7 @@ export const handleVotingStage = async (
 
         await trackPromptUsage('voting_stage', {
             latency_ms: Date.now() - startTime,
-            model_used: 'llama-3.3-70b-versatile'
+            model_used: GROQ_MODEL
         });
 
         try {

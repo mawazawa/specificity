@@ -12,16 +12,18 @@ export const ExpertAssignmentSchema = z.object({
 export type ExpertAssignment = z.infer<typeof ExpertAssignmentSchema>;
 
 /**
- * Model selection based on expert specialty (Nov 2025)
+ * Model selection based on expert specialty
+ * Verified: December 19, 2025
+ * See: docs/reports/model-evidence-ledger-2025-12-19.md
  */
 const EXPERT_MODEL_MAP: Record<string, string> = {
-  'elon': 'gpt-5.1-codex', // Technical/architecture - best for code
-  'steve': 'claude-sonnet-4.5', // Design/UX - best reasoning
-  'jony': 'claude-sonnet-4.5', // Design precision
-  'zaha': 'claude-sonnet-4.5', // Creative design
-  'bartlett': 'gemini-2.5-flash', // Market/growth - fast & cheap
-  'oprah': 'gemini-2.5-flash', // Human connection
-  'amal': 'gpt-5.1' // Legal reasoning - deep thinking
+  'elon': 'gpt-5.2-codex', // Technical/architecture - best for code
+  'steve': 'claude-opus-4.5', // Design/UX - best reasoning
+  'jony': 'claude-opus-4.5', // Design precision
+  'zaha': 'claude-opus-4.5', // Creative design
+  'bartlett': 'gemini-3-flash', // Market/growth - fast & cheap
+  'oprah': 'gemini-3-flash', // Human connection
+  'amal': 'gpt-5.2' // Legal reasoning - deep thinking
 };
 
 /**
@@ -117,7 +119,7 @@ function calculateExpertScore(question: ResearchQuestion, expert: AgentConfig): 
  * Select best model for each expert's specialty
  */
 function selectModelForExpert(expertId: string): string {
-  return EXPERT_MODEL_MAP[expertId] || 'llama-3.3-70b';
+  return EXPERT_MODEL_MAP[expertId] || 'deepseek-r1-distill'; // Verified fallback
 }
 
 /**

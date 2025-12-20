@@ -4,7 +4,7 @@
  */
 
 export interface ModelConfig {
-  provider: 'openai' | 'anthropic' | 'google' | 'xai' | 'groq' | 'meta';
+  provider: 'openai' | 'anthropic' | 'google' | 'xai' | 'groq' | 'meta' | 'deepseek' | 'moonshotai';
   model: string;
   costPer1MTokensInput: number;
   costPer1MTokensOutput: number;
@@ -13,56 +13,107 @@ export interface ModelConfig {
   speed: 'fast' | 'medium' | 'slow';
 }
 
+/**
+ * Model Registry - Single Source of Truth
+ * Last Verified: December 19, 2025 via Exa Search MCP
+ * Evidence Ledger: docs/reports/model-evidence-ledger-2025-12-19.md
+ */
 export const MODELS: Record<string, ModelConfig> = {
-  'gpt-5.1': {
+  // ═══════════════════════════════════════════════════════════════
+  // VERIFIED MODELS (Dec 19, 2025)
+  // ═══════════════════════════════════════════════════════════════
+
+  'gpt-5.2': {
     provider: 'openai',
-    model: 'gpt-5.1',
-    costPer1MTokensInput: 10,
-    costPer1MTokensOutput: 30,
-    strengths: ['reasoning', 'meta-cognition', 'math'],
-    contextWindow: 128000,
+    model: 'gpt-5.2', // OpenRouter: openai/gpt-5.2
+    costPer1MTokensInput: 1.75, // Verified Dec 19, 2025
+    costPer1MTokensOutput: 14.00,
+    strengths: ['reasoning', 'meta-cognition', 'math', 'creativity', 'agentic'],
+    contextWindow: 400000, // Verified: 400K context
     speed: 'medium'
   },
-  'gpt-5.1-codex': {
+
+  'gpt-5.2-codex': {
     provider: 'openai',
-    model: 'gpt-5.1-codex',
-    costPer1MTokensInput: 10,
-    costPer1MTokensOutput: 30,
-    strengths: ['coding', 'architecture', 'technical_writing'],
-    contextWindow: 128000,
+    model: 'gpt-5.2-codex', // OpenRouter: openai/gpt-5.2-codex (API rolling out Dec 2025)
+    costPer1MTokensInput: 2.00, // Estimated - API not fully available
+    costPer1MTokensOutput: 15.00,
+    strengths: ['coding', 'architecture', 'refactoring', 'security', 'agentic'],
+    contextWindow: 400000,
     speed: 'medium'
   },
-  'claude-sonnet-4.5': {
+
+  'claude-opus-4.5': {
     provider: 'anthropic',
-    model: 'claude-sonnet-4-5-20250929',
-    costPer1MTokensInput: 3,
-    costPer1MTokensOutput: 15,
-    strengths: ['coding', 'reasoning', 'nuance'],
+    model: 'claude-opus-4-5-20251101', // OpenRouter: anthropic/claude-opus-4-5-20251101
+    costPer1MTokensInput: 15.00,
+    costPer1MTokensOutput: 75.00,
+    strengths: ['nuance', 'writing', 'complex_instruction_following'],
     contextWindow: 200000,
-    speed: 'medium'
+    speed: 'slow'
   },
-  'gemini-2.5-flash': {
+
+  'gemini-3-flash': {
     provider: 'google',
-    model: 'gemini-2.5-flash',
-    costPer1MTokensInput: 0.075,
-    costPer1MTokensOutput: 0.30,
-    strengths: ['speed', 'multimodal', 'long_context'],
-    contextWindow: 1000000,
+    model: 'gemini-3-flash-preview', // OpenRouter: google/gemini-3-flash-preview
+    costPer1MTokensInput: 0.50, // Verified Dec 19, 2025
+    costPer1MTokensOutput: 3.00,
+    strengths: ['speed', 'multimodal', 'huge_context', 'agentic'],
+    contextWindow: 1048576, // Verified: 1M context
     speed: 'fast'
   },
-  'llama-3.3-70b': {
-    provider: 'meta-llama',
-    model: 'llama-3.3-70b-versatile',
-    costPer1MTokensInput: 0.10,
+
+  'deepseek-v3': {
+    provider: 'deepseek',
+    model: 'deepseek-chat', // OpenRouter: deepseek/deepseek-chat (V3)
+    costPer1MTokensInput: 0.30, // Verified Dec 19, 2025
+    costPer1MTokensOutput: 1.20,
+    strengths: ['balanced', 'efficiency', 'general_purpose', 'coding'],
+    contextWindow: 163840,
+    speed: 'fast'
+  },
+
+  'kimi-k2-thinking': {
+    provider: 'moonshotai',
+    model: 'kimi-k2-thinking', // OpenRouter: moonshotai/kimi-k2-thinking
+    costPer1MTokensInput: 0.45, // Verified Dec 19, 2025
+    costPer1MTokensOutput: 2.35,
+    strengths: ['chain_of_thought', 'self_correction', 'planning', 'tool_use'],
+    contextWindow: 262144, // 256K context
+    speed: 'slow'
+  },
+
+  'deepseek-r1-distill': {
+    provider: 'groq',
+    model: 'deepseek-r1-distill-llama-70b', // Groq direct (not OpenRouter)
+    costPer1MTokensInput: 0.10, // Groq pricing
     costPer1MTokensOutput: 0.30,
-    strengths: ['speed', 'cost'],
-    contextWindow: 8192,
+    strengths: ['speed', 'cost', 'reasoning_lite', 'math'],
+    contextWindow: 128000, // Full 128K on Groq
+    speed: 'fast'
+  },
+
+  // ═══════════════════════════════════════════════════════════════
+  // LEGACY ALIASES (for backward compatibility)
+  // ═══════════════════════════════════════════════════════════════
+
+  // Alias: deepseek-v3.2 -> deepseek-v3 (no V3.2 exists on OpenRouter)
+  'deepseek-v3.2': {
+    provider: 'deepseek',
+    model: 'deepseek-chat',
+    costPer1MTokensInput: 0.30,
+    costPer1MTokensOutput: 1.20,
+    strengths: ['balanced', 'efficiency', 'general_purpose', 'coding'],
+    contextWindow: 163840,
     speed: 'fast'
   }
+
+  // NOTE: deepseek-v3.2-speciale REMOVED - not found on any provider
+  // NOTE: claude-octopus-4.5 renamed to claude-opus-4.5
 };
 
 // Fallback model if preferred model fails
-export const FALLBACK_MODEL = 'llama-3.3-70b';
+export const FALLBACK_MODEL = 'deepseek-r1-distill';
 
 export interface LLMCallParams {
   model: string;
@@ -179,7 +230,7 @@ async function callGroqFallback(params: LLMCallParams): Promise<LLMResponse> {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      model: 'llama-3.3-70b-versatile',
+      model: 'deepseek-r1-distill-llama-70b',
       messages: params.messages,
       temperature: params.temperature ?? 0.7,
       max_tokens: params.maxTokens ?? 2000
@@ -207,7 +258,7 @@ async function callGroqFallback(params: LLMCallParams): Promise<LLMResponse> {
       totalTokens: inputTokens + outputTokens
     },
     cost,
-    model: 'llama-3.3-70b',
+    model: 'deepseek-r1-distill',
     provider: 'groq'
   };
 }
