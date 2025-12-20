@@ -1,7 +1,7 @@
 import { corsHeaders } from '../utils/api.ts';
 import { AgentConfig } from '../types.ts';
-import { callOpenRouter } from '../../lib/openrouter-client.ts';
-import { renderPrompt } from '../../lib/prompt-service.ts';
+import { callOpenRouter } from '../../../lib/openrouter-client.ts';
+import { renderPrompt } from '../../../lib/prompt-service.ts';
 
 export const handleChatStage = async (
     agentConfigs: AgentConfig[] | undefined,

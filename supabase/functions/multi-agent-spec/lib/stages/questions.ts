@@ -1,4 +1,4 @@
-import { generateDynamicQuestions } from '../../lib/question-generator.ts';
+import { generateDynamicQuestions } from '../../../lib/question-generator.ts';
 import { corsHeaders } from '../utils/api.ts';
 
 export const handleQuestionsStage = async (cleanInput: string) => {

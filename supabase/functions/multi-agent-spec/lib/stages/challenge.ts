@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { generateChallenges, executeChallenges, resolveDebates } from '../../lib/challenge-generator.ts';
+import { generateChallenges, executeChallenges, resolveDebates } from '../../../lib/challenge-generator.ts';
 import { corsHeaders } from '../utils/api.ts';
 import { AgentConfig, RoundData } from '../types.ts';
 
