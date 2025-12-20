@@ -1,44 +1,93 @@
-# Optimal AI Stack Report (December 19, 2025)
+# AI Stack Report (December 19, 2025) - Verified
 
 ## Executive Summary
-As requested, we have performed a deep-dive research into the "bleeding edge" AI landscape as of December 19, 2025. We analyzed recent releases from OpenAI, DeepSeek, Google, Anthropic, and Moonshot AI to construct a cost-optimized, high-performance stack that replaces legacy models with the absolute latest state-of-the-art technology.
 
-The codebase has been updated to leverage this new stack immediately.
+This document reflects the **verified and deployed** AI model stack as of December 19, 2025.
+All models have been verified via Exa search against OpenRouter and Groq documentation.
 
-## The New Bleeding Edge Stack
+**Evidence Ledger:** `docs/reports/model-evidence-ledger-2025-12-19.md`
 
-| Component | Selected Model | Provider | Release Date | Why it was chosen |
-|-----------|----------------|----------|--------------|-------------------|
-| **Coding & Architecture** | **GPT-5.2 Codex** | OpenAI | Dec 18, 2025 | Released yesterday. The absolute frontier for agentic coding and complex system design. Outperforms GPT-5.1 significantly on refactoring tasks. |
-| **Deep Reasoning** | **DeepSeek V3.2 Speciale** | DeepSeek | Dec 01, 2025 | "Rivals Gemini 3.0 Pro" at a fraction of the cost. Optimized specifically for hard reasoning problems and agentic workflows. |
-| **Fast / General Driver** | **Gemini 3 Flash (Preview)** | Google | Dec 17, 2025 | The new speed king. Massive 2M context window, multimodal, and significantly smarter than 2.5 Flash. |
-| **Thinking / Planning** | **Kimi K2 Thinking** | Moonshot AI | Nov 07, 2025 | specialized "Thinking" model (Chain of Thought) perfect for long-horizon planning and self-correction. |
-| **Reliability Fallback** | **DeepSeek R1 Distill** | Groq | Feb 2025 | Running on Groq's LPU. Extremely fast inference for fallback scenarios when primary providers fail. |
+## Verified Model Stack
 
-## Detailed Research Findings
+| Component | Model ID | Provider | Context | Input$/M | Output$/M | Verification |
+|-----------|----------|----------|---------|----------|-----------|--------------|
+| **Coding & Architecture** | `gpt-5.2-codex` | OpenAI | 256K | $2.00 | $16.00 | ✅ Dec 18, 2025 |
+| **Deep Reasoning** | `gpt-5.2` | OpenAI | 400K | $1.75 | $14.00 | ✅ Dec 10, 2025 |
+| **Fast / General** | `gemini-3-flash-preview` | Google | 1M | $0.50 | $3.00 | ✅ Dec 17, 2025 |
+| **Design & UX** | `claude-opus-4.5` | Anthropic | 200K | $15.00 | $75.00 | ✅ Nov 2025 |
+| **Thinking / Planning** | `kimi-k2-thinking` | Moonshot AI | 256K | $0.45 | $2.35 | ✅ Nov 06, 2025 |
+| **Budget Reasoning** | `deepseek-chat` (V3) | DeepSeek | 163K | $0.30 | $1.20 | ✅ Verified |
+| **Fast Inference** | `deepseek-r1-distill-llama-70b` | Groq | 128K | $0.10 | $0.30 | ✅ Verified |
 
-### 1. OpenAI GPT-5.2 Codex (The New Heavyweight)
-Released just yesterday (Dec 18), **GPT-5.2-Codex** is the specialized version of the GPT-5.2 frontier model. It features "context compaction" for long-horizon coding tasks and improved performance on refactoring. This replaces the previous `gpt-5.1` reference in your codebase.
+## Models Removed (Unverified)
 
-### 2. DeepSeek V3.2 & Speciale (The Value/Performance King)
-DeepSeek continues to disrupt the market. **V3.2 Speciale** (released Dec 1) is designed to compete with the heaviest models (Gemini 3.0 Pro, GPT-5) on reasoning tasks but remains accessible via OpenRouter.
-*   **V3.2 Speciale**: Use this for widely complex logic where you'd normally pay $10+/M tokens. It costs ~$0.40/M.
-*   **V3.2 Standard**: A perfect "daily driver" that balances GPT-5 level performance with high efficiency.
+The following models were referenced in code but could NOT be verified on OpenRouter:
 
-### 3. Google Gemini 3 Flash (The Context Beast)
-Released Dec 17, **Gemini 3 Flash** makes the previous "Flash" models look like toys. It retains the massive context window (2M+) but brings "frontier-class" intelligence. This is ideal for analyzing large codebases or massive document sets in a single pass.
+| Model ID | Reason | Replacement |
+|----------|--------|-------------|
+| `deepseek-v3.2-speciale` | NOT found on OpenRouter | `deepseek-chat` (V3) |
+| `gpt-5.1` / `gpt-5.1-codex` | Superseded | `gpt-5.2` / `gpt-5.2-codex` |
+| `claude-sonnet-4.5` | Name incorrect | `claude-opus-4.5` |
+| `gemini-2.5-flash` | Superseded | `gemini-3-flash-preview` |
 
-### 4. Kimi K2 Thinking (The Planner)
-A unique addition. This model natively supports "thinking while using tools," making it distinct from standard chat models. It is excellent for the "Questions" and "Challenge" stages of your multi-agent spec flow where deep reflection is required.
+## Pipeline Stage Routing
 
-## Infrastructure Updates
+| Stage | Primary Model | Provider | Fallback |
+|-------|---------------|----------|----------|
+| Questions | `gpt-5.2` | OpenRouter | `claude-opus-4.5` |
+| Research | Dynamic (per expert) | OpenRouter | `gemini-3-flash` |
+| Challenge | `gpt-5.2` | OpenRouter | `claude-opus-4.5` |
+| Synthesis | `deepseek-r1-distill-llama-70b` | Groq | - |
+| **Review** | `gpt-5.2-codex` | OpenRouter | `claude-opus-4.5` |
+| Voting | `deepseek-r1-distill-llama-70b` | Groq | - |
+| Spec | `deepseek-r1-distill-llama-70b` | Groq | - |
+| Chat | `gpt-5.2` | OpenRouter | `gemini-3-flash` |
 
-*   **Primary Router**: **OpenRouter** remains the primary gateway. It has official support for all the selected models (DeepSeek V3.2, Kimi K2, Gemini 3).
-*   **Groq Integration**: We confirmed Groq now supports **DeepSeek R1 Distill** (70B). We have updated your fallback logic to use this instead of Llama 3.3. This ensures that even your safety net is running on bleeding-edge distilled reasoning models at 1000+ tokens/second.
+## Expert-to-Model Assignments
 
-## Codebase Changes
+| Expert | Role | Model | Rationale |
+|--------|------|-------|-----------|
+| Elon | Tech Visionary | `gpt-5.2-codex` | Complex technical reasoning |
+| Steve | Product Design | `claude-opus-4.5` | Creative product thinking |
+| Jony | UX Design | `claude-opus-4.5` | Design excellence |
+| Zaha | Architecture | `claude-opus-4.5` | Structural vision |
+| Bartlett | Business | `gemini-3-flash` | Fast market analysis |
+| Oprah | User Empathy | `gemini-3-flash` | Quick empathy insights |
+| Amal | Legal | `gpt-5.2` | Precise legal reasoning |
 
-We have updated `supabase/functions/lib/openrouter-client.ts` and `api.ts`:
-1.  **Updated `MODELS` Registry**: Removed `gpt-5.1`, `gemini-2.5`, `claude-sonnet`. Added `gpt-5.2`, `gpt-5.2-codex`, `gemini-3-flash`, `deepseek-v3.2`, `deepseek-v3.2-speciale`, `kimi-k2-thinking`.
-2.  **Updated Fallbacks**: Switched default fallbacks to `deepseek-r1-distill` via Groq.
-3.  **Fixed Types**: Updated TypeScript interfaces to strictly type these new providers.
+## Infrastructure
+
+### Primary: OpenRouter
+- Unified API for OpenAI, Anthropic, Google, DeepSeek, Moonshot
+- Automatic fallback routing
+- Usage tracking and cost monitoring
+
+### Secondary: Groq (Direct)
+- Used for synthesis/voting/spec stages
+- `deepseek-r1-distill-llama-70b` model
+- Extremely fast inference (1000+ tokens/sec)
+
+## Cost Optimization
+
+| Stage Category | Model | Cost/1M tokens | Use Case |
+|----------------|-------|----------------|----------|
+| High-Value | `gpt-5.2-codex` | $2.00-$16.00 | Review, coding |
+| Balanced | `gpt-5.2` / `claude-opus-4.5` | $1.75-$75.00 | Reasoning, design |
+| Fast/Cheap | `gemini-3-flash` | $0.50-$3.00 | Quick analysis |
+| Bulk | `deepseek-r1-distill-llama-70b` | $0.10-$0.30 | Synthesis, voting |
+
+## Verification Sources
+
+All models verified via Exa search on December 19, 2025:
+
+1. **GPT-5.2 / GPT-5.2-Codex**: OpenRouter model listings
+2. **Gemini 3 Flash**: Google AI announcements, OpenRouter
+3. **Claude Opus 4.5**: Anthropic documentation
+4. **Kimi K2 Thinking**: Moonshot AI press releases
+5. **DeepSeek V3**: DeepSeek documentation, HuggingFace
+6. **DeepSeek R1 Distill**: Groq console, HuggingFace
+
+---
+
+*Last Updated: December 19, 2025 20:48 PST*
+*Verified By: Claude Opus 4.5 via Exa Search MCP*

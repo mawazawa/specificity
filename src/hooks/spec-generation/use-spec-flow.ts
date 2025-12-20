@@ -151,7 +151,9 @@ export function useSpecFlow({ agentConfigs }: UseSpecFlowProps) {
       round.research = researchData.researchResults || [];
       const metadata = researchData.metadata || { totalToolsUsed: 0, totalCost: 0 };
 
-      const researchSummary = `📊 **Research Complete:**\n• ${round.research.length} experts analyzed\n• ${metadata.totalToolsUsed || 0} tool calls executed\n• Cost: $${(metadata.totalCost || 0).toFixed(4)}\n• Duration: ${(researchDuration / 1000).toFixed(1)}s\n\n**Models Used:** Multi-model (GPT-5.1-Codex, Claude Sonnet 4.5, Gemini 2.5 Flash)`;
+      // Extract unique models from research results
+const modelsUsed = [...new Set(round.research.map(r => r.model))].join(', ') || 'Multi-model';
+const researchSummary = `📊 **Research Complete:**\n• ${round.research.length} experts analyzed\n• ${metadata.totalToolsUsed || 0} tool calls executed\n• Cost: $${(metadata.totalCost || 0).toFixed(4)}\n• Duration: ${(researchDuration / 1000).toFixed(1)}s\n\n**Models Used:** ${modelsUsed}`;
 
       addDialogue({
         agent: 'system',

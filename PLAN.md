@@ -151,20 +151,20 @@
 
 ---
 
-## Phase 6: UI and Documentation Alignment
+## Phase 6: UI and Documentation Alignment ✅ COMPLETED
 *Goal: Frontend and docs reflect the real, verified model stack.*
 
-- [ ] **6.1 Update UI model labels**
+- [x] **6.1 Update UI model labels** ✅
   - **Action:** Drive UI "Models Used" from backend response metadata, not hardcoded strings.
-  - **Success Criteria:** UI displays actual models used per stage.
+  - **Completed:** Dec 19, 2025 - Updated `use-spec-flow.ts` to extract models from `researchResults` dynamically instead of hardcoded strings.
 
-- [ ] **6.2 Update AI stack docs**
+- [x] **6.2 Update AI stack docs** ✅
   - **Action:** Revise `docs/reports/ai-stack-update-dec-2025.md` with verified sources and remove unverified claims.
-  - **Success Criteria:** Docs match the Model Evidence Ledger.
+  - **Completed:** Dec 19, 2025 - Rewrote entire document with verified model stack, removed `deepseek-v3.2-speciale`, added verification table and sources.
 
-- [ ] **6.3 Add a model update runbook**
+- [x] **6.3 Add a model update runbook** ✅
   - **Action:** Document the steps to add/replace models safely (verification, registry updates, prompt updates, tests).
-  - **Success Criteria:** A new model can be swapped in without touching multiple files.
+  - **Completed:** Dec 19, 2025 - Created `docs/runbooks/model-update-runbook.md` with 8-step process, rollback procedures, and common issues.
 
 ---
 
