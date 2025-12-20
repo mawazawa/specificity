@@ -176,3 +176,381 @@
 
 ## Critical Path
 Phase 0 -> Phase 1 -> Phase 3 -> Phase 4. Phases 2, 5, and 6 are parallelizable after Phase 1.
+
+---
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PHASE 7-11: Bug Fixes & World-Class Enhancements
+# Date: December 20, 2025
+# Research Verification: All items verified via Exa search Dec 20, 2025 09:15 PST
+# ═══════════════════════════════════════════════════════════════════════════════
+
+## Database Migration Notice
+**CRITICAL CHANGE (Dec 20, 2025):**
+- **Old Database:** `supabase-lime-tree` / `sbwgkocarqvonkdlitdx` (DEPRECATED - shared with 85+ tables from other projects)
+- **New Database:** `specificity` / `tkkthpoottlqmdopmtuh` (DEDICATED - created Dec 20, 2025)
+- All migrations applied, prompts seeded, edge functions deployed to new project
+
+---
+
+## Phase 7: Data Integrity & RLS Hardening
+*Goal: Fix database insert failures and ensure all writes include proper user context.*
+*Verified: Supabase RLS docs Dec 2025 - INSERT requires WITH CHECK, not USING*
+
+### Bug #1: saveSpec Missing user_id on Insert
+**File:** `src/lib/api.ts:saveSpec()`
+**Root Cause:** INSERT missing `user_id: session.user.id`
+**RLS Requirement:** `auth.uid() = user_id` policy requires user_id field
+
+- [ ] **7.1.1** Read current saveSpec implementation and map all insert paths
+  - **Success:** Document all `.insert()` calls in api.ts with line numbers
+- [ ] **7.1.2** Add user session retrieval before insert
+  - **Success:** `const { data: { session } } = await supabase.auth.getSession()` present
+- [ ] **7.1.3** Add user_id field to insert payload
+  - **Success:** `user_id: session?.user?.id` included in insert object
+- [ ] **7.1.4** Add null check with user-friendly error
+  - **Success:** Throws descriptive error if session is null
+- [ ] **7.1.5** Update TypeScript types to require user_id
+  - **Success:** `SpecificationInsert` type includes `user_id: string`
+- [ ] **7.1.6** Test insert with authenticated user
+  - **Success:** Specification saves and returns ID
+- [ ] **7.1.7** Test insert without auth (expect failure)
+  - **Success:** RLS policy blocks insert, error caught gracefully
+- [ ] **7.1.8** Verify RLS policy uses WITH CHECK for INSERT
+  - **Success:** Policy `WITH CHECK (auth.uid() = user_id)` confirmed in schema
+- [ ] **7.1.9** Add E2E test for specification save flow
+  - **Success:** Playwright test creates spec and verifies in DB
+- [ ] **7.1.10** Document user_id requirement in CLAUDE.md
+  - **Success:** Data integrity section added to project docs
+
+### Bug #7: review_stage Prompt Not Seeded
+**File:** `supabase/migrations/*_seed_prompts.sql`
+**Root Cause:** Phase 4 added review stage but prompt was never seeded
+
+- [ ] **7.2.1** Check prompts table for review_stage entry
+  - **Success:** Query returns 0 rows for name='review_stage'
+- [ ] **7.2.2** Create review_stage prompt content with GPT-5.2 Codex model
+  - **Success:** Prompt text follows existing format with {{variables}}
+- [ ] **7.2.3** Add INSERT statement to seed migration
+  - **Success:** Migration file created: `*_seed_review_prompt.sql`
+- [ ] **7.2.4** Include correct metadata (category: quality, model: gpt-5.2-codex)
+  - **Success:** recommended_model matches evidence ledger
+- [ ] **7.2.5** Apply migration to new database (tkkthpoottlqmdopmtuh)
+  - **Success:** `supabase db push` succeeds
+- [ ] **7.2.6** Verify prompt retrieval in review.ts stage handler
+  - **Success:** `renderPrompt('review_stage', {})` returns content
+- [ ] **7.2.7** Add prompt_versions entry for audit trail
+  - **Success:** Version 1 recorded with created_at timestamp
+- [ ] **7.2.8** Test review stage end-to-end
+  - **Success:** Review stage returns pass/fail with issues array
+- [ ] **7.2.9** Add prompt to smoke test validation
+  - **Success:** smoke-test-pipeline.ts checks review_stage exists
+- [ ] **7.2.10** Update prompts documentation
+  - **Success:** docs/reports/ai-stack-update-dec-2025.md lists review_stage
+
+---
+
+## Phase 8: UX & Output Fidelity
+*Goal: Fix frontend expectations to match actual API response schemas.*
+*Verified: React 19.x patterns Dec 2025 - useOptimistic for pending states*
+
+### Bug #2: Review Stage Not Called in Frontend
+**File:** `src/hooks/use-spec-flow.ts`
+**Root Cause:** Frontend skips 'review' stage despite backend implementation
+
+- [ ] **8.1.1** Map current stage progression in use-spec-flow.ts
+  - **Success:** Document all stages and their order in flow
+- [ ] **8.1.2** Identify where review stage should be inserted
+  - **Success:** After synthesis, before voting (line ~XXX)
+- [ ] **8.1.3** Add review stage call with correct endpoint
+  - **Success:** `stage: 'review'` added to runStage calls
+- [ ] **8.1.4** Handle review response schema (pass/fail, score, issues)
+  - **Success:** TypeScript interface matches API response
+- [ ] **8.1.5** Add UI feedback for review in-progress
+  - **Success:** "Quality review in progress..." shown to user
+- [ ] **8.1.6** Display review results in SpecResults component
+  - **Success:** Score and issues array rendered
+- [ ] **8.1.7** Handle review failure (retry or escalate)
+  - **Success:** User sees option to proceed or retry
+- [ ] **8.1.8** Add review stage to pipeline visualization
+  - **Success:** AgentCard shows review stage activity
+- [ ] **8.1.9** Test full pipeline including review
+  - **Success:** E2E test exercises all 8 stages
+- [ ] **8.1.10** Update user documentation
+  - **Success:** Help text explains quality review step
+
+### Bug #3: ResearchPanel Expects Wrong Schema
+**File:** `src/components/ResearchPanel.tsx`
+**Root Cause:** Component expects {title, url, snippet} but API returns {expert, findings, citations}
+
+- [ ] **8.2.1** Document current ResearchPanel props interface
+  - **Success:** TypeScript interface captured with all fields
+- [ ] **8.2.2** Compare against actual API response from research stage
+  - **Success:** Side-by-side diff of expected vs actual
+- [ ] **8.2.3** Update interface to match API: expert, findings[], citations[]
+  - **Success:** ResearchResult type updated
+- [ ] **8.2.4** Refactor rendering to display expert-based structure
+  - **Success:** UI shows expert name with findings list
+- [ ] **8.2.5** Add citations display with clickable links
+  - **Success:** Each citation renders as anchor tag
+- [ ] **8.2.6** Handle missing/optional fields gracefully
+  - **Success:** Null checks prevent runtime errors
+- [ ] **8.2.7** Add loading skeleton matching new structure
+  - **Success:** Skeleton UI mimics final layout
+- [ ] **8.2.8** Test with real API response data
+  - **Success:** Component renders without errors
+- [ ] **8.2.9** Add Storybook story for ResearchPanel
+  - **Success:** Visual test with mock data
+- [ ] **8.2.10** Verify accessibility (ARIA labels, keyboard nav)
+  - **Success:** Lighthouse accessibility score >90
+
+### Bug #4: Live Agent Activity Expects askedBy Field
+**File:** `src/components/AgentCard.tsx` or similar
+**Root Cause:** UI expects `askedBy` field that doesn't exist in response
+
+- [ ] **8.3.1** Locate component expecting askedBy field
+  - **Success:** File and line number identified
+- [ ] **8.3.2** Trace expected data flow from API
+  - **Success:** Document where askedBy should come from
+- [ ] **8.3.3** Determine if askedBy should be added to API or removed from UI
+  - **Success:** Decision documented (add/remove)
+- [ ] **8.3.4** Implement chosen fix (API addition OR UI removal)
+  - **Success:** Code updated, no type errors
+- [ ] **8.3.5** Update TypeScript interfaces
+  - **Success:** Types match implementation
+- [ ] **8.3.6** Add fallback for missing field
+  - **Success:** Graceful degradation if field absent
+- [ ] **8.3.7** Test agent activity display during pipeline run
+  - **Success:** Real-time updates work without errors
+- [ ] **8.3.8** Verify all agent types display correctly
+  - **Success:** Each expert type renders properly
+- [ ] **8.3.9** Add E2E test for agent activity panel
+  - **Success:** Playwright test validates activity
+- [ ] **8.3.10** Update component documentation
+  - **Success:** Props documented with examples
+
+---
+
+## Phase 9: Observability & Consistency
+*Goal: Ensure all model usage is tracked correctly with consistent IDs.*
+*Verified: OpenTelemetry + Supabase patterns Dec 2025*
+
+### Bug #5: Model Registry Inconsistent with Evidence Ledger
+**File:** `supabase/functions/lib/openrouter-client.ts`
+**Root Cause:** MODELS object has entries not in evidence ledger
+
+- [ ] **9.1.1** Export current MODELS registry to JSON
+  - **Success:** All model IDs captured
+- [ ] **9.1.2** Compare against evidence ledger (model-evidence-ledger-2025-12-19.md)
+  - **Success:** Diff report generated
+- [ ] **9.1.3** Remove unverified models from registry
+  - **Success:** Only verified models remain
+- [ ] **9.1.4** Add missing verified models
+  - **Success:** All 7 verified models present
+- [ ] **9.1.5** Update pricing to match ledger
+  - **Success:** Input/output costs accurate
+- [ ] **9.1.6** Update context windows to match ledger
+  - **Success:** Context limits accurate
+- [ ] **9.1.7** Add verification date to each model entry
+  - **Success:** `verifiedDate: '2025-12-19'` in registry
+- [ ] **9.1.8** Create unit test for registry consistency
+  - **Success:** Test compares registry to ledger file
+- [ ] **9.1.9** Add CI check for registry drift
+  - **Success:** PR fails if registry differs from ledger
+- [ ] **9.1.10** Document registry update process
+  - **Success:** Runbook updated with verification steps
+
+### Bug #6: Groq Model Tracking Metadata Wrong
+**File:** `supabase/functions/multi-agent-spec/lib/utils/api.ts`
+**Root Cause:** trackPromptUsage records wrong model ID for Groq calls
+
+- [ ] **9.2.1** Find all trackPromptUsage calls for Groq stages
+  - **Success:** synthesis, voting, spec stage calls located
+- [ ] **9.2.2** Verify GROQ_MODEL constant is exported and correct
+  - **Success:** `deepseek-r1-distill-llama-70b` confirmed
+- [ ] **9.2.3** Replace hardcoded strings with GROQ_MODEL
+  - **Success:** All calls use constant
+- [ ] **9.2.4** Add provider field to tracking metadata
+  - **Success:** `provider: 'groq'` included
+- [ ] **9.2.5** Verify tracking data in prompt_usage table
+  - **Success:** Query shows correct model IDs
+- [ ] **9.2.6** Add latency tracking for Groq calls
+  - **Success:** `latency_ms` field populated
+- [ ] **9.2.7** Add token count tracking
+  - **Success:** `input_tokens`, `output_tokens` recorded
+- [ ] **9.2.8** Create usage dashboard query
+  - **Success:** SQL query for model usage stats
+- [ ] **9.2.9** Test tracking end-to-end
+  - **Success:** Full pipeline populates usage table
+- [ ] **9.2.10** Add monitoring alert for tracking failures
+  - **Success:** Alert triggers if usage insert fails
+
+### Bug #10: claude-octopus-4.5 Typo
+**File:** Search codebase for typo
+**Root Cause:** Typo "octopus" instead of "opus"
+
+- [ ] **9.3.1** Search entire codebase for "octopus"
+  - **Success:** All occurrences found
+- [ ] **9.3.2** Replace with "opus" in each location
+  - **Success:** Zero "octopus" references remain
+- [ ] **9.3.3** Search for other potential model ID typos
+  - **Success:** Audit complete, no other typos
+- [ ] **9.3.4** Add model ID validation at startup
+  - **Success:** Registry validates against known patterns
+- [ ] **9.3.5** Add spellcheck to CI for model names
+  - **Success:** Custom dictionary includes model IDs
+- [ ] **9.3.6** Test affected code paths
+  - **Success:** No runtime errors from typo fix
+- [ ] **9.3.7** Update any cached/compiled assets
+  - **Success:** Build artifacts regenerated
+- [ ] **9.3.8** Deploy fix to edge functions
+  - **Success:** `supabase functions deploy` succeeds
+- [ ] **9.3.9** Verify fix in production logs
+  - **Success:** Logs show correct model ID
+- [ ] **9.3.10** Add to codebase conventions doc
+  - **Success:** Model naming rules documented
+
+---
+
+## Phase 10: Performance & Reliability
+*Goal: Optimize bundle size, enable rate limiting, fix test expectations.*
+*Verified: Vite 6.x code splitting Dec 2025, React.lazy patterns*
+
+### Bug #8: Rate Limiting Disabled in multi-agent-spec
+**File:** `supabase/functions/multi-agent-spec/index.ts`
+**Root Cause:** Rate limit check commented out or bypassed
+
+- [ ] **10.1.1** Locate rate limiting code in multi-agent-spec
+  - **Success:** Line numbers for rate limit logic found
+- [ ] **10.1.2** Verify check_and_increment_rate_limit RPC exists
+  - **Success:** Function exists in new database
+- [ ] **10.1.3** Uncomment/enable rate limit check
+  - **Success:** Rate limit logic active
+- [ ] **10.1.4** Configure appropriate limits (requests/hour)
+  - **Success:** 100 requests/hour default set
+- [ ] **10.1.5** Add rate limit exceeded response (429)
+  - **Success:** Returns proper HTTP status with retry-after
+- [ ] **10.1.6** Test rate limit enforcement
+  - **Success:** 101st request blocked
+- [ ] **10.1.7** Add rate limit bypass for admin users
+  - **Success:** Admin role skips check
+- [ ] **10.1.8** Add rate limit headers to all responses
+  - **Success:** X-RateLimit-Remaining in headers
+- [ ] **10.1.9** Add rate limit monitoring
+  - **Success:** Alerts for users hitting limits
+- [ ] **10.1.10** Document rate limits for users
+  - **Success:** API docs include rate limit info
+
+### Bug #9: Smoke Test Expectations Don't Match API Response
+**File:** `scripts/smoke-test-pipeline.ts`
+**Root Cause:** Test expects fields that don't exist in actual response
+
+- [ ] **10.2.1** Run smoke test and capture failures
+  - **Success:** All assertion errors documented
+- [ ] **10.2.2** Compare expected vs actual for each stage
+  - **Success:** Diff for questions, research, challenge, etc.
+- [ ] **10.2.3** Update questions stage expectations
+  - **Success:** Test expects correct response shape
+- [ ] **10.2.4** Update research stage expectations
+  - **Success:** Test expects expert/findings/citations
+- [ ] **10.2.5** Update challenge stage expectations
+  - **Success:** Test expects challengeResponses array
+- [ ] **10.2.6** Update synthesis stage expectations
+  - **Success:** Test expects synthesis object
+- [ ] **10.2.7** Update review stage expectations
+  - **Success:** Test expects pass/fail/score
+- [ ] **10.2.8** Update voting stage expectations
+  - **Success:** Test expects votes array
+- [ ] **10.2.9** Update spec stage expectations
+  - **Success:** Test expects specification object
+- [ ] **10.2.10** Run full smoke test with all fixes
+  - **Success:** All 7 stages pass
+
+### Performance: Bundle Optimization
+**Target:** <200KB initial bundle, <1s LCP
+*Verified: Vite 6.x manualChunks Dec 2025, React.lazy patterns*
+
+- [ ] **10.3.1** Analyze current bundle with `vite-bundle-visualizer`
+  - **Success:** Bundle report generated with size breakdown
+- [ ] **10.3.2** Identify largest dependencies
+  - **Success:** Top 10 deps by size documented
+- [ ] **10.3.3** Configure manualChunks in vite.config.ts
+  - **Success:** Vendor chunk separated
+- [ ] **10.3.4** Add React.lazy for route components
+  - **Success:** All route components lazy loaded
+- [ ] **10.3.5** Add Suspense boundaries with loading states
+  - **Success:** Skeleton UI during chunk load
+- [ ] **10.3.6** Optimize Recharts import (tree-shake)
+  - **Success:** Only used chart components imported
+- [ ] **10.3.7** Optimize Lucide icons import
+  - **Success:** Icons imported individually, not from barrel
+- [ ] **10.3.8** Add preload hints for critical chunks
+  - **Success:** modulepreload links in HTML
+- [ ] **10.3.9** Measure LCP after optimizations
+  - **Success:** Lighthouse LCP <1s
+- [ ] **10.3.10** Add bundle size CI check
+  - **Success:** PR fails if bundle exceeds budget
+
+---
+
+## Phase 11: Quality Control & Documentation
+*Goal: Ensure all changes are tested, documented, and maintainable.*
+
+### Testing Coverage
+- [ ] **11.1.1** Run existing test suite, capture failures
+  - **Success:** Baseline failure count documented
+- [ ] **11.1.2** Fix broken tests from schema changes
+  - **Success:** All previously passing tests pass
+- [ ] **11.1.3** Add unit tests for RLS user_id fix
+  - **Success:** saveSpec test with/without auth
+- [ ] **11.1.4** Add integration tests for review stage
+  - **Success:** Review stage API tested
+- [ ] **11.1.5** Add E2E test for full pipeline
+  - **Success:** Playwright test exercises all stages
+- [ ] **11.1.6** Add visual regression tests
+  - **Success:** Percy/Chromatic snapshots configured
+- [ ] **11.1.7** Measure and report coverage
+  - **Success:** Coverage report generated
+- [ ] **11.1.8** Add coverage threshold to CI
+  - **Success:** PR fails if coverage drops
+- [ ] **11.1.9** Document testing strategy
+  - **Success:** Testing guide in docs/
+- [ ] **11.1.10** Create test data fixtures
+  - **Success:** Fixtures for all stage responses
+
+### Documentation Updates
+- [ ] **11.2.1** Update README with new database info
+  - **Success:** Project ref and setup steps current
+- [ ] **11.2.2** Update API documentation
+  - **Success:** All endpoints documented
+- [ ] **11.2.3** Update deployment runbook
+  - **Success:** Steps reflect new database
+- [ ] **11.2.4** Create troubleshooting guide
+  - **Success:** Common issues and fixes documented
+- [ ] **11.2.5** Update CLAUDE.md with all changes
+  - **Success:** AI context file current
+- [ ] **11.2.6** Create architecture diagram
+  - **Success:** Mermaid diagram in docs/
+- [ ] **11.2.7** Document all environment variables
+  - **Success:** .env.example complete
+- [ ] **11.2.8** Create onboarding guide
+  - **Success:** New developer setup steps
+- [ ] **11.2.9** Update CHANGELOG.md
+  - **Success:** All changes since last release
+- [ ] **11.2.10** Tag release version
+  - **Success:** Git tag with version number
+
+---
+
+## Definition of Done (Phases 7-11)
+- All 10 bugs fixed and verified with tests
+- Bundle size <200KB, LCP <1s
+- Rate limiting active in production
+- Review stage integrated end-to-end
+- All model IDs consistent with evidence ledger
+- Documentation reflects current state
+- CHANGELOG.md updated
+
+## Critical Path (Phases 7-11)
+Phase 7 (Data Integrity) → Phase 8 (UX) → Phase 9 (Observability) → Phase 10 (Performance)
+Phase 11 runs in parallel with verification.
