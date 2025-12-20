@@ -28,7 +28,9 @@
     "lint:docs": "npx tsx scripts/lint/doc-lint.ts",
     "lint:root": "npx tsx scripts/lint/root-lint.ts",
     "lint:models": "npx tsx scripts/lint/model-lint.ts",
-    "lint:plan": "npx tsx scripts/lint/plan-lint.ts"
+    "lint:plan": "npx tsx scripts/lint/plan-lint.ts",
+    "eval": "npx tsx evals/runner/eval-runner.ts",
+    "eval:baseline": "npx tsx evals/runner/eval-runner.ts --baseline evals/baselines/latest.json"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

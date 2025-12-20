@@ -1,0 +1,11 @@
+{
+  "version": "1.0.0",
+  "created": "2025-12-20",
+  "aggregateScore": 75,
+  "stages": {
+    "questions": 80,
+    "research": 70,
+    "spec": 75
+  },
+  "note": "Initial baseline - adjust after first successful eval run"
+}

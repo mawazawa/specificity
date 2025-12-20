@@ -1,0 +1,5 @@
+{"id":"q1","input":"AI-powered fitness tracking app","expected_question_count":5,"expected_domains":["technical","market","legal"],"description":"Standard fitness app idea"}
+{"id":"q2","input":"B2B SaaS for construction project management","expected_question_count":5,"expected_domains":["technical","business","integration"],"description":"Enterprise SaaS idea"}
+{"id":"q3","input":"Decentralized social media platform with crypto rewards","expected_question_count":5,"expected_domains":["technical","legal","market"],"description":"Web3 social idea"}
+{"id":"q4","input":"AI tutoring platform for K-12 students","expected_question_count":5,"expected_domains":["technical","legal","growth"],"description":"EdTech idea"}
+{"id":"q5","input":"Telemedicine app for mental health therapy","expected_question_count":5,"expected_domains":["technical","legal","market"],"description":"HealthTech idea with HIPAA requirements"}

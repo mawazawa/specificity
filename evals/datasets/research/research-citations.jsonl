@@ -1,0 +1,3 @@
+{"id":"r1","input":"AI-powered fitness tracking app","expected_min_citations":3,"expected_tools":["web_search","competitor_analysis"],"description":"Expect tech stack, competitors, compliance research"}
+{"id":"r2","input":"B2B SaaS for construction project management","expected_min_citations":3,"expected_tools":["web_search","market_data"],"description":"Expect market sizing, competitor, tech stack research"}
+{"id":"r3","input":"Decentralized social media platform","expected_min_citations":3,"expected_tools":["web_search","github_search"],"description":"Expect blockchain tech, protocol, open source research"}
