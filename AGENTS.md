@@ -152,12 +152,13 @@ Query with: `mcp__memory__search_nodes({ query: "verification protocol" })`
 
 ## Lessons Encoded
 
-1. **Exa is not authoritative** - It's a search engine with indexing latency
+1. **Exa works - lazy usage doesn't** - The tool found the model when actually used properly
 2. **Document amendments need reconciliation** - Grep for contradictions before adding corrections
 3. **Completion claims need artifacts** - Never mark [x] without verification command
 4. **Single-agent review is insufficient** - Different architectures catch different errors
 5. **Cross-review is mandatory** - Not optional, not "nice to have"
+6. **Never blame tools for agent laziness** - If Exa returns nothing, try harder, not give up
 
 ---
 
-*This protocol exists because we failed. Learn from our failure.*
+*This protocol exists because Claude failed - not the tools. Learn from the failure.*

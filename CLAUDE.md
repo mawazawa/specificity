@@ -55,24 +55,28 @@ VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 
 ## Verification Protocols (Learned Dec 20, 2025)
 
-### Exa Search Reliability
+### Exa Usage Discipline
 
-**Exa MCP is NOT authoritative.** It is a search engine with indexing latency.
+**Exa works. The problem is when Claude doesn't use it properly.**
 
-| Risk | Mitigation |
-|------|------------|
-| False negatives for recent content (< 30 days) | Do 3+ query variations before claiming "NOT FOUND" |
-| Query too narrow | Try broader terms, exact IDs, provider names separately |
-| Indexing delay | Cross-verify with direct source (API docs, official pages) |
+| Failure Mode | Reality |
+|--------------|---------|
+| "Exa returned no results" | You did a lazy single query and gave up |
+| "NOT FOUND on any provider" | You didn't actually check the provider |
+| "Indexing delay" | Excuse for not trying harder |
 
-**Before marking anything NOT FOUND:**
+**Dec 19 2025 Incident:** Single lazy query for deepseek-v3.2-speciale, no results, declared "NOT FOUND". Dec 20: Used Exa properly, found it immediately. **This was Claude's failure, not Exa's.**
+
+**Before ANY negative claim:**
 ```
-1. Search: "[model] OpenRouter"
-2. Search: "[model] site:openrouter.ai"
-3. Search: "[provider] latest models December 2025"
-4. Direct verify: Check actual OpenRouter/provider page
-5. If still not found: "Not found as of [date] - may exist but not indexed"
+1. Search: "[exact term]"
+2. Search: "[broader term] [provider]"
+3. Search: "[provider] latest [category] 2025"
+4. ACTUALLY CHECK the provider's page directly
+5. If still nothing: "I could not find this" NOT "This does not exist"
 ```
+
+**The tool is not the problem. Lazy usage is the problem.**
 
 ### Document Amendment Protocol
 
