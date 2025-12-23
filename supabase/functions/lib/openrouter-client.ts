@@ -15,7 +15,7 @@ export interface ModelConfig {
 
 /**
  * Model Registry - Single Source of Truth
- * Last Verified: December 19, 2025 via Exa Search MCP
+ * Last Verified: December 21, 2025 via Groq /v1/models + OpenRouter listings
  * Evidence Ledger: docs/reports/model-evidence-ledger-2025-12-19.md
  */
 export const MODELS: Record<string, ModelConfig> = {
@@ -83,13 +83,23 @@ export const MODELS: Record<string, ModelConfig> = {
     speed: 'slow'
   },
 
-  'deepseek-r1-distill': {
+  'groq-llama-3.3-70b': {
     provider: 'groq',
-    model: 'deepseek-r1-distill-llama-70b', // Groq direct (not OpenRouter)
-    costPer1MTokensInput: 0.10, // Groq pricing
-    costPer1MTokensOutput: 0.30,
-    strengths: ['speed', 'cost', 'reasoning_lite', 'math'],
-    contextWindow: 128000, // Full 128K on Groq
+    model: 'llama-3.3-70b-versatile', // Groq API: llama-3.3-70b-versatile
+    costPer1MTokensInput: 0, // Pricing TBD - verify via Groq pricing
+    costPer1MTokensOutput: 0,
+    strengths: ['reasoning', 'synthesis', 'general_purpose'],
+    contextWindow: 131072,
+    speed: 'medium'
+  },
+
+  'groq-llama-3.1-8b': {
+    provider: 'groq',
+    model: 'llama-3.1-8b-instant', // Groq API: llama-3.1-8b-instant
+    costPer1MTokensInput: 0, // Pricing TBD - verify via Groq pricing
+    costPer1MTokensOutput: 0,
+    strengths: ['speed', 'cost', 'general_purpose'],
+    contextWindow: 131072,
     speed: 'fast'
   },
 
@@ -113,7 +123,7 @@ export const MODELS: Record<string, ModelConfig> = {
 };
 
 // Fallback model if preferred model fails
-export const FALLBACK_MODEL = 'deepseek-r1-distill';
+export const FALLBACK_MODEL = 'groq-llama-3.1-8b';
 
 export interface LLMCallParams {
   model: string;
@@ -135,19 +145,110 @@ export interface LLMResponse {
   provider: string;
 }
 
+const REQUEST_TIMEOUT_MS = 25000;
+const DEFAULT_GROQ_MODEL = FALLBACK_MODEL;
+
+/**
+ * Fetch with an abort timeout to prevent edge function hangs.
+ */
+async function fetchWithTimeout(
+  url: string,
+  options: RequestInit,
+  timeoutMs = REQUEST_TIMEOUT_MS
+): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function resolveGroqModel(params: LLMCallParams): { modelId: string; modelName: string; config: ModelConfig } {
+  const requested = MODELS[params.model];
+  if (requested && requested.provider === 'groq') {
+    return { modelId: params.model, modelName: requested.model, config: requested };
+  }
+
+  const fallback = MODELS[DEFAULT_GROQ_MODEL];
+  if (!fallback) {
+    throw new Error(`Groq fallback model not configured: ${DEFAULT_GROQ_MODEL}`);
+  }
+
+  return { modelId: DEFAULT_GROQ_MODEL, modelName: fallback.model, config: fallback };
+}
+
+/**
+ * Call Groq API directly using a supported Groq model.
+ */
+async function callGroqModel(params: LLMCallParams): Promise<LLMResponse> {
+  const GROQ_API_KEY = Deno.env.get('GROQ_API_KEY');
+
+  if (!GROQ_API_KEY) {
+    throw new Error('Neither OPENROUTER_API_KEY nor GROQ_API_KEY is configured');
+  }
+
+  const { modelId, modelName, config } = resolveGroqModel(params);
+
+  const response = await fetchWithTimeout('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${GROQ_API_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: modelName,
+      messages: params.messages,
+      temperature: params.temperature ?? 0.7,
+      max_tokens: params.maxTokens ?? 2000
+    })
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Groq API error: ${response.status} ${errorText}`);
+  }
+
+  const data = await response.json();
+
+  const inputTokens = data.usage?.prompt_tokens || 0;
+  const outputTokens = data.usage?.completion_tokens || 0;
+  const cost = (
+    (inputTokens / 1_000_000) * config.costPer1MTokensInput +
+    (outputTokens / 1_000_000) * config.costPer1MTokensOutput
+  );
+
+  return {
+    content: data.choices[0].message.content,
+    usage: {
+      promptTokens: inputTokens,
+      completionTokens: outputTokens,
+      totalTokens: data.usage?.total_tokens || (inputTokens + outputTokens)
+    },
+    cost,
+    model: modelId,
+    provider: 'groq'
+  };
+}
+
 /**
  * Call OpenRouter API with automatic fallback
  */
 export async function callOpenRouter(params: LLMCallParams): Promise<LLMResponse> {
   const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
+  const modelConfig = MODELS[params.model];
+
+  if (modelConfig?.provider === 'groq') {
+    return callGroqModel(params);
+  }
 
   // Fallback to Groq if OpenRouter not configured
   if (!OPENROUTER_API_KEY) {
     console.warn('[OpenRouter] API key not found, falling back to Groq');
-    return callGroqFallback(params);
+    return callGroqModel(params);
   }
-
-  const modelConfig = MODELS[params.model];
 
   if (!modelConfig) {
     console.warn(`[OpenRouter] Unknown model: ${params.model}, using fallback`);
@@ -157,7 +258,7 @@ export async function callOpenRouter(params: LLMCallParams): Promise<LLMResponse
   try {
     const openRouterModel = `${modelConfig.provider}/${modelConfig.model}`;
 
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    const response = await fetchWithTimeout('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
@@ -182,7 +283,7 @@ export async function callOpenRouter(params: LLMCallParams): Promise<LLMResponse
 
       // Fallback to Groq on error
       console.warn('[OpenRouter] Falling back to Groq due to error');
-      return callGroqFallback(params);
+      return callGroqModel({ ...params, model: FALLBACK_MODEL });
     }
 
     const data = await response.json();
@@ -209,58 +310,8 @@ export async function callOpenRouter(params: LLMCallParams): Promise<LLMResponse
   } catch (error) {
     console.error('[OpenRouter] Request failed:', error);
     console.warn('[OpenRouter] Falling back to Groq');
-    return callGroqFallback(params);
+    return callGroqModel({ ...params, model: FALLBACK_MODEL });
   }
-}
-
-/**
- * Fallback to Groq API (always available)
- */
-async function callGroqFallback(params: LLMCallParams): Promise<LLMResponse> {
-  const GROQ_API_KEY = Deno.env.get('GROQ_API_KEY');
-
-  if (!GROQ_API_KEY) {
-    throw new Error('Neither OPENROUTER_API_KEY nor GROQ_API_KEY is configured');
-  }
-
-  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${GROQ_API_KEY}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      model: 'deepseek-r1-distill-llama-70b',
-      messages: params.messages,
-      temperature: params.temperature ?? 0.7,
-      max_tokens: params.maxTokens ?? 2000
-    })
-  });
-
-  if (!response.ok) {
-    throw new Error(`Groq API error: ${response.status}`);
-  }
-
-  const data = await response.json();
-
-  const inputTokens = data.usage?.prompt_tokens || 0;
-  const outputTokens = data.usage?.completion_tokens || 0;
-  const cost = (
-    (inputTokens / 1_000_000) * 0.10 +
-    (outputTokens / 1_000_000) * 0.30
-  );
-
-  return {
-    content: data.choices[0].message.content,
-    usage: {
-      promptTokens: inputTokens,
-      completionTokens: outputTokens,
-      totalTokens: inputTokens + outputTokens
-    },
-    cost,
-    model: 'deepseek-r1-distill',
-    provider: 'groq'
-  };
 }
 
 /**

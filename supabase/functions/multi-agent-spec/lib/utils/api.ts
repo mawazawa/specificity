@@ -21,12 +21,21 @@ export const getUserMessage = (error: unknown): string => {
 
 /**
  * Groq API call for synthesis/voting/spec stages
- * Model: deepseek-r1-distill-llama-70b (VERIFIED Dec 19, 2025)
- * - 128K context window
- * - $0.10/M input, $0.30/M output
- * - Source: https://console.groq.com/docs/model/deepseek-r1-distill-llama-70b
+ * Model: llama-3.3-70b-versatile (verified via Groq /v1/models)
  */
-export const GROQ_MODEL = 'deepseek-r1-distill-llama-70b';
+export const GROQ_MODEL = 'llama-3.3-70b-versatile';
+const GROQ_TIMEOUT_MS = Number(Deno.env.get('GROQ_TIMEOUT_MS') || 25000);
+
+async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs = GROQ_TIMEOUT_MS): Promise<Response> {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+        return await fetch(url, { ...options, signal: controller.signal });
+    } finally {
+        clearTimeout(timer);
+    }
+}
 
 export async function callGroq(
     apiKey: string,
@@ -35,7 +44,7 @@ export async function callGroq(
     temperature: number = 0.7,
     maxTokens: number = 800
 ): Promise<string> {
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    const response = await fetchWithTimeout('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${apiKey}`,
@@ -53,7 +62,8 @@ export async function callGroq(
     });
 
     if (!response.ok) {
-        console.error('External API error:', { type: 'api_error', status: response.status });
+        const errorText = await response.text();
+        console.error('External API error:', { type: 'api_error', status: response.status, body: errorText });
 
         if (response.status === 429) {
             throw new Error('RATE_LIMIT: Rate limit exceeded');

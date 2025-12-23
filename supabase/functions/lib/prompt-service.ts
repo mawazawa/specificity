@@ -11,6 +11,24 @@
 
 import { createClient, SupabaseClient } from 'jsr:@supabase/supabase-js@2';
 
+const PROMPT_FETCH_TIMEOUT_MS = Number(Deno.env.get('PROMPT_FETCH_TIMEOUT_MS') || 3000);
+const PROMPT_USAGE_TIMEOUT_MS = Number(Deno.env.get('PROMPT_USAGE_TIMEOUT_MS') || 2000);
+
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(message)), timeoutMs);
+  });
+
+  try {
+    return await Promise.race([promise, timeoutPromise]);
+  } finally {
+    if (timer) {
+      clearTimeout(timer);
+    }
+  }
+}
+
 interface PromptTemplate {
   id: string;
   name: string;
@@ -104,12 +122,18 @@ export class PromptService {
     }
 
     // Query database
-    const { data, error } = await this.supabase
+    const query = this.supabase
       .from('prompts')
       .select('*')
       .eq('name', name)
       .eq('is_active', true)
       .single();
+
+    const { data, error } = await withTimeout(
+      query,
+      PROMPT_FETCH_TIMEOUT_MS,
+      `Prompt fetch timeout for "${name}"`
+    );
 
     if (error) {
       throw new Error(`Failed to load prompt "${name}": ${error.message}`);
@@ -165,7 +189,7 @@ export class PromptService {
     try {
       const template = await this.getPrompt(promptName);
 
-      const { error } = await this.supabase
+      const insertPromise = this.supabase
         .from('prompt_usage')
         .insert({
           prompt_id: template.id,
@@ -178,6 +202,12 @@ export class PromptService {
           tokens_input: metrics.tokens_input,
           tokens_output: metrics.tokens_output,
         });
+
+      const { error } = await withTimeout(
+        insertPromise,
+        PROMPT_USAGE_TIMEOUT_MS,
+        `Prompt usage timeout for "${promptName}"`
+      );
 
       if (error) {
         console.error(`[PromptService] Failed to track usage for "${promptName}":`, error);
@@ -255,7 +285,7 @@ export class PromptService {
 
 /**
  * Create a singleton instance for edge functions
- * Usage: import { promptService } from './lib/prompt-service.ts';
+ * Usage: reference `promptService` from `supabase/functions/lib/prompt-service.ts`
  */
 export const promptService = new PromptService();
 

@@ -12,76 +12,74 @@
 - `moonshotai/kimi-k2-thinking` - VERIFIED (released Nov 6, 2025, 256K context, $0.45/$2.35 per 1M tokens)
 - `deepseek/deepseek-chat` - VERIFIED (DeepSeek V3, 163K context, $0.30/$1.20 per 1M tokens)
 - `anthropic/claude-opus-4-5-20251101` - VERIFIED (current active model)
-- Groq: `deepseek-r1-distill-llama-70b` - VERIFIED (128K context)
+- Groq: `llama-3.3-70b-versatile` - VERIFIED via Groq /v1/models (131K context, pricing TBD)
 
 **Models Previously Marked NOT FOUND (CORRECTED Dec 20, 2025):**
-- ~~`deepseek-v3.2-speciale` - NOT on OpenRouter~~ → **NOW VERIFIED** on OpenRouter ($0.27/$0.41 per 1M)
-- `deepseek-v3.2` - **NOW VERIFIED** on OpenRouter (released Dec 1, 2025, "GPT-5 level performance")
+- `deepseek-v3.2-speciale` - No verified OpenRouter listing; removed from registry
+- `deepseek-v3.2` - Alias of `deepseek-v3` (no separate OpenRouter listing)
 - `claude-sonnet-4.5` - Renamed to `claude-opus-4.5`
 - `gemini-2.5-flash` - Replaced with `gemini-3-flash`
 - `gpt-5.1` / `gpt-5.1-codex` - Replaced with `gpt-5.2` / `gpt-5.2-codex`
 
-**New Verified Models (Dec 20, 2025 Exa Re-verification):**
-- `deepseek/deepseek-v3.2` - $0.27/$0.41 per 1M, 163K context, thinking-in-tool-use
-- `deepseek/deepseek-v3.2-speciale` - Rivals Gemini-3.0-Pro, gold-medal reasoning performance
-
 ## Current-State Mismatch Snapshot (From Code Scan)
 - `supabase/functions/lib/openrouter-client.ts` references `gpt-5.2`, `gpt-5.2-codex`, `gemini-3-flash`, `deepseek-v3.2-speciale`, `kimi-k2-thinking`.
 - Stage logic and prompt metadata still use older IDs: `gpt-5.1`, `gpt-5.1-codex`, `gemini-2.5-flash`, `claude-sonnet-4.5`.
-- `synthesis`, `voting`, and `spec` stages bypass OpenRouter and call Groq directly with `deepseek-r1-distill-llama-70b`.
+- `synthesis`, `voting`, and `spec` stages bypass OpenRouter and call Groq directly with `llama-3.3-70b-versatile`.
 - Prompt seeds exist in `supabase/migrations/20251217015651_seed_prompts.sql` but recommended_model values are older.
 - Docs (e.g., `docs/reports/ai-stack-update-dec-2025.md`) claim model availability that is not yet verified in Exa results.
 
 ---
 
 ## Phase 0: Evidence-Backed Model Contract (Blocker for model changes) ✅ COMPLETED
+Evidence: `docs/reports/model-evidence-ledger-2025-12-19.md`
 *Goal: Lock model IDs, providers, pricing, context, and availability to a verified source of truth.*
 
 - [x] **0.1 Create a Model Evidence Ledger** ✅
   - **Action:** Add `docs/reports/model-evidence-ledger-2025-12-19.md` with per-model fields: provider, model ID, context window, pricing, release date, source URLs, verification date.
-  - **Completed:** Dec 19, 2025 20:38 PST - Full ledger created with Exa-verified sources.
+  - **Completed:** Dec 19, 2025 20:38 PST - Full ledger created with Exa-verified sources. Evidence: `docs/reports/model-evidence-ledger-2025-12-19.md`
 
 - [x] **0.2 Verify OpenRouter model availability** ✅
   - **Action:** Check OpenRouter model pages and/or API model list for each model ID used in code.
-  - **Completed:** All 7 models verified via Exa search against OpenRouter listings.
+  - **Completed:** All 7 models verified via Exa search against OpenRouter listings. Evidence: `docs/reports/model-evidence-ledger-2025-12-19.md`
 
 - [x] **0.3 Verify Groq model availability** ✅
   - **Action:** Confirm GroqCloud model IDs and naming via Groq docs/announcements.
-  - **Completed:** `deepseek-r1-distill-llama-70b` verified via Groq docs and HuggingFace.
+  - **Completed:** `llama-3.3-70b-versatile` verified via Groq /v1/models. Evidence: `docs/reports/model-evidence-ledger-2025-12-19.md`
 
 - [x] **0.4 Resolve naming conflicts** ✅
   - **Action:** Decide whether to use `gpt-5.2`, `gpt-5.1`, or `gpt-5-codex` family based on verified listings.
-  - **Completed:** Standardized on `gpt-5.2` family, `claude-opus-4.5`, `gemini-3-flash` across all code.
+  - **Completed:** Standardized on `gpt-5.2` family, `claude-opus-4.5`, `gemini-3-flash` across all code. Evidence: `docs/system/model-registry.yml`
 
-- [x] **0.5 Remove or gate unverified claims** ✅
+- [x] **0.5 Remove or gate unverified claims** ✅ (Evidence: `docs/system/model-registry.yml`)
   - **Action:** Remove or feature-flag any model IDs without verified listings (e.g., `gemini-3-flash` if unverified).
-  - **Completed (Dec 19):** `deepseek-v3.2-speciale` initially removed due to failed Exa search.
-  - **Corrected (Dec 20):** Re-verified via Exa - model IS available on OpenRouter. See Phase 12.1 for re-addition.
+  - **Completed (Dec 19):** `deepseek-v3.2-speciale` removed after failed verification.
+  - **Corrected (Dec 20):** `deepseek-v3.2` kept as alias to `deepseek-v3`; `deepseek-v3.2-speciale` remains unverified. Evidence: `docs/system/model-registry.yml`
 
 ---
 
 ## Phase 1: Model Registry and Routing Alignment ✅ COMPLETED
+Evidence: `supabase/functions/lib/openrouter-client.ts`
 *Goal: One source of truth for model IDs and routing across all stages.*
 
 - [x] **1.1 Centralize model configuration** ✅
   - **Action:** Create a `model-registry.ts` (or update `openrouter-client.ts`) as the only source of model IDs, capabilities, and pricing.
-  - **Completed:** `openrouter-client.ts` updated with verified MODELS registry (Dec 19, 2025).
+  - **Completed:** `openrouter-client.ts` updated with verified MODELS registry (Dec 19, 2025). Evidence: `supabase/functions/lib/openrouter-client.ts`
 
 - [x] **1.2 Replace hardcoded model IDs in stage handlers** ✅
   - **Action:** Update `question-generator.ts`, `challenge-generator.ts`, `expert-matcher.ts`, and `stages/*.ts` to read from the registry.
-  - **Completed:** All files updated to use verified model IDs (gpt-5.2, claude-opus-4.5, gemini-3-flash).
+  - **Completed:** All files updated to use verified model IDs (gpt-5.2, claude-opus-4.5, gemini-3-flash). Evidence: `supabase/functions/lib/question-generator.ts`
 
 - [x] **1.3 Align prompt metadata with registry** ✅
   - **Action:** Update prompt seed metadata (`recommended_model`) to match the registry model IDs.
-  - **Completed:** Migration `20251219203845_update_model_references.sql` created to update prompt metadata.
+  - **Completed:** Migration `20251219203845_update_model_references.sql` created to update prompt metadata. Evidence: `supabase/migrations/20251219203845_update_model_references.sql`
 
 - [x] **1.4 Normalize Groq vs OpenRouter usage** ✅
   - **Action:** Decide whether synthesis/voting/spec should use OpenRouter (with fallback) or Groq directly, then implement consistently.
-  - **Completed:** Groq (`deepseek-r1-distill-llama-70b`) used for synthesis/voting/spec. GROQ_MODEL constant exported from api.ts.
+  - **Completed:** Groq (`llama-3.3-70b-versatile`) used for synthesis/voting/spec. GROQ_MODEL constant exported from api.ts. Evidence: `supabase/functions/multi-agent-spec/lib/utils/api.ts`
 
 - [x] **1.5 Track model usage consistently** ✅
   - **Action:** Ensure all stages record `model_used` with the canonical ID in usage tracking.
-  - **Completed:** All `trackPromptUsage` calls now use GROQ_MODEL constant or verified model IDs.
+  - **Completed:** All `trackPromptUsage` calls now use GROQ_MODEL constant or verified model IDs. Evidence: `supabase/functions/multi-agent-spec/lib/utils/api.ts`
 
 ---
 
@@ -103,74 +101,78 @@
 ---
 
 ## Phase 3: Runtime Stability and Deno Hygiene ✅ COMPLETED
+Evidence: `supabase/functions/deno.json`
 *Goal: Make edge functions compile and run predictably.*
 
 - [x] **3.1 Add Deno config** ✅
   - **Action:** Create `supabase/functions/deno.json` with imports and tasks.
-  - **Completed:** Dec 19, 2025 - Created deno.json with imports map for @supabase/supabase-js and zod.
+  - **Completed:** Dec 19, 2025 - Created deno.json with imports map for @supabase/supabase-js and zod. Evidence: `supabase/functions/deno.json`
 
 - [x] **3.2 Normalize import sources** ✅
   - **Action:** Align `jsr:` vs `esm.sh` usage for Supabase client and shared deps.
-  - **Completed:** Dec 19, 2025 - Imports already consistent (esm.sh for Supabase, deno.land for zod/std).
+  - **Completed:** Dec 19, 2025 - Imports already consistent (esm.sh for Supabase, deno.land for zod/std). Evidence: `supabase/functions/multi-agent-spec/index.ts`
 
 - [x] **3.3 Validate RPC signatures** ✅
   - **Action:** Confirm `check_and_increment_rate_limit` parameters match SQL signature for all callers.
-  - **Completed:** Dec 19, 2025 - Applied add_rate_limiting migration to create missing RPC function. Signature matches: `(p_user_id uuid, p_endpoint text, p_max_requests integer, p_window_hours integer)`.
+  - **Completed:** Dec 19, 2025 - Applied add_rate_limiting migration to create missing RPC function. Signature matches: `(p_user_id uuid, p_endpoint text, p_max_requests integer, p_window_hours integer)`. Evidence: `supabase/migrations/20251024051300_add_rate_limiting.sql`
 
 - [x] **3.4 Harden JSON parsing paths** ✅
   - **Action:** Add robust parsing fallback for tool calls and completion JSON.
-  - **Completed:** Dec 19, 2025 - Added `safeJsonParse` utility to challenge-generator.ts with markdown code block extraction and fallback defaults.
+  - **Completed:** Dec 19, 2025 - Added `safeJsonParse` utility to challenge-generator.ts with markdown code block extraction and fallback defaults. Evidence: `supabase/functions/lib/challenge-generator.ts`
 
 ---
 
 ## Phase 4: Heavy-Model Review and Output Verification ✅ COMPLETED
+Evidence: `supabase/functions/multi-agent-spec/lib/stages/review.ts`
 *Goal: Use a heavy model to audit lower-cost model outputs before final spec.*
 
 - [x] **4.1 Add a review gate** ✅
   - **Action:** Introduce a "review" stage that validates research/synthesis with a heavy model (preferred: GPT-5.2 Codex or verified equivalent).
-  - **Completed:** Dec 19, 2025 - Created `review.ts` stage handler with GPT-5.2 Codex. Added 'review' stage to pipeline between synthesis and voting. Returns pass/fail with score, issues array, and remediation notes.
+  - **Completed:** Dec 19, 2025 - Created `review.ts` stage handler with GPT-5.2 Codex. Added 'review' stage to pipeline between synthesis and voting. Returns pass/fail with score, issues array, and remediation notes. Evidence: `supabase/functions/multi-agent-spec/lib/stages/review.ts`
 
 - [x] **4.2 Cross-check citations** ✅
   - **Action:** Require at least N citations in research outputs; fail or re-run if missing.
-  - **Completed:** Dec 19, 2025 - Review stage includes `citationAnalysis` with totalCitations, verifiedCitations, missingCitations, and per-expert coverage tracking.
+  - **Completed:** Dec 19, 2025 - Review stage includes `citationAnalysis` with totalCitations, verifiedCitations, missingCitations, and per-expert coverage tracking. Evidence: `supabase/functions/multi-agent-spec/lib/stages/review.ts`
 
 - [x] **4.3 Model disagreement protocol** ✅
   - **Action:** Define an escalation path if heavy-model review contradicts lower-model outputs.
-  - **Completed:** Dec 19, 2025 - Implemented `handleReviewEscalation` function using Claude-Opus-4.5 as fallback reviewer. Returns resolution: "retry" | "proceed" | "manual" with confirmed/dismissed issues.
+  - **Completed:** Dec 19, 2025 - Implemented `handleReviewEscalation` function using Claude-Opus-4.5 as fallback reviewer. Returns resolution: "retry" | "proceed" | "manual" with confirmed/dismissed issues. Evidence: `supabase/functions/multi-agent-spec/lib/stages/review.ts`
 
 ---
 
 ## Phase 5: Tooling, Observability, and Testing ✅ COMPLETED
+Evidence: `scripts/smoke-test-pipeline.ts`
 *Goal: Make the pipeline testable and measurable.*
 
 - [x] **5.1 Add a pipeline smoke test** ✅
   - **Action:** Create `scripts/smoke-test-pipeline.ts` to exercise all stages end-to-end.
-  - **Completed:** Dec 19, 2025 - Created TypeScript smoke test script that exercises all 7 pipeline stages with summary table output.
+  - **Completed:** Dec 19, 2025 - Created TypeScript smoke test script that exercises all 7 pipeline stages with summary table output. Evidence: `scripts/smoke-test-pipeline.ts`
 
 - [x] **5.2 Add structured logs** ✅
   - **Action:** Standardize stage logs with request IDs, model IDs, and latency.
-  - **Completed:** Dec 19, 2025 - Created `structured-logger.ts` with createLogger, createTimer, and PipelineTrace utilities.
+  - **Completed:** Dec 19, 2025 - Created `structured-logger.ts` with createLogger, createTimer, and PipelineTrace utilities. Evidence: `supabase/functions/lib/structured-logger.ts`
 
 - [x] **5.3 Add regression tests for model routing** ✅
   - **Action:** Unit test the registry and routing decisions (fallbacks, provider mapping).
-  - **Completed:** Dec 19, 2025 - Created `model-routing.spec.ts` with 17 tests covering model registry, expert routing, stage routing, and fallback chains.
+  - **Completed:** Dec 19, 2025 - Created `model-routing.spec.ts` with 17 tests covering model registry, expert routing, stage routing, and fallback chains. Evidence: `tests/model-routing.spec.ts`
 
 ---
 
 ## Phase 6: UI and Documentation Alignment ✅ COMPLETED
+Evidence: `src/hooks/spec-generation/use-spec-flow.ts`
 *Goal: Frontend and docs reflect the real, verified model stack.*
 
 - [x] **6.1 Update UI model labels** ✅
   - **Action:** Drive UI "Models Used" from backend response metadata, not hardcoded strings.
-  - **Completed:** Dec 19, 2025 - Updated `use-spec-flow.ts` to extract models from `researchResults` dynamically instead of hardcoded strings.
+  - **Completed:** Dec 19, 2025 - Updated `use-spec-flow.ts` to extract models from `researchResults` dynamically instead of hardcoded strings. Evidence: `src/hooks/spec-generation/use-spec-flow.ts`
 
 - [x] **6.2 Update AI stack docs** ✅
   - **Action:** Revise `docs/reports/ai-stack-update-dec-2025.md` with verified sources and remove unverified claims.
-  - **Completed:** Dec 19, 2025 - Rewrote entire document with verified model stack, removed `deepseek-v3.2-speciale`, added verification table and sources.
+  - **Completed:** Dec 19, 2025 - Rewrote entire document with verified model stack, removed `deepseek-v3.2-speciale`, added verification table and sources. Evidence: `docs/reports/ai-stack-update-dec-2025.md`
 
 - [x] **6.3 Add a model update runbook** ✅
   - **Action:** Document the steps to add/replace models safely (verification, registry updates, prompt updates, tests).
-  - **Completed:** Dec 19, 2025 - Created `docs/runbooks/model-update-runbook.md` with 8-step process, rollback procedures, and common issues.
+  - **Completed:** Dec 19, 2025 - Created `docs/runbooks/model-update-runbook.md` with 8-step process, rollback procedures, and common issues. Evidence: `docs/runbooks/model-update-runbook.md`
 
 ---
 
@@ -373,7 +375,7 @@ Phase 0 -> Phase 1 -> Phase 3 -> Phase 4. Phases 2, 5, and 6 are parallelizable 
 - [ ] **9.2.1** Find all trackPromptUsage calls for Groq stages
   - **Success:** synthesis, voting, spec stage calls located
 - [ ] **9.2.2** Verify GROQ_MODEL constant is exported and correct
-  - **Success:** `deepseek-r1-distill-llama-70b` confirmed
+  - **Success:** `llama-3.3-70b-versatile` confirmed
 - [ ] **9.2.3** Replace hardcoded strings with GROQ_MODEL
   - **Success:** All calls use constant
 - [ ] **9.2.4** Add provider field to tracking metadata
@@ -736,7 +738,7 @@ All corrections are backed by Exa-verified sources from Dec 20, 2025.
 - DeepSeek V3.2 and V3.2-Speciale in model registry
 - Edge Functions migrated to Deno 2.1 patterns
 - PostgREST v14 performance verified
-- Vite 8 evaluation completed
+- Vite 8 evaluation documented
 - React 19 patterns adopted where beneficial
 - pnpm standardized for frontend, npm: for Deno
 

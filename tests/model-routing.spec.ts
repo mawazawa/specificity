@@ -58,16 +58,24 @@ const VERIFIED_MODELS = {
     model: 'deepseek-chat',
     costPer1MTokensInput: 0.30,
     costPer1MTokensOutput: 1.20,
-    contextWindow: 163000,
+    contextWindow: 163840,
     speed: 'fast',
   },
-  'deepseek-r1-distill': {
+  'groq-llama-3.3-70b': {
     provider: 'groq',
-    model: 'deepseek-r1-distill-llama-70b',
-    costPer1MTokensInput: 0.10,
-    costPer1MTokensOutput: 0.30,
-    contextWindow: 128000,
-    speed: 'very-fast',
+    model: 'llama-3.3-70b-versatile',
+    costPer1MTokensInput: 0,
+    costPer1MTokensOutput: 0,
+    contextWindow: 131072,
+    speed: 'medium',
+  },
+  'groq-llama-3.1-8b': {
+    provider: 'groq',
+    model: 'llama-3.1-8b-instant',
+    costPer1MTokensInput: 0,
+    costPer1MTokensOutput: 0,
+    contextWindow: 131072,
+    speed: 'fast',
   },
 } as const;
 
@@ -84,13 +92,13 @@ const EXPERT_MODEL_MAP: Record<string, string> = {
 
 // Stage-to-model mappings
 const STAGE_MODEL_MAP: Record<string, string> = {
-  questions: 'gpt-5.2',
+  questions: 'groq-llama-3.1-8b',
   research: 'dynamic', // Uses EXPERT_MODEL_MAP
   challenge: 'gpt-5.2',
-  synthesis: 'deepseek-r1-distill-llama-70b', // Groq
+  synthesis: 'llama-3.3-70b-versatile', // Groq
   review: 'gpt-5.2-codex',
-  voting: 'deepseek-r1-distill-llama-70b', // Groq
-  spec: 'deepseek-r1-distill-llama-70b', // Groq
+  voting: 'llama-3.3-70b-versatile', // Groq
+  spec: 'llama-3.3-70b-versatile', // Groq
   chat: 'gpt-5.2',
 };
 
@@ -103,7 +111,8 @@ describe('Model Registry', () => {
       'gemini-3-flash',
       'kimi-k2-thinking',
       'deepseek-v3',
-      'deepseek-r1-distill',
+      'groq-llama-3.3-70b',
+      'groq-llama-3.1-8b',
     ];
 
     for (const modelId of expectedModels) {
@@ -132,7 +141,8 @@ describe('Model Registry', () => {
     expect(VERIFIED_MODELS['gemini-3-flash'].provider).toBe('google');
     expect(VERIFIED_MODELS['kimi-k2-thinking'].provider).toBe('moonshotai');
     expect(VERIFIED_MODELS['deepseek-v3'].provider).toBe('deepseek');
-    expect(VERIFIED_MODELS['deepseek-r1-distill'].provider).toBe('groq');
+    expect(VERIFIED_MODELS['groq-llama-3.3-70b'].provider).toBe('groq');
+    expect(VERIFIED_MODELS['groq-llama-3.1-8b'].provider).toBe('groq');
   });
 
   it('should have valid context windows', () => {
@@ -144,8 +154,14 @@ describe('Model Registry', () => {
 
   it('should have valid pricing', () => {
     for (const [modelId, config] of Object.entries(VERIFIED_MODELS)) {
-      expect(config.costPer1MTokensInput).toBeGreaterThan(0);
-      expect(config.costPer1MTokensOutput).toBeGreaterThan(0);
+      const priced = config.provider !== 'groq';
+      if (priced) {
+        expect(config.costPer1MTokensInput).toBeGreaterThan(0);
+        expect(config.costPer1MTokensOutput).toBeGreaterThan(0);
+      } else {
+        expect(config.costPer1MTokensInput).toBeGreaterThanOrEqual(0);
+        expect(config.costPer1MTokensOutput).toBeGreaterThanOrEqual(0);
+      }
       expect(config.costPer1MTokensOutput).toBeGreaterThanOrEqual(config.costPer1MTokensInput);
     }
   });
@@ -184,14 +200,14 @@ describe('Expert-to-Model Routing', () => {
 });
 
 describe('Stage-to-Model Routing', () => {
-  it('should use GPT-5.2 for question generation', () => {
-    expect(STAGE_MODEL_MAP.questions).toBe('gpt-5.2');
+  it('should use a fast Groq model for question generation', () => {
+    expect(STAGE_MODEL_MAP.questions).toBe('groq-llama-3.1-8b');
   });
 
   it('should use Groq for fast synthesis stages', () => {
     const groqStages = ['synthesis', 'voting', 'spec'];
     for (const stage of groqStages) {
-      expect(STAGE_MODEL_MAP[stage]).toBe('deepseek-r1-distill-llama-70b');
+      expect(STAGE_MODEL_MAP[stage]).toBe('llama-3.3-70b-versatile');
     }
   });
 
@@ -233,7 +249,7 @@ describe('Fallback Chains', () => {
 describe('Cost Optimization', () => {
   it('should use cheaper models for high-volume stages', () => {
     // Synthesis, voting, spec run on Groq (cheapest)
-    const highVolumeModel = VERIFIED_MODELS['deepseek-r1-distill'];
+    const highVolumeModel = VERIFIED_MODELS['groq-llama-3.1-8b'];
     const premiumModel = VERIFIED_MODELS['gpt-5.2'];
 
     expect(highVolumeModel.costPer1MTokensInput).toBeLessThan(premiumModel.costPer1MTokensInput);

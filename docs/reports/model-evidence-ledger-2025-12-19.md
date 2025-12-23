@@ -1,8 +1,18 @@
 # Model Evidence Ledger
 **Generated:** December 19, 2025 20:38 PST
-**Last Updated:** December 20, 2025 12:35 PST
-**Verification Method:** Exa Search MCP against OpenRouter, Groq, OpenAI, Google, DeepSeek official sources
+**Last Updated:** December 21, 2025 03:49 UTC
+**Verification Method:** Exa Search MCP (OpenRouter/OpenAI/Google/DeepSeek) + Groq `/v1/models`
 **Status:** Production-Ready Verification
+
+---
+
+## Addendum (Dec 21, 2025)
+
+- Verified Groq models via `https://api.groq.com/openai/v1/models`:
+  - `llama-3.3-70b-versatile` (context_window: 131072)
+  - `llama-3.1-8b-instant` (context_window: 131072)
+- `deepseek-r1-distill-llama-70b` no longer appears in Groq model listings; treated as retired.
+- `deepseek-v3.2` remains an alias of `deepseek-v3` and `deepseek-v3.2-speciale` is removed in `docs/system/model-registry.yml`.
 
 ---
 
@@ -17,7 +27,9 @@
 | deepseek-v3 | DeepSeek | `deepseek/deepseek-chat` | **VERIFIED** | Dec 19, 2025 |
 | deepseek-v3.2 | DeepSeek | `deepseek/deepseek-v3.2` | **VERIFIED** ⚡NEW | Dec 20, 2025 |
 | deepseek-v3.2-speciale | DeepSeek | `deepseek/deepseek-v3.2-speciale` | **VERIFIED** ⚡NEW | Dec 20, 2025 |
-| deepseek-r1-distill | Groq | `deepseek-r1-distill-llama-70b` | **VERIFIED** | Dec 19, 2025 |
+| groq-llama-3.3-70b | Groq | `llama-3.3-70b-versatile` | **VERIFIED** | Dec 21, 2025 |
+| groq-llama-3.1-8b | Groq | `llama-3.1-8b-instant` | **VERIFIED** | Dec 21, 2025 |
+| deepseek-r1-distill | Groq | `deepseek-r1-distill-llama-70b` | **RETIRED** | Dec 21, 2025 |
 | claude-opus-4.5 | Anthropic | `anthropic/claude-opus-4-5-20251101` | **VERIFIED** | Dec 19, 2025 |
 
 **⚡ Dec 20, 2025 Update:** DeepSeek V3.2 and V3.2-Speciale are NOW AVAILABLE on OpenRouter (released Dec 1, 2025)
@@ -160,6 +172,8 @@
 ---
 
 ### DeepSeek R1 Distill Llama 70B (Groq)
+
+**Status:** RETIRED (not present in Groq /v1/models as of Dec 21, 2025). Replaced by `llama-3.3-70b-versatile` and `llama-3.1-8b-instant`.
 
 | Field | Value |
 |-------|-------|
@@ -312,6 +326,8 @@
 
 | Timestamp | Action | Result |
 |-----------|--------|--------|
+| 2025-12-21 03:49 UTC | Groq model list refresh | Confirmed llama-3.3-70b-versatile + llama-3.1-8b-instant; deepseek-r1-distill removed |
+| 2025-12-21 03:49 UTC | Registry correction | deepseek-v3.2 treated as alias; deepseek-v3.2-speciale removed |
 | 2025-12-19 20:38 PST | Initial Exa search for OpenRouter models | Found GPT-5.2, Gemini 3 Flash Preview listings |
 | 2025-12-19 20:38 PST | Groq model verification | Confirmed deepseek-r1-distill-llama-70b |
 | 2025-12-19 20:38 PST | GPT-5.2-Codex verification | Confirmed via IT Pro, VentureBeat, OpenAI blog |
@@ -331,5 +347,5 @@
 This ledger represents the verified state of AI model availability as of December 20, 2025.
 All code changes to the model registry must reference this document.
 
-**Last Updated:** December 20, 2025 12:35 PST
-**Next Review Date:** December 27, 2025 (weekly cadence recommended)
+**Last Updated:** December 21, 2025 03:49 UTC
+**Next Review Date:** December 28, 2025 (weekly cadence recommended)

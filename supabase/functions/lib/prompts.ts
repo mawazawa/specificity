@@ -379,7 +379,7 @@ Output ONLY JSON with this schema:
 ]
 
 Try to find real logo URLs if possible, or use placeholder. Ensure "rating" is 1-5.`
-  }
+  },
 
   /**
    * 1:1 CHAT STAGE

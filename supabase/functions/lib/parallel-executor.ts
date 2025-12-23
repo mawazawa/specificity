@@ -25,6 +25,10 @@ export const AgentResearchResultSchema = z.object({
 
 export type AgentResearchResult = z.infer<typeof AgentResearchResultSchema>;
 
+const MAX_AGENT_ITERATIONS = Number(Deno.env.get('RESEARCH_MAX_ITERATIONS')) || 3;
+const MAX_AGENT_RETRIES = Number(Deno.env.get('RESEARCH_MAX_RETRIES')) || 1;
+const MAX_AGENT_TOKENS = Number(Deno.env.get('RESEARCH_MAX_TOKENS')) || 1200;
+
 /**
  * Execute all agents in parallel with autonomous tool usage
  */
@@ -89,7 +93,7 @@ async function executeAgentAssignment(
 
   let conversationHistory = `Product Idea: ${context.userInput}\n\nRound: ${context.roundNumber}\n\nBegin your research.`;
   let iterations = 0;
-  const maxIterations = 6; // Allow up to 6 tool calls per agent
+  const maxIterations = MAX_AGENT_ITERATIONS;
 
   try {
     while (iterations < maxIterations) {
@@ -107,10 +111,10 @@ async function executeAgentAssignment(
             { role: 'user', content: conversationHistory }
           ],
           temperature: 0.7,
-          maxTokens: 2000
+          maxTokens: MAX_AGENT_TOKENS
         }),
         {
-          maxRetries: 2,
+          maxRetries: MAX_AGENT_RETRIES,
           onRetry: (error, attempt) => {
             console.log(`[${assignment.expertName}] Retry ${attempt}:`, error.message);
           }

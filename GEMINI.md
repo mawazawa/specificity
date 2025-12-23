@@ -18,7 +18,7 @@
 3.  **Viral Growth**
     *   **Goal**: Make specs shareable and collaborative.
     *   **Focus**: Dynamic routing, RLS for sharing, and "Open Graph" previews.
-    *   **Status**: ✅ Implemented (Spec persistence & sharing).
+    *   **Status**: ✅ Implemented (Spec persistence for authenticated users; public share via `is_public`).
 
 ## 🛠️ Current Development Session
 
@@ -27,6 +27,7 @@
 - **1:1 Chat**: Users can chat directly with specific agents.
 - **Infrastructure**: CI/CD and Sentry setup.
 - **Sharing**: Specs can be saved and shared via URL.
+  - Requires authenticated user context to persist `user_id`.
 
 **Next Steps**:
 - **Monitoring**: Verify Sentry error reporting.

@@ -26,13 +26,16 @@ const LINTS = [
   { name: 'Plan Lint', script: 'plan-lint.ts' },
 ];
 
-async function runLint(lint: { name: string; script: string }): Promise<LintRun> {
+async function runLint(
+  lint: { name: string; script: string },
+  extraArgs: string[] = []
+): Promise<LintRun> {
   const scriptPath = path.join(process.cwd(), 'scripts/lint', lint.script);
   const start = Date.now();
 
   return new Promise((resolve) => {
     try {
-      const output = execSync(`npx tsx ${scriptPath}`, {
+      const output = execSync(`npx tsx ${scriptPath} ${extraArgs.join(' ')}`.trim(), {
         encoding: 'utf-8',
         stdio: ['pipe', 'pipe', 'pipe'],
         timeout: 60000, // 60 second timeout
@@ -62,6 +65,11 @@ async function main(): Promise<void> {
   console.log('║           GOVERNANCE LINT SUITE - Specificity AI              ║');
   console.log('╚═══════════════════════════════════════════════════════════════╝\n');
 
+  const args = process.argv.slice(2);
+  const changedOnly = args.includes('--changed');
+  const baseIndex = args.indexOf('--base');
+  const baseRef = baseIndex >= 0 ? args[baseIndex + 1] : undefined;
+
   console.log(`Running ${LINTS.length} lints...\n`);
   console.log('───────────────────────────────────────────────────────────────\n');
 
@@ -69,7 +77,11 @@ async function main(): Promise<void> {
 
   for (const lint of LINTS) {
     console.log(`▶ Running ${lint.name}...`);
-    const result = await runLint(lint);
+    const extraArgs =
+      lint.script === 'doc-lint.ts' && changedOnly
+        ? ['--changed', ...(baseRef ? ['--base', baseRef] : [])]
+        : [];
+    const result = await runLint(lint, extraArgs);
     results.push(result);
 
     const status = result.passed ? '✅ PASSED' : '❌ FAILED';

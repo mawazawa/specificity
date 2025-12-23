@@ -1,9 +1,9 @@
-# AI Stack Report (December 19, 2025) - Verified
+# AI Stack Report (December 21, 2025) - Verified
 
 ## Executive Summary
 
-This document reflects the **verified and deployed** AI model stack as of December 19, 2025.
-All models have been verified via Exa search against OpenRouter and Groq documentation.
+This document reflects the **verified and deployed** AI model stack as of December 21, 2025.
+All models have been verified via OpenRouter listings and Groq `/v1/models`.
 
 **Evidence Ledger:** `docs/reports/model-evidence-ledger-2025-12-19.md`
 
@@ -17,7 +17,8 @@ All models have been verified via Exa search against OpenRouter and Groq documen
 | **Design & UX** | `claude-opus-4.5` | Anthropic | 200K | $15.00 | $75.00 | ✅ Nov 2025 |
 | **Thinking / Planning** | `kimi-k2-thinking` | Moonshot AI | 256K | $0.45 | $2.35 | ✅ Nov 06, 2025 |
 | **Budget Reasoning** | `deepseek-chat` (V3) | DeepSeek | 163K | $0.30 | $1.20 | ✅ Verified |
-| **Fast Inference** | `deepseek-r1-distill-llama-70b` | Groq | 128K | $0.10 | $0.30 | ✅ Verified |
+| **Fast Inference (70B)** | `llama-3.3-70b-versatile` | Groq | 131K | TBD | TBD | ✅ Verified |
+| **Fast Inference (8B)** | `llama-3.1-8b-instant` | Groq | 131K | TBD | TBD | ✅ Verified |
 
 ## Models Removed (Unverified)
 
@@ -34,14 +35,16 @@ The following models were referenced in code but could NOT be verified on OpenRo
 
 | Stage | Primary Model | Provider | Fallback |
 |-------|---------------|----------|----------|
-| Questions | `gpt-5.2` | OpenRouter | `claude-opus-4.5` |
+| Questions | `groq-llama-3.1-8b` | Groq | `gpt-5.2` |
 | Research | Dynamic (per expert) | OpenRouter | `gemini-3-flash` |
 | Challenge | `gpt-5.2` | OpenRouter | `claude-opus-4.5` |
-| Synthesis | `deepseek-r1-distill-llama-70b` | Groq | - |
+| Synthesis | `llama-3.3-70b-versatile` | Groq | - |
 | **Review** | `gpt-5.2-codex` | OpenRouter | `claude-opus-4.5` |
-| Voting | `deepseek-r1-distill-llama-70b` | Groq | - |
-| Spec | `deepseek-r1-distill-llama-70b` | Groq | - |
+| Voting | `llama-3.3-70b-versatile` | Groq | - |
+| Spec | `llama-3.3-70b-versatile` | Groq | - |
 | Chat | `gpt-5.2` | OpenRouter | `gemini-3-flash` |
+
+**Note:** If `OPENROUTER_API_KEY` is set and `QUESTIONS_MODEL` is unset, the questions stage defaults to `gpt-5.2`.
 
 ## Expert-to-Model Assignments
 
@@ -64,7 +67,8 @@ The following models were referenced in code but could NOT be verified on OpenRo
 
 ### Secondary: Groq (Direct)
 - Used for synthesis/voting/spec stages
-- `deepseek-r1-distill-llama-70b` model
+- `llama-3.3-70b-versatile` model (Groq direct)
+- `llama-3.1-8b-instant` for fast question generation
 - Extremely fast inference (1000+ tokens/sec)
 
 ## Cost Optimization
@@ -74,7 +78,8 @@ The following models were referenced in code but could NOT be verified on OpenRo
 | High-Value | `gpt-5.2-codex` | $2.00-$16.00 | Review, coding |
 | Balanced | `gpt-5.2` / `claude-opus-4.5` | $1.75-$75.00 | Reasoning, design |
 | Fast/Cheap | `gemini-3-flash` | $0.50-$3.00 | Quick analysis |
-| Bulk | `deepseek-r1-distill-llama-70b` | $0.10-$0.30 | Synthesis, voting |
+| Bulk | `llama-3.3-70b-versatile` | TBD | Synthesis, voting |
+| Fast Fallback | `llama-3.1-8b-instant` | TBD | Questions, retries |
 
 ## Verification Sources
 
@@ -85,9 +90,9 @@ All models verified via Exa search on December 19, 2025:
 3. **Claude Opus 4.5**: Anthropic documentation
 4. **Kimi K2 Thinking**: Moonshot AI press releases
 5. **DeepSeek V3**: DeepSeek documentation, HuggingFace
-6. **DeepSeek R1 Distill**: Groq console, HuggingFace
+6. **Groq Models**: Groq `/v1/models` (llama-3.3-70b-versatile, llama-3.1-8b-instant)
 
 ---
 
-*Last Updated: December 19, 2025 20:48 PST*
-*Verified By: Claude Opus 4.5 via Exa Search MCP*
+*Last Updated: December 21, 2025 03:49 UTC*
+*Verified By: Groq /v1/models + OpenRouter listings*

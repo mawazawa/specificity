@@ -6,10 +6,10 @@
  * 1. questions    - Dynamic question generation (GPT-5.2)
  * 2. research     - Parallel expert research with tools (multi-model via OpenRouter)
  * 3. challenge    - Ray Dalio-style productive conflict (GPT-5.2)
- * 4. synthesis    - Expert synthesis (Groq: deepseek-r1-distill-llama-70b)
+ * 4. synthesis    - Expert synthesis (Groq: llama-3.3-70b-versatile)
  * 5. review       - Heavy-model review gate (GPT-5.2 Codex) [NEW Phase 4]
- * 6. voting       - Expert voting (Groq: deepseek-r1-distill-llama-70b)
- * 7. spec         - Final spec generation (Groq: deepseek-r1-distill-llama-70b)
+ * 6. voting       - Expert voting (Groq: llama-3.3-70b-versatile)
+ * 7. spec         - Final spec generation (Groq: llama-3.3-70b-versatile)
  * 8. chat         - 1:1 expert chat (GPT-5.2)
  *
  * Features:

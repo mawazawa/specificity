@@ -17,6 +17,43 @@ export interface TestCase {
   output?: Record<string, unknown>;
 }
 
+/**
+ * Resolve nested values using a dot path. Supports "items[]"
+ * to flatten array segments, e.g., "researchResults[].toolsUsed".
+ */
+function getPathValues(source: unknown, path?: string): unknown[] {
+  if (!path) return [source];
+
+  const segments = path.split('.');
+  let current: unknown[] = [source];
+
+  for (const segment of segments) {
+    const isArray = segment.endsWith('[]');
+    const key = isArray ? segment.slice(0, -2) : segment;
+    const next: unknown[] = [];
+
+    for (const value of current) {
+      if (!value || typeof value !== 'object') continue;
+      const child = (value as Record<string, unknown>)[key];
+      if (isArray) {
+        if (Array.isArray(child)) {
+          next.push(...child);
+        }
+      } else if (child !== undefined) {
+        next.push(child);
+      }
+    }
+
+    current = next;
+  }
+
+  return current;
+}
+
+function flattenValues(values: unknown[]): unknown[] {
+  return values.flatMap(value => Array.isArray(value) ? value : [value]);
+}
+
 // ═══════════════════════════════════════════════════════════════
 // GRADER IMPLEMENTATIONS
 // ═══════════════════════════════════════════════════════════════
@@ -63,14 +100,8 @@ export function gradeCountGte(
   field: string,
   min: number
 ): GradeResult {
-  const value = output[field];
-  let count = 0;
-
-  if (Array.isArray(value)) {
-    count = value.length;
-  } else if (typeof value === 'object' && value !== null) {
-    count = Object.keys(value).length;
-  }
+  const values = flattenValues(getPathValues(output, field));
+  const count = values.length;
 
   const passed = count >= min;
   const score = passed ? 100 : Math.round((count / min) * 100);
@@ -86,10 +117,14 @@ export function gradeCountGte(
  * Word count >= grader
  */
 export function gradeWordCountGte(
-  output: string | Record<string, unknown>,
-  min: number
+  output: unknown,
+  min: number,
+  field?: string
 ): GradeResult {
-  const text = typeof output === 'string' ? output : JSON.stringify(output);
+  const values = flattenValues(getPathValues(output, field));
+  const text = values
+    .map(value => typeof value === 'string' ? value : JSON.stringify(value))
+    .join(' ');
   const words = text.split(/\s+/).filter(w => w.length > 0);
   const count = words.length;
   const passed = count >= min;
@@ -106,10 +141,15 @@ export function gradeWordCountGte(
  * Section presence grader - checks if required sections exist
  */
 export function gradeSectionPresence(
-  output: string,
-  required: string[]
+  output: unknown,
+  required: string[],
+  field?: string
 ): GradeResult {
-  const outputLower = output.toLowerCase();
+  const values = flattenValues(getPathValues(output, field));
+  const text = values
+    .map(value => typeof value === 'string' ? value : JSON.stringify(value))
+    .join('\n');
+  const outputLower = text.toLowerCase();
   const found: string[] = [];
   const missing: string[] = [];
 
@@ -175,6 +215,39 @@ export function gradeMetadataFieldGte(
     score,
     passed,
     details: `${field}: ${numValue} (min: ${min})`,
+  };
+}
+
+/**
+ * Set coverage grader - checks that expected items appear in the output set.
+ */
+export function gradeSetCoverage(
+  output: unknown,
+  expected: string[],
+  field?: string,
+  minCoverage = 70
+): GradeResult {
+  if (!Array.isArray(expected) || expected.length === 0) {
+    return {
+      score: 0,
+      passed: false,
+      details: 'Expected set missing or empty',
+    };
+  }
+
+  const values = flattenValues(getPathValues(output, field))
+    .map(value => String(value).toLowerCase());
+  const expectedLower = expected.map(item => item.toLowerCase());
+  const found = expectedLower.filter(item => values.includes(item));
+  const score = expectedLower.length > 0
+    ? Math.round((found.length / expectedLower.length) * 100)
+    : 100;
+  const passed = score >= minCoverage;
+
+  return {
+    score,
+    passed,
+    details: `Coverage: ${found.length}/${expectedLower.length} (${score}%)`,
   };
 }
 
@@ -266,7 +339,8 @@ export type ScorerType =
   | 'word_count_gte'
   | 'section_presence'
   | 'llm_judge'
-  | 'metadata_field_gte';
+  | 'metadata_field_gte'
+  | 'set_coverage';
 
 export async function grade(
   scorer: ScorerType,
@@ -289,10 +363,18 @@ export async function grade(
       );
 
     case 'word_count_gte':
-      return gradeWordCountGte(output as string, params.min as number);
+      return gradeWordCountGte(
+        output,
+        params.min as number,
+        params.field as string | undefined
+      );
 
     case 'section_presence':
-      return gradeSectionPresence(output as string, params.required as string[]);
+      return gradeSectionPresence(
+        output,
+        params.required as string[],
+        params.field as string | undefined
+      );
 
     case 'llm_judge':
       return gradeLlmJudge(output, params.prompt as string, llmClient);
@@ -302,6 +384,14 @@ export async function grade(
         output as Record<string, unknown>,
         params.field as string,
         params.min as number
+      );
+
+    case 'set_coverage':
+      return gradeSetCoverage(
+        output,
+        params.expected as string[],
+        params.field as string | undefined,
+        params.minCoverage as number | undefined
       );
 
     default:

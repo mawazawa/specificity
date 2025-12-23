@@ -120,15 +120,23 @@ export const api = {
     });
   },
 
+  /**
+   * Persist a specification for the current authenticated user.
+   */
   saveSpec: async (
     title: string,
     content: string,
     metadata: any = {}
   ) => {
-    // Use the user from current session implicitly via RLS
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
+      throw new Error('Authentication required to save specification');
+    }
+
     const { data, error } = await supabase
       .from('specifications')
       .insert({
+        user_id: user.id,
         title,
         content,
         metadata,

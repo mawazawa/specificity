@@ -150,56 +150,15 @@ allowed_files:
     required: false
 
   # ─────────────────────────────────────────────────────────────
-  # Legacy/Archive Candidates
-  # These are allowed but should be reviewed for archival
+  # Strategic Docs (Active)
   # ─────────────────────────────────────────────────────────────
-  - name: "ARCHITECTURE_COMPARISON.md"
-    purpose: "Architecture analysis"
-    archive_candidate: true
-
-  - name: "IMPLEMENTATION_ROADMAP.md"
-    purpose: "Original implementation roadmap"
-    archive_candidate: true
-
-  - name: "COMPLETE_IMPROVEMENTS_SUMMARY.md"
-    purpose: "Historical improvement log"
-    archive_candidate: true
-
-  - name: "CONVERSION_IMPROVEMENTS.md"
-    purpose: "Conversion optimization notes"
-    archive_candidate: true
-
-  - name: "FIXES_AND_IMPROVEMENTS.md"
-    purpose: "Bug fix history"
-    archive_candidate: true
-
-  - name: "LANDING_PAGE_ANALYSIS.md"
-    purpose: "Landing page audit"
-    archive_candidate: true
-
   - name: "PERSONAS.md"
     purpose: "AI persona definitions"
     archive_candidate: false  # Active reference
 
-  - name: "BUG_FIX_REPORT.md"
-    purpose: "Bug fix documentation"
-    archive_candidate: true
-
-  - name: "BUG_FIX_REPORT_2025-11-17.md"
-    purpose: "Dated bug fix report"
-    archive_candidate: true
-
-  - name: "frontend-integration-patch.md"
-    purpose: "Frontend patch notes"
-    archive_candidate: true
-
   - name: "STRATEGIC_ANALYSIS_2026.md"
     purpose: "Strategic planning"
     archive_candidate: false  # Future planning
-
-  - name: "VERCEL_DEPLOYMENT.md"
-    purpose: "Vercel deployment notes"
-    archive_candidate: true
 
 # ═══════════════════════════════════════════════════════════════
 # ALLOWED DIRECTORIES
@@ -264,6 +223,7 @@ ignored_patterns:
   - "*.log"
   - "*.tmp"
   - ".env*.local"
+  - ".mcp.json"
 
 # ═══════════════════════════════════════════════════════════════
 # LINT RULES
@@ -273,5 +233,5 @@ lint_rules:
   fail_on_unknown_file: true
   fail_on_unknown_directory: true
   warn_on_archive_candidate: true
-  max_root_files: 40
+  max_root_files: 35
   max_root_directories: 15

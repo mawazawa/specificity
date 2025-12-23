@@ -42,7 +42,7 @@ export class WebSearchTool extends BaseTool {
     }
 
     try {
-      const response = await fetch('https://api.exa.ai/search', {
+      const response = await this.fetchWithTimeout('https://api.exa.ai/search', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${EXA_API_KEY}`,

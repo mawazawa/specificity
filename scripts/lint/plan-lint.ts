@@ -22,23 +22,53 @@ interface LintResult {
 const PLAN_PATH = path.join(process.cwd(), 'PLAN.md');
 
 // Patterns for evidence detection
-const EVIDENCE_PATTERNS = [
-  /\b[a-f0-9]{7,40}\b/i,           // Git SHA (short or full)
-  /\b\w+\.(ts|js|tsx|jsx|yml|yaml|json|md)\b/i,  // File paths
-  /https?:\/\/[^\s)]+/i,           // URLs
-  /`[^`]+`/,                       // Inline code references
-  /Evidence:|Verified:|Commit:|File:/i,  // Explicit evidence markers
-];
+const EVIDENCE_MARKERS = /Evidence:|Verified:|Commit:|File:|URL:/i;
+const COMMIT_PATTERN = /(commit|sha)\s*[:#]?\s*([a-f0-9]{7,40})/i;
+const URL_PATTERN = /https?:\/\/[^\s)]+/i;
+const FILE_PATH_PATTERN = /`([^`]+)`|([A-Za-z0-9_./-]+\.(ts|tsx|js|jsx|yml|yaml|json|md|sql))/g;
 
 // Patterns that suggest completion without evidence
 const COMPLETION_PATTERNS = [
   /^\s*-\s*\[x\]/im,               // Markdown checkbox checked
-  /COMPLETED?/i,                    // Word "COMPLETED"
+  /\bCOMPLETED\b/i,                 // Word "COMPLETED"
   /✅|✓|☑/,                        // Check emojis
 ];
 
+/**
+ * Normalize git diff style paths (a/ or b/) to workspace paths.
+ */
+function normalizePath(value: string): string {
+  if (value.startsWith('a/') || value.startsWith('b/')) {
+    return value.slice(2);
+  }
+  return value;
+}
+
+/**
+ * Detects evidence references to existing files in the workspace.
+ */
+function hasExistingFileReference(text: string): boolean {
+  const matches = text.matchAll(FILE_PATH_PATTERN);
+  for (const match of matches) {
+    const backtickValue = match[1];
+    const rawValue = backtickValue || match[2];
+    const candidate = normalizePath(rawValue);
+    if (!candidate) continue;
+    const hasSlash = candidate.includes('/') || candidate.includes('\\');
+    const resolved = path.resolve(process.cwd(), candidate);
+    if ((hasSlash || backtickValue) && fs.existsSync(resolved)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function checkLineHasEvidence(line: string): boolean {
-  return EVIDENCE_PATTERNS.some(pattern => pattern.test(line));
+  if (EVIDENCE_MARKERS.test(line)) return true;
+  if (URL_PATTERN.test(line)) return true;
+  if (COMMIT_PATTERN.test(line)) return true;
+  if (hasExistingFileReference(line)) return true;
+  return false;
 }
 
 function checkLineIsCompletion(line: string): boolean {

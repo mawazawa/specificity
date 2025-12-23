@@ -71,7 +71,40 @@ function shouldSkip(filePath: string): boolean {
   return SKIP_PATTERNS.some(pattern => filePath.includes(pattern));
 }
 
-function getFilesToScan(): string[] {
+/**
+ * Collect changed and untracked files for a fast, incremental scan.
+ */
+function getChangedFiles(baseRef?: string): string[] {
+  const diffBase = baseRef || 'HEAD';
+  const diffCmd = `git diff --name-only --diff-filter=ACMRTUXB ${diffBase}`;
+  const untrackedCmd = 'git ls-files --others --exclude-standard';
+  const diffFiles = execSync(diffCmd, { encoding: 'utf-8' })
+    .split('\n')
+    .map(line => line.trim())
+    .filter(Boolean);
+  const untrackedFiles = execSync(untrackedCmd, { encoding: 'utf-8' })
+    .split('\n')
+    .map(line => line.trim())
+    .filter(Boolean);
+  const files = Array.from(new Set([...diffFiles, ...untrackedFiles]));
+  return files
+    .filter(file => DOC_EXTENSIONS.some(ext => file.endsWith(ext)))
+    .map(file => path.join(process.cwd(), file))
+    .filter(fullPath => fs.existsSync(fullPath) && !shouldSkip(fullPath));
+}
+
+/**
+ * Resolve the final scan list based on full or changed-only mode.
+ */
+function getFilesToScan(options: { changedOnly: boolean; baseRef?: string }): string[] {
+  if (options.changedOnly) {
+    try {
+      return getChangedFiles(options.baseRef);
+    } catch (error) {
+      console.warn(`Failed to compute changed files (${error}); falling back to full scan.`);
+    }
+  }
+
   const files: string[] = [];
 
   for (const scanPath of SCAN_PATHS) {
@@ -173,10 +206,16 @@ function lintDocumentation(): LintResult {
     warnings: [],
   };
 
+  const args = process.argv.slice(2);
+  const changedOnly = args.includes('--changed');
+  const baseIndex = args.indexOf('--base');
+  const baseRef = baseIndex >= 0 ? args[baseIndex + 1] : undefined;
+
   console.log('Scanning files...\n');
 
-  const files = getFilesToScan();
-  console.log(`Found ${files.length} files to check\n`);
+  const files = getFilesToScan({ changedOnly, baseRef });
+  const mode = changedOnly ? `changed-only${baseRef ? ` (base: ${baseRef})` : ''}` : 'full';
+  console.log(`Found ${files.length} files to check (${mode})\n`);
 
   let filesWithIssues = 0;
 

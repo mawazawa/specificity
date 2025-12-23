@@ -14,7 +14,7 @@ export interface Rubric {
 export interface RubricCriterion {
   name: string;
   weight: number;  // 0-1, must sum to 1
-  scorer: 'exact_match' | 'contains' | 'count_gte' | 'word_count_gte' | 'section_presence' | 'llm_judge' | 'metadata_field_gte';
+  scorer: 'exact_match' | 'contains' | 'count_gte' | 'word_count_gte' | 'section_presence' | 'llm_judge' | 'metadata_field_gte' | 'set_coverage';
   params?: Record<string, unknown>;
 }
 
@@ -24,31 +24,20 @@ export interface RubricCriterion {
 
 export const questionGenerationRubric: Rubric = {
   name: 'question-generation',
-  description: 'Evaluates the quality of AI-generated research questions',
+  description: 'Evaluates coverage and structure of AI-generated research questions',
   threshold: 75,  // 75% to pass
   criteria: [
     {
       name: 'question_count',
-      weight: 0.3,
+      weight: 0.5,
       scorer: 'count_gte',
-      params: { field: 'questions', min: 5 },
+      params: { field: 'questions', min: 5, minField: 'expected_question_count' },
     },
     {
       name: 'domain_coverage',
-      weight: 0.4,
-      scorer: 'contains',
-      // Valid domains: technical, design, market, legal, growth, security
-      params: { required: ['technical', 'market'] },
-    },
-    {
-      name: 'question_quality',
-      weight: 0.3,
-      scorer: 'llm_judge',
-      params: {
-        prompt: `Rate the quality of these research questions on a scale of 1-10.
-                 Good questions are: specific, actionable, domain-appropriate.
-                 Return ONLY a number 1-10.`,
-      },
+      weight: 0.5,
+      scorer: 'set_coverage',
+      params: { field: 'questions[].domain', expectedField: 'expected_domains', minCoverage: 70 },
     },
   ],
 };
@@ -62,30 +51,32 @@ export const questionGenerationRubric: Rubric = {
 
 export const researchCitationsRubric: Rubric = {
   name: 'research-citations',
-  description: 'Evaluates research depth and citation quality',
+  description: 'Evaluates research depth and tool coverage',
   threshold: 70,  // 70% to pass
   criteria: [
     {
       name: 'research_results_count',
-      weight: 0.4,
+      weight: 0.3,
       scorer: 'count_gte',
       params: { field: 'researchResults', min: 2 },  // At least 2 expert results
     },
     {
       name: 'tool_usage',
       weight: 0.3,
-      scorer: 'metadata_field_gte',  // Custom scorer for nested metadata
-      params: { field: 'metadata.totalToolsUsed', min: 2 },
+      scorer: 'count_gte',
+      params: { field: 'researchResults[].toolsUsed', min: 2, minField: 'expected_min_tools' },
     },
     {
-      name: 'findings_quality',
-      weight: 0.3,
-      scorer: 'llm_judge',
-      params: {
-        prompt: `Evaluate the quality of these research findings on a scale of 1-10.
-                 Good findings are: specific, cite sources, provide actionable insights.
-                 Return ONLY a number 1-10.`,
-      },
+      name: 'tool_coverage',
+      weight: 0.2,
+      scorer: 'set_coverage',
+      params: { field: 'researchResults[].toolsUsed[].tool', expectedField: 'expected_tools', minCoverage: 50 },
+    },
+    {
+      name: 'findings_length',
+      weight: 0.2,
+      scorer: 'word_count_gte',
+      params: { field: 'researchResults[].findings', min: 250 },
     },
   ],
 };
@@ -96,41 +87,29 @@ export const researchCitationsRubric: Rubric = {
 
 export const specCompletenessRubric: Rubric = {
   name: 'spec-completeness',
-  description: 'Evaluates final specification quality and completeness',
+  description: 'Evaluates final specification completeness',
   threshold: 80,  // 80% to pass (higher bar for final output)
   criteria: [
     {
       name: 'required_sections',
-      weight: 0.4,
+      weight: 0.5,
       scorer: 'section_presence',
       params: {
-        required: [
-          'Executive Summary',
-          'Core Requirements',
-          'Technical Architecture',
-          'Implementation Phases',
-          'Dependencies',
-          'Risk Analysis',
-          'Success Metrics',
-        ],
+        field: 'spec',
+        requiredField: 'required_sections',
       },
     },
     {
       name: 'minimum_length',
-      weight: 0.2,
+      weight: 0.3,
       scorer: 'word_count_gte',
-      params: { min: 1000 },
+      params: { field: 'spec', min: 1000, minField: 'min_word_count' },
     },
     {
-      name: 'actionability',
-      weight: 0.4,
-      scorer: 'llm_judge',
-      params: {
-        prompt: `Rate this product specification on a scale of 1-10 for actionability.
-                 An actionable spec has: clear next steps, specific technologies named,
-                 prioritized requirements, and realistic timelines.
-                 Return ONLY a number 1-10.`,
-      },
+      name: 'tech_stack_present',
+      weight: 0.2,
+      scorer: 'count_gte',
+      params: { field: 'techStack', min: 1 },
     },
   ],
 };

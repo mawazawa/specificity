@@ -119,7 +119,7 @@ function calculateExpertScore(question: ResearchQuestion, expert: AgentConfig): 
  * Select best model for each expert's specialty
  */
 function selectModelForExpert(expertId: string): string {
-  return EXPERT_MODEL_MAP[expertId] || 'deepseek-r1-distill'; // Verified fallback
+  return EXPERT_MODEL_MAP[expertId] || 'groq-llama-3.1-8b';
 }
 
 /**

@@ -56,7 +56,7 @@ interface CodeModelEntry {
   name: string;
   provider: string;
   model: string;
-  openrouterId: string;
+  modelId: string;
 }
 
 function extractModelsFromCode(content: string): CodeModelEntry[] {
@@ -93,11 +93,11 @@ function extractModelsFromCode(content: string): CodeModelEntry[] {
     if (providerMatch && modelMatch) {
       const provider = providerMatch[1];
       const model = modelMatch[1];
-      const openrouterId = `${provider}/${model}`;
+      const modelId = provider === 'groq' ? model : `${provider}/${model}`;
 
       // Skip false positives
-      if (!isFalsePositive(openrouterId)) {
-        models.push({ name, provider, model, openrouterId });
+      if (!isFalsePositive(modelId)) {
+        models.push({ name, provider, model, modelId });
       }
     }
   }
@@ -141,18 +141,11 @@ function lintModels(): LintResult {
 
   // Build registry lookup
   const registryModels = new Map<string, ModelRegistryEntry>();
-  const registryOpenRouterIds = new Set<string>();
   const registryModelNames = new Set<string>();
 
   for (const [name, entry] of Object.entries(registry.models)) {
     registryModels.set(name, entry);
     registryModelNames.add(name);
-    if (entry.openrouter_id) {
-      registryOpenRouterIds.add(entry.openrouter_id);
-    }
-    if (entry.groq_id) {
-      registryOpenRouterIds.add(`groq/${entry.groq_id}`);
-    }
   }
 
   // Check: All code models exist in registry (by name and OpenRouter ID)
@@ -166,15 +159,23 @@ function lintModels(): LintResult {
       continue;
     }
 
-    // Check if OpenRouter ID matches
+    // Check if OpenRouter/Groq ID matches
     const registryEntry = registry.models[codeModel.name];
     if (registryEntry) {
-      const expectedId = registryEntry.openrouter_id || (registryEntry.groq_id ? `groq/${registryEntry.groq_id}` : null);
-      if (expectedId && expectedId !== codeModel.openrouterId) {
-        result.errors.push(
-          `Model "${codeModel.name}" OpenRouter ID mismatch: code="${codeModel.openrouterId}" registry="${expectedId}"`
-        );
-        result.passed = false;
+      if (codeModel.provider === 'groq') {
+        if (!registryEntry.groq_id || registryEntry.groq_id !== codeModel.modelId) {
+          result.errors.push(
+            `Model "${codeModel.name}" Groq ID mismatch: code="${codeModel.modelId}" registry="${registryEntry.groq_id || 'missing'}"`
+          );
+          result.passed = false;
+        }
+      } else {
+        if (!registryEntry.openrouter_id || registryEntry.openrouter_id !== codeModel.modelId) {
+          result.errors.push(
+            `Model "${codeModel.name}" OpenRouter ID mismatch: code="${codeModel.modelId}" registry="${registryEntry.openrouter_id || 'missing'}"`
+          );
+          result.passed = false;
+        }
       }
     }
   }
@@ -197,6 +198,14 @@ function lintModels(): LintResult {
           `Model "${name}" was verified ${Math.floor(daysSinceVerification)} days ago (consider re-verification)`
         );
       }
+    }
+  }
+
+  // Warn on verified registry models not referenced in code
+  const codeModelNames = new Set(codeModels.map(model => model.name));
+  for (const [name, entry] of registryModels) {
+    if (entry.status === 'verified' && !codeModelNames.has(name)) {
+      result.warnings.push(`Verified model "${name}" not referenced in code`);
     }
   }
 

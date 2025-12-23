@@ -23,6 +23,8 @@ export interface ToolResult {
   };
 }
 
+const TOOL_TIMEOUT_MS = Number(Deno.env.get('TOOL_TIMEOUT_MS') || 15000);
+
 export abstract class BaseTool {
   abstract name: string;
   abstract description: string;
@@ -54,6 +56,24 @@ export abstract class BaseTool {
       valid: errors.length === 0,
       errors
     };
+  }
+
+  /**
+   * Fetch wrapper with timeout to avoid long-running tool calls.
+   */
+  protected async fetchWithTimeout(
+    url: string,
+    options: RequestInit,
+    timeoutMs = TOOL_TIMEOUT_MS
+  ): Promise<Response> {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      return await fetch(url, { ...options, signal: controller.signal });
+    } finally {
+      clearTimeout(timer);
+    }
   }
 
   /**

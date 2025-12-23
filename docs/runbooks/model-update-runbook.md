@@ -109,7 +109,7 @@ const EXPERT_MODEL_MAP: Record<string, string> = {
 Update `supabase/functions/multi-agent-spec/lib/utils/api.ts`:
 
 ```typescript
-export const GROQ_MODEL = 'deepseek-r1-distill-llama-70b';
+export const GROQ_MODEL = 'llama-3.3-70b-versatile';
 ```
 
 ## Step 5: Update Prompt Metadata (if applicable)
@@ -242,9 +242,9 @@ Examples:
 - gpt-5.2-codex
 - claude-opus-4.5
 - gemini-3-flash
-- deepseek-r1-distill
+- groq-llama-3.3-70b
 ```
 
 ---
 
-*Last Updated: December 19, 2025*
+*Last Updated: December 21, 2025*

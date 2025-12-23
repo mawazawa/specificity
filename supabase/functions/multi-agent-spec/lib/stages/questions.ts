@@ -1,11 +1,14 @@
 import { generateDynamicQuestions } from '../../../lib/question-generator.ts';
 import { corsHeaders } from '../utils/api.ts';
 
+const QUESTIONS_MODEL = Deno.env.get('QUESTIONS_MODEL')
+    || (Deno.env.get('OPENROUTER_API_KEY') ? 'gpt-5.2' : 'groq-llama-3.1-8b');
+
 export const handleQuestionsStage = async (cleanInput: string) => {
     console.log('[Enhanced] Generating dynamic research questions...');
 
     const questions = await generateDynamicQuestions(cleanInput, {
-        model: 'gpt-5.2', // Verified Dec 19, 2025 (openai/gpt-5.2)
+        model: QUESTIONS_MODEL,
         count: 7
     });
 

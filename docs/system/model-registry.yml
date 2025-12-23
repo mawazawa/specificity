@@ -2,8 +2,8 @@
 # Syncs with: supabase/functions/lib/openrouter-client.ts
 # Evidence Ledger: docs/reports/model-evidence-ledger-2025-12-19.md
 version: "1.0.0"
-last_verified: "2025-12-20T12:35:00-08:00"
-next_review: "2025-12-27"
+last_verified: "2025-12-21T03:49:37Z"
+next_review: "2025-12-28"
 
 models:
   gpt-5.2:
@@ -113,18 +113,32 @@ models:
       - planning
       - tool_use
 
-  deepseek-r1-distill:
+  groq-llama-3.3-70b:
     provider: groq
-    groq_id: deepseek-r1-distill-llama-70b
-    context_window: 128000
-    cost_per_1m_input: 0.10
-    cost_per_1m_output: 0.30
-    verified_date: "2025-12-19"
-    verified_source: "https://console.groq.com/docs/model/deepseek-r1-distill-llama-70b"
+    groq_id: llama-3.3-70b-versatile
+    context_window: 131072
+    cost_per_1m_input: 0
+    cost_per_1m_output: 0
+    verified_date: "2025-12-21"
+    verified_source: "https://api.groq.com/openai/v1/models"
     status: verified
-    note: "Groq direct (not OpenRouter)"
+    note: "Groq direct (pricing TBD)"
+    strengths:
+      - reasoning
+      - synthesis
+      - general_purpose
+
+  groq-llama-3.1-8b:
+    provider: groq
+    groq_id: llama-3.1-8b-instant
+    context_window: 131072
+    cost_per_1m_input: 0
+    cost_per_1m_output: 0
+    verified_date: "2025-12-21"
+    verified_source: "https://api.groq.com/openai/v1/models"
+    status: verified
+    note: "Groq direct (pricing TBD)"
     strengths:
       - speed
       - cost
-      - reasoning_lite
-      - math
+      - general_purpose

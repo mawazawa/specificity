@@ -1,6 +1,7 @@
 import { callOpenRouter, retryWithBackoff } from './openrouter-client.ts';
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 import { renderPrompt, trackPromptUsage } from './prompt-service.ts';
+import { Prompts } from './prompts.ts';
 
 export const ResearchQuestionSchema = z.object({
   id: z.string(),
@@ -11,6 +12,27 @@ export const ResearchQuestionSchema = z.object({
 });
 
 export type ResearchQuestion = z.infer<typeof ResearchQuestionSchema>;
+
+const PROMPT_TIMEOUT_MS = 3000;
+
+/**
+ * Render the question prompt with a timeout fallback to the static prompt.
+ */
+async function renderQuestionPrompt(count: number, userInput: string): Promise<string> {
+  const timeoutPromise = new Promise<string>((_, reject) => {
+    setTimeout(() => reject(new Error('prompt_timeout')), PROMPT_TIMEOUT_MS);
+  });
+
+  try {
+    return await Promise.race([
+      renderPrompt('question_generation', { count, userInput }),
+      timeoutPromise
+    ]);
+  } catch (error) {
+    console.warn('[QuestionGen] Prompt fetch failed, using fallback prompt:', error);
+    return Prompts.Questions.system(count);
+  }
+}
 
 /**
  * Generate dynamic research questions tailored to user input
@@ -28,7 +50,7 @@ export async function generateDynamicQuestions(
   } = options;
 
   // Load prompt from database with variable interpolation
-  const systemPrompt = await renderPrompt('question_generation', { count, userInput });
+  const systemPrompt = await renderQuestionPrompt(count, userInput);
   const userPrompt = `Product Idea: ${userInput}\n\nGenerate ${count} research questions that will help create a comprehensive technical specification. Focus on what MUST be researched to create production-ready documentation.`;
 
   try {
@@ -45,10 +67,7 @@ export async function generateDynamicQuestions(
         responseFormat: 'json'
       }),
       {
-        maxRetries: 2,
-        onRetry: (error, attempt) => {
-          console.log(`[QuestionGen] Retry ${attempt} due to:`, error.message);
-        }
+        maxRetries: 0
       }
     );
 

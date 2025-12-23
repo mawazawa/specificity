@@ -48,7 +48,7 @@ export class GitHubSearchTool extends BaseTool {
 
       const url = `https://api.github.com/search/repositories?q=${encodeURIComponent(searchQuery)}&sort=${sort}&per_page=10`;
 
-      const response = await fetch(url, {
+      const response = await this.fetchWithTimeout(url, {
         headers: {
           'Accept': 'application/vnd.github.v3+json',
           'User-Agent': 'Specificity-AI'

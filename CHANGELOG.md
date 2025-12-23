@@ -10,28 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Phases 7-11 atomic implementation plan with 100+ sub-tasks mapped to success criteria
 - Comprehensive bug tracking for 10 verified issues
-- **Phase 12**: Critical corrections and platform upgrades (Dec 20, 2025)
-  - DeepSeek V3.2 and V3.2-Speciale model entries (NOW AVAILABLE on OpenRouter)
-  - Deno 2.1 migration tasks for Edge Functions
-  - PostgREST v14 performance verification tasks
-  - Vite 8 Beta evaluation tasks
-  - React 19 pattern adoption tasks
-  - pnpm standardization for frontend
+- Governance updates: deterministic eval rubrics and dataset-driven expectations
+- Root hygiene: archived legacy docs into `docs/archive/`
 
 ### Changed
-- **Model Registry Correction**: DeepSeek V3.2-Speciale is NOW AVAILABLE
-  - Previously marked "NOT FOUND" on Dec 19, 2025
-  - Verified available on OpenRouter Dec 20, 2025 via Exa search
-  - Model ID: `deepseek/deepseek-v3.2-speciale`
-  - Pricing: $0.27/$0.41 per 1M tokens (55x cheaper than Claude Opus 4.5)
-- Updated Evidence Ledger with corrected DeepSeek V3.2 model information
-- Added new verified models:
-  - `deepseek/deepseek-v3.2` - "GPT-5 level performance", thinking-in-tool-use
-  - `deepseek/deepseek-v3.2-speciale` - Rivals Gemini-3.0-Pro, gold-medal reasoning
+- Clarified DeepSeek v3.2 as an alias of `deepseek-v3` (no separate OpenRouter model)
+- Synced eval datasets with production section headings
 
 ### Fixed
-- Corrected Evidence Ledger false negative for DeepSeek V3.2-Speciale
-- Updated GPT-5.2 model ID to include date suffix: `openai/gpt-5.2-20251211`
+- Corrected inaccurate model availability claims in CHANGELOG
+- Fixed spec persistence by explicitly setting `user_id` on inserts
 
 ### Documentation
 - Evidence Ledger updated with Dec 20, 2025 re-verification results
@@ -92,7 +80,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `gpt-5.2-codex` (OpenRouter) - Code review
   - `claude-opus-4.5` (OpenRouter/Anthropic) - Synthesis and escalation
   - `gemini-3-flash` (OpenRouter/Google) - Fast inference
-  - `deepseek-r1-distill-llama-70b` (Groq) - Synthesis/voting/spec
+  - `llama-3.3-70b-versatile` (Groq) - Synthesis/voting/spec
+  - `llama-3.1-8b-instant` (Groq) - Fast fallback/questions
   - `kimi-k2-thinking` (OpenRouter) - Reasoning tasks
 - Updated all hardcoded model IDs to use registry constants
 - Normalized Groq vs OpenRouter usage patterns
@@ -121,7 +110,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 | `gpt-5.2-codex` | OpenRouter | 400K | $2.00 / $16.00 |
 | `claude-opus-4.5` | OpenRouter | 200K | $15.00 / $75.00 |
 | `gemini-3-flash` | OpenRouter | 1M | $0.50 / $3.00 |
-| `deepseek-r1-distill-llama-70b` | Groq | 128K | Free tier |
+| `llama-3.3-70b-versatile` | Groq | 131K | TBD |
+| `llama-3.1-8b-instant` | Groq | 131K | TBD |
 | `kimi-k2-thinking` | OpenRouter | 256K | $0.45 / $2.35 |
 | `deepseek-chat` (V3) | OpenRouter | 163K | $0.30 / $1.20 |
 

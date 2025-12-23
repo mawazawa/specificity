@@ -37,7 +37,7 @@ export class NPMSearchTool extends BaseTool {
       // Use npm registry search API
       const url = `https://registry.npmjs.org/-/v1/search?text=${encodeURIComponent(query)}&size=${Math.min(size, 20)}`;
 
-      const response = await fetch(url, {
+      const response = await this.fetchWithTimeout(url, {
         headers: {
           'Accept': 'application/json'
         }
