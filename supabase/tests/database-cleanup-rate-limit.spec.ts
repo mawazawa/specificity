@@ -14,7 +14,8 @@ test.describe('Bug Fix: Duplicate Rate Limit Tables Cleanup', () => {
 
   test('OLD BUG: rate_limits (plural) table should NOT exist', async () => {
     const { error } = await supabase
-      .from('rate_limits' as any)
+      // @ts-expect-error Intentionally accessing non-existent table to verify it was removed
+      .from('rate_limits')
       .select('id')
       .limit(1);
 

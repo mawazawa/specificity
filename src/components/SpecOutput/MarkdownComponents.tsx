@@ -103,7 +103,7 @@ export const markdownComponents: Components = {
   ),
 
   // Handle both inline and block code
-  code: ({ node, inline, className, children, ...props }: any) => {
+  code: ({ node, inline, className, children, ...props }: { node?: unknown; inline?: boolean; className?: string; children?: React.ReactNode; [key: string]: unknown }) => {
     if (inline) {
       return (
         <code

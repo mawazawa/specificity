@@ -29,9 +29,11 @@ export const handleSynthesisStage = async (
         const userGuidance = cleanComment ? `\nUser guidance: ${cleanComment}` : '';
 
         // Include debate resolution if available (battle-tested position)
-        const debateResolution = debateResolutions[idx];
-        const debateContext = debateResolution ?
-            `\n\n**DEBATE-TESTED POSITION** (Ray Dalio productive conflict):\n${debateResolution.resolution}\n\nChallenges addressed: ${debateResolution.challenges.join('; ')}\nConfidence change: ${debateResolution.confidenceChange > 0 ? '+' : ''}${debateResolution.confidenceChange}%\nAdopted alternatives: ${debateResolution.adoptedAlternatives.join(', ') || 'None'}` : '';
+        // Safe array access with bounds check and property validation
+        const debateResolution = idx < debateResolutions.length ? debateResolutions[idx] : undefined;
+        const debateContext = debateResolution && debateResolution.resolution
+            ? `\n\n**DEBATE-TESTED POSITION** (Ray Dalio productive conflict):\n${debateResolution.resolution}\n\nChallenges addressed: ${(debateResolution.challenges || []).join('; ')}\nConfidence change: ${debateResolution.confidenceChange > 0 ? '+' : ''}${debateResolution.confidenceChange || 0}%\nAdopted alternatives: ${(debateResolution.adoptedAlternatives || []).join(', ') || 'None'}`
+            : '';
 
         // Load synthesis stage prompt from database
         const prompt = await renderPrompt('synthesis_stage', {

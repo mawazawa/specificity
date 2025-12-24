@@ -20,7 +20,7 @@ function safeJsonParse<T>(content: string, fallback: T): T {
       }
     }
     // Try to find raw JSON object/array
-    const rawMatch = content.match(/[\[{][\s\S]*[\]}]/);
+    const rawMatch = content.match(/[[{][\s\S]*[}\]]/);
     if (rawMatch) {
       try {
         return JSON.parse(rawMatch[0]);
@@ -111,8 +111,15 @@ export async function generateChallenges(
     })
   );
 
-  const parsed = safeJsonParse<{ challenges: any[] }>(response.content, { challenges: [] });
-  const challenges: ChallengeQuestion[] = parsed.challenges.map((c: any, idx: number) => ({
+  interface RawChallenge {
+    type?: string;
+    question?: string;
+    targetFindingIndex?: number;
+    priority?: number;
+  }
+
+  const parsed = safeJsonParse<{ challenges: RawChallenge[] }>(response.content, { challenges: [] });
+  const challenges: ChallengeQuestion[] = parsed.challenges.map((c: RawChallenge, idx: number) => ({
     id: `challenge_${idx}`,
     type: c.type || 'feasibility',
     question: c.question || 'Challenge question unavailable',

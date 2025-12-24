@@ -78,7 +78,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       setTimeout(() => setRipple(null), 600);
       // Call original onClick if exists
       if (props.onClick) {
-        props.onClick(e as any);
+        props.onClick(e as React.MouseEvent<HTMLButtonElement>);
       }
     };
 
@@ -88,11 +88,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     const buttonProps = {
       ...props,
-      onClick: (e) => {
+      onClick: (e: React.MouseEvent<HTMLButtonElement>) => {
         if (asChild) {
           // For asChild, ripple not supported or handle differently
         } else {
-          handleClick(e as any);
+          handleClick(e);
         }
         if (props.onClick) props.onClick(e);
       },

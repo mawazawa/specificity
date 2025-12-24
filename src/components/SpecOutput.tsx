@@ -20,7 +20,7 @@ import { Document, Packer, Paragraph, TextRun, HeadingLevel } from "docx";
 import { saveAs } from "file-saver";
 import { TechStackCard } from "./TechStackCard";
 import { TechStackItem } from "@/types/spec";
-import { SpecMarkdown } from "./SpecOutput/markdownComponents";
+import { SpecMarkdown } from "./SpecOutput/MarkdownComponents";
 
 interface SpecOutputProps {
   spec: string;

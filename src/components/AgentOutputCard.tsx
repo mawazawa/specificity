@@ -149,7 +149,7 @@ export const AgentOutputCard = ({ perspective }: AgentOutputCardProps) => {
                 ol: ({ node, ...props }) => <ol className="list-decimal list-inside space-y-2 mb-4" {...props} />,
                 li: ({ node, ...props }) => <li className="text-sm text-foreground/70 leading-relaxed" {...props} />,
                 strong: ({ node, ...props }) => <strong className="font-semibold text-foreground/90" {...props} />,
-                code: ({ node, inline, ...props }: any) => 
+                code: ({ node, inline, ...props }: { node?: unknown; inline?: boolean; [key: string]: unknown }) =>
                   inline ? (
                     <code className="bg-primary/10 px-2 py-0.5 rounded text-primary font-mono text-xs" {...props} />
                   ) : (

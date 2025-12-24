@@ -180,7 +180,7 @@ export const ExpandableAgentCard = ({ perspectives }: ExpandableAgentCardProps) 
                       p: ({ node, ...props }) => <p className="text-sm text-foreground/70 leading-relaxed mb-4" {...props} />,
                       ul: ({ node, ...props }) => <ul className="list-disc list-inside space-y-2 mb-4" {...props} />,
                       li: ({ node, ...props }) => <li className="text-sm text-foreground/70" {...props} />,
-                      code: ({ node, inline, ...props }: any) => 
+                      code: ({ node, inline, ...props }: { node?: unknown; inline?: boolean; [key: string]: unknown }) =>
                         inline ? (
                           <code className="bg-secondary/30 px-2 py-1 rounded-lg text-accent font-mono text-xs" {...props} />
                         ) : (

@@ -52,8 +52,9 @@ const agentAvatars: Record<AgentType, string> = {
 
 export const VotingPanel = ({ votes, roundNumber }: VotingPanelProps) => {
   const [expandedVotes, setExpandedVotes] = useState<Set<string>>(new Set());
-  const approved = votes.filter(v => v.approved);
-  const dissented = votes.filter(v => !v.approved);
+  // Explicit boolean check to handle null/undefined/truthy values from API
+  const approved = votes.filter(v => v.approved === true);
+  const dissented = votes.filter(v => v.approved !== true);
   const approvalRate = votes.length > 0 ? (approved.length / votes.length) * 100 : 0;
 
   const toggleVoteExpansion = (agent: string) => {

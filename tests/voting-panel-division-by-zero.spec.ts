@@ -97,8 +97,12 @@ test.describe('VotingPanel Division by Zero Bug Fix', () => {
     // This is the critical test for the bug fix
     // It directly tests that an empty array produces 0, not NaN
 
+    interface Vote {
+      approved: boolean;
+    }
+
     const result = await page.evaluate(() => {
-      const votes: any[] = []; // Empty array - the bug case
+      const votes: Vote[] = []; // Empty array - the bug case
       const approved = votes.filter(v => v.approved);
 
       // OLD (BUGGY) CALCULATION:
@@ -132,8 +136,12 @@ test.describe('VotingPanel Division by Zero Bug Fix', () => {
     // This test documents what the bug WAS, to prevent regression
     // It proves that the old calculation would have produced NaN
 
+    interface Vote {
+      approved: boolean;
+    }
+
     const result = await page.evaluate(() => {
-      const votes: any[] = [];
+      const votes: Vote[] = [];
       const approved = votes.filter(v => v.approved);
 
       // BUGGY CALCULATION (for demonstration)

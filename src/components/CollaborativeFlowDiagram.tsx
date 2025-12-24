@@ -1,11 +1,11 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
-import { MessageCircle, Search, Vote, FileText, Zap, Users } from "lucide-react";
+import { MessageCircle, Search, Vote, FileText, Zap, Users, LucideIcon } from "lucide-react";
 
 interface FlowStage {
   id: string;
   title: string;
-  icon: any;
+  icon: LucideIcon;
   description: string;
   x: number;
   y: number;

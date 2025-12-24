@@ -46,6 +46,7 @@ const EXA_API_KEY = Deno.env.get('EXA_API_KEY');
 const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const ADMIN_USER_IDS = (Deno.env.get('ADMIN_USER_IDS') || '').split(',').filter(id => id.trim());
 
 // Initialize tool registry
 const tools = new ToolRegistry();
@@ -68,6 +69,18 @@ const validateEnv = () => {
     return false;
   }
   return true;
+};
+
+// Utility: Add rate limit headers to response
+const addRateLimitHeaders = async (response: Response, remaining: number): Promise<Response> => {
+  const body = await response.text();
+  const headers = new Headers(response.headers);
+  headers.set('X-RateLimit-Remaining', String(remaining));
+  return new Response(body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers
+  });
 };
 
 serve(async (req) => {
@@ -147,28 +160,48 @@ serve(async (req) => {
     } = validated;
 
     // Check rate limit (count 1 spec generation as the initial "questions" stage)
-    /* 
+    // Rate limit: 100 requests/hour/user (Phase A.1)
+    // Admin bypass: Users in ADMIN_USER_IDS env var bypass rate limits
+    let rateLimitRemaining = 100;
+    const isAdmin = ADMIN_USER_IDS.includes(user.id);
+
     if (stage === 'questions') {
-      const rateLimit = await checkRateLimit(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, user.id, 'multi-agent-spec', 5);
-      if (!rateLimit.allowed) {
-        return new Response(
-          JSON.stringify({
-            error: 'Rate limit exceeded. You can generate up to 5 specifications per hour. Please try again later.',
-            retryAfter: 3600
-          }),
-          {
-            status: 429,
-            headers: {
-              ...corsHeaders,
-              'Content-Type': 'application/json',
-              'X-RateLimit-Remaining': '0',
-              'X-RateLimit-Reset': new Date(Date.now() + 60 * 60 * 1000).toISOString()
+      if (isAdmin) {
+        console.log('[RateLimit] Admin user bypassing rate limit:', user.id);
+        rateLimitRemaining = 999; // Indicate unlimited for admin
+      } else {
+        console.log('[RateLimit] Checking rate limit for user:', user.id);
+        const rateLimit = await checkRateLimit(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, user.id, 'multi-agent-spec', 100);
+
+        if (!rateLimit.allowed) {
+          console.warn('[RateLimit] Rate limit exceeded:', { type: 'rate_limit_exceeded', user_id: user.id });
+          const retryAfterSeconds = 3600; // 1 hour
+          const resetTime = new Date(Date.now() + retryAfterSeconds * 1000);
+
+          return new Response(
+            JSON.stringify({
+              error: 'Rate limit exceeded. You can generate up to 100 specifications per hour. Please try again later.',
+              retryAfter: retryAfterSeconds,
+              resetAt: resetTime.toISOString(),
+              code: 'RATE_LIMIT_EXCEEDED'
+            }),
+            {
+              status: 429,
+              headers: {
+                ...corsHeaders,
+                'Content-Type': 'application/json',
+                'X-RateLimit-Remaining': '0',
+                'X-RateLimit-Reset': resetTime.toISOString(),
+                'Retry-After': String(retryAfterSeconds)
+              }
             }
-          }
-        );
+          );
+        }
+
+        rateLimitRemaining = rateLimit.remaining;
+        console.log('[RateLimit] Request allowed:', { remaining: rateLimitRemaining });
       }
     }
-    */
 
     console.log('[EdgeFunction] Request validated:', { stage, hasUserInput: !!userInput, hasAgentConfigs: !!agentConfigs });
 
@@ -211,28 +244,32 @@ serve(async (req) => {
     // STAGE 1: DYNAMIC QUESTION GENERATION
     // ========================================
     if (stage === 'questions') {
-      return await handleQuestionsStage(cleanInput);
+      const response = await handleQuestionsStage(cleanInput);
+      return await addRateLimitHeaders(response, rateLimitRemaining);
     }
 
     // ========================================
     // STAGE 2: PARALLEL RESEARCH WITH TOOLS
     // ========================================
     if (stage === 'research') {
-      return await handleResearchStage(agentConfigs, roundData, cleanInput, tools);
+      const response = await handleResearchStage(agentConfigs, roundData, cleanInput, tools);
+      return await addRateLimitHeaders(response, rateLimitRemaining);
     }
 
     // ========================================
     // STAGE 2.5: CHALLENGE/DEBATE (RAY DALIO STYLE)
     // ========================================
     if (stage === 'challenge') {
-      return await handleChallengeStage(agentConfigs, roundData, cleanInput);
+      const response = await handleChallengeStage(agentConfigs, roundData, cleanInput);
+      return await addRateLimitHeaders(response, rateLimitRemaining);
     }
 
     // ========================================
     // STAGE 3: SYNTHESIS (ENHANCED)
     // ========================================
     if (stage === 'synthesis') {
-      return await handleSynthesisStage(roundData, cleanComment, GROQ_API_KEY!);
+      const response = await handleSynthesisStage(roundData, cleanComment, GROQ_API_KEY!);
+      return await addRateLimitHeaders(response, rateLimitRemaining);
     }
 
     // ========================================
@@ -240,28 +277,32 @@ serve(async (req) => {
     // Phase 4 implementation - GPT-5.2 Codex validates outputs
     // ========================================
     if (stage === 'review') {
-      return await handleReviewStage(roundData);
+      const response = await handleReviewStage(roundData);
+      return await addRateLimitHeaders(response, rateLimitRemaining);
     }
 
     // ========================================
     // STAGE 4: VOTING (UNCHANGED)
     // ========================================
     if (stage === 'voting') {
-      return await handleVotingStage(agentConfigs, roundData, GROQ_API_KEY!);
+      const response = await handleVotingStage(agentConfigs, roundData, GROQ_API_KEY!);
+      return await addRateLimitHeaders(response, rateLimitRemaining);
     }
 
     // ========================================
     // STAGE 5: SPEC GENERATION (ENHANCED)
     // ========================================
     if (stage === 'spec') {
-      return await handleSpecStageComplete(roundData, GROQ_API_KEY!);
+      const response = await handleSpecStageComplete(roundData, GROQ_API_KEY!);
+      return await addRateLimitHeaders(response, rateLimitRemaining);
     }
 
     // ========================================
     // STAGE 6: 1:1 CHAT
     // ========================================
     if (stage === 'chat') {
-      return await handleChatStage(agentConfigs, targetAgent, cleanInput);
+      const response = await handleChatStage(agentConfigs, targetAgent, cleanInput);
+      return await addRateLimitHeaders(response, rateLimitRemaining);
     }
 
     // Fallback for unknown stage

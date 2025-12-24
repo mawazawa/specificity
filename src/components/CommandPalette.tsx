@@ -3,7 +3,7 @@ import { Command, CommandDialog, CommandEmpty, CommandGroup, CommandInput, Comma
 import { FileText, Download, Copy, Users, Settings, LogOut, Zap, Search } from "lucide-react";
 
 interface CommandPaletteProps {
-  onAction: (action: string, data?: any) => void;
+  onAction: (action: string, data?: unknown) => void;
 }
 
 export const CommandPalette = ({ onAction }: CommandPaletteProps) => {
@@ -22,7 +22,7 @@ export const CommandPalette = ({ onAction }: CommandPaletteProps) => {
     return () => document.removeEventListener("keydown", down);
   }, []);
 
-  const handleAction = useCallback((action: string, data?: any) => {
+  const handleAction = useCallback((action: string, data?: unknown) => {
     setOpen(false);
     onAction(action, data);
   }, [onAction]);

@@ -11,7 +11,7 @@ import * as path from 'path';
 import { fileURLToPath } from 'url';
 import { randomUUID } from 'crypto';
 import * as dotenv from 'dotenv';
-import { getRubric, type Rubric } from '../scoring/rubrics';
+import { getRubric, type Rubric, type RubricName } from '../scoring/rubrics';
 import { grade } from '../scoring/graders';
 
 // ES module compatibility for __dirname
@@ -626,7 +626,7 @@ async function main(): Promise<void> {
   for (const [stage, mapping] of Object.entries(STAGE_MAPPINGS)) {
     console.log(`\n▶ Running ${stage} evals...\n`);
 
-    const rubric = getRubric(mapping.rubric as any);
+    const rubric = getRubric(mapping.rubric as RubricName);
     let testCases: TestCase[];
 
     try {
@@ -655,7 +655,7 @@ async function main(): Promise<void> {
   const stages = [...new Set(results.map(r => r.stage))];
   const stageResults: StageResult[] = stages.map(stage => {
     const stageTests = results.filter(r => r.stage === stage);
-    const rubric = getRubric(STAGE_MAPPINGS[stage].rubric as any);
+    const rubric = getRubric(STAGE_MAPPINGS[stage].rubric as RubricName);
     return {
       stage,
       tests: stageTests.length,

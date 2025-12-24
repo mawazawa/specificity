@@ -138,6 +138,39 @@ export const expertVoteSchema = z.object({
 
 export type ExpertVote = z.infer<typeof expertVoteSchema>;
 
+// From review.ts - Phase 4 heavy-model review
+export const reviewIssueSchema = z.object({
+  severity: z.enum(['critical', 'major', 'minor']),
+  category: z.enum(['accuracy', 'completeness', 'citation', 'feasibility', 'consistency']),
+  description: z.string(),
+  affectedExpert: z.string().optional(),
+  remediation: z.string(),
+});
+
+export const citationAnalysisSchema = z.object({
+  totalCitations: z.number().int(),
+  verifiedCitations: z.number().int(),
+  missingCitations: z.number().int(),
+  expertCoverage: z.record(z.string(), z.object({
+    citations: z.number().int(),
+    verified: z.boolean(),
+  })),
+});
+
+export const reviewResultSchema = z.object({
+  overallScore: z.number().int().min(0).max(100),
+  passed: z.boolean(),
+  issues: z.array(reviewIssueSchema),
+  recommendations: z.array(z.string()),
+  citationAnalysis: citationAnalysisSchema,
+  timestamp: z.string(),
+  model: z.string(),
+});
+
+export type ReviewIssue = z.infer<typeof reviewIssueSchema>;
+export type CitationAnalysis = z.infer<typeof citationAnalysisSchema>;
+export type ReviewResult = z.infer<typeof reviewResultSchema>;
+
 // Combine into a single roundData schema
 export const roundDataSchema = z.object({
   questions: z.array(researchQuestionSchema).optional(),
@@ -150,6 +183,7 @@ export const roundDataSchema = z.object({
   challengeMetadata: challengeMetadataSchema.optional(),
   syntheses: z.array(expertSynthesisSchema).optional(),
   synthesisMetadata: synthesisMetadataSchema.optional(),
+  review: reviewResultSchema.optional(), // Phase 4: Heavy-model review
   votes: z.array(expertVoteSchema).optional(),
 });
 

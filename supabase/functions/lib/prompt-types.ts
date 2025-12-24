@@ -3,6 +3,23 @@
  * Generated from database schema
  */
 
+/**
+ * Metadata stored with prompts. Can contain various optional fields
+ * depending on the prompt category and use case.
+ */
+export interface PromptMetadata {
+  agent_id?: string;
+  temperature?: number;
+  recommended_model?: string;
+  default_count?: number;
+  supports_variables?: boolean;
+  variables?: string[];
+  target_length?: string;
+  sections?: number;
+  default_challenges_per_finding?: number;
+  [key: string]: string | number | boolean | string[] | undefined;
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -14,18 +31,7 @@ export interface Database {
           version: number;
           category: 'agent' | 'question' | 'challenge' | 'debate' | 'spec';
           is_active: boolean;
-          metadata: {
-            agent_id?: string;
-            temperature?: number;
-            recommended_model?: string;
-            default_count?: number;
-            supports_variables?: boolean;
-            variables?: string[];
-            target_length?: string;
-            sections?: number;
-            default_challenges_per_finding?: number;
-            [key: string]: any;
-          };
+          metadata: PromptMetadata;
           created_at: string;
           updated_at: string;
           created_by: string | null;
@@ -40,7 +46,7 @@ export interface Database {
           version?: number;
           category: 'agent' | 'question' | 'challenge' | 'debate' | 'spec';
           is_active?: boolean;
-          metadata?: Record<string, any>;
+          metadata?: PromptMetadata;
           created_at?: string;
           updated_at?: string;
           created_by?: string | null;
@@ -55,7 +61,7 @@ export interface Database {
           version?: number;
           category?: 'agent' | 'question' | 'challenge' | 'debate' | 'spec';
           is_active?: boolean;
-          metadata?: Record<string, any>;
+          metadata?: PromptMetadata;
           created_at?: string;
           updated_at?: string;
           created_by?: string | null;
@@ -70,7 +76,7 @@ export interface Database {
           prompt_id: string;
           version: number;
           content: string;
-          metadata: Record<string, any>;
+          metadata: PromptMetadata;
           created_at: string;
           created_by: string | null;
         };
@@ -79,7 +85,7 @@ export interface Database {
           prompt_id: string;
           version: number;
           content: string;
-          metadata?: Record<string, any>;
+          metadata?: PromptMetadata;
           created_at?: string;
           created_by?: string | null;
         };
@@ -88,7 +94,7 @@ export interface Database {
           prompt_id?: string;
           version?: number;
           content?: string;
-          metadata?: Record<string, any>;
+          metadata?: PromptMetadata;
           created_at?: string;
           created_by?: string | null;
         };

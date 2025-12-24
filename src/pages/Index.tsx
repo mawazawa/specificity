@@ -524,9 +524,12 @@ const LiveAgentCards = ({ currentRound, agentConfigs }: LiveAgentCardsProps) => 
     </h2>
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-w-5xl mx-auto">
       {agentConfigs.map((config) => {
-        const agentQuestion = currentRound?.questions?.find((q: any) => q.askedBy === config.agent);
-        const agentAnswer = currentRound?.answers?.find((a: any) => a.agent === config.agent);
-        const agentVote = currentRound?.votes?.find((v: any) => v.agent === config.agent);
+        // Match questions by requiredExpertise array (API schema) instead of askedBy (legacy)
+        const agentQuestion = currentRound?.questions?.find((q: { requiredExpertise?: string[]; askedBy?: string }) =>
+          q.requiredExpertise?.includes(config.agent) || q.askedBy === config.agent
+        );
+        const agentAnswer = currentRound?.answers?.find((a: { agent?: string }) => a.agent === config.agent);
+        const agentVote = currentRound?.votes?.find((v: { agent?: string }) => v.agent === config.agent);
 
         if (agentQuestion || agentAnswer || agentVote) {
           return (

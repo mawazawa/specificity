@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { ResearchResult } from "@/types/spec";
-import { ExternalLink, Search } from "lucide-react";
+import { Search, Wrench } from "lucide-react";
 
 interface ResearchPanelProps {
   results: ResearchResult[];
@@ -31,25 +31,54 @@ export const ResearchPanel = ({ results, isSearching }: ResearchPanelProps) => {
 
         <div className="space-y-4">
           {results.map((result, index) => (
-            <a
+            <div
               key={index}
-              href={result.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block p-5 bg-background/20 rounded-fluid border border-border/10 hover:border-border/30 transition-all duration-500 group backdrop-blur-sm"
+              className="p-5 bg-background/20 rounded-fluid border border-border/10 transition-all duration-500 backdrop-blur-sm"
             >
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1 space-y-2">
-                  <h4 className="font-light text-foreground/90 text-sm group-hover:text-primary transition-colors">
-                    {result.title}
-                  </h4>
-                  <p className="text-xs text-muted-foreground/70 line-clamp-2 leading-relaxed">
-                    {result.snippet}
-                  </p>
+              <div className="space-y-3">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <h4 className="font-light text-foreground/90 text-sm mb-1">
+                      {result.expertName}
+                    </h4>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground/70">
+                      <span>{result.model}</span>
+                      <span>•</span>
+                      <span>{(result.duration / 1000).toFixed(1)}s</span>
+                      <span>•</span>
+                      <span>${result.cost.toFixed(4)}</span>
+                    </div>
+                  </div>
+                  {result.toolsUsed && result.toolsUsed.length > 0 && (
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground/60">
+                      <Wrench className="w-3 h-3" />
+                      <span>{result.toolsUsed.length} tools</span>
+                    </div>
+                  )}
                 </div>
-                <ExternalLink className="w-3.5 h-3.5 text-muted-foreground/40 group-hover:text-primary/60 transition-colors flex-shrink-0" />
+
+                <p className="text-xs text-muted-foreground/80 leading-relaxed line-clamp-4">
+                  {result.findings}
+                </p>
+
+                {result.toolsUsed && result.toolsUsed.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {result.toolsUsed.map((tool, toolIndex) => (
+                      <span
+                        key={toolIndex}
+                        className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full ${
+                          tool.success
+                            ? 'bg-primary/10 text-primary/90'
+                            : 'bg-destructive/10 text-destructive/90'
+                        }`}
+                      >
+                        {tool.tool}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
-            </a>
+            </div>
           ))}
         </div>
       </div>

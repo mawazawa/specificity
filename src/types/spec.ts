@@ -5,7 +5,10 @@ import {
   ChallengeResponse,
   DebateResolution as SchemaDebateResolution,
   ExpertSynthesis,
-  ExpertVote
+  ExpertVote,
+  ReviewResult as SchemaReviewResult,
+  ReviewIssue as SchemaReviewIssue,
+  CitationAnalysis as SchemaCitationAnalysis
 } from './schemas';
 
 export type AgentType = 'elon' | 'steve' | 'oprah' | 'zaha' | 'jony' | 'bartlett' | 'amal' | 'user' | 'system';
@@ -34,16 +37,20 @@ export type DebateResolution = SchemaDebateResolution;
 export type AgentAnswer = ExpertSynthesis;
 export type ResearchResult = AgentResearchResult;
 export type SpecQuestion = ResearchQuestion;
+export type ReviewResult = SchemaReviewResult;
+export type ReviewIssue = SchemaReviewIssue;
+export type CitationAnalysis = SchemaCitationAnalysis;
 
 export interface Round {
   roundNumber: number;
-  stage: 'questions' | 'research' | 'challenge' | 'answers' | 'voting' | 'spec';
+  stage: 'questions' | 'research' | 'challenge' | 'answers' | 'review' | 'voting' | 'spec';
   questions: SpecQuestion[];
   research: ResearchResult[];
   challenges?: Challenge[];
   challengeResponses?: ChallengeResponse[];
   debateResolutions?: DebateResolution[];
   answers: AgentAnswer[];
+  review?: ReviewResult;
   votes: Vote[];
   status: 'in-progress' | 'complete' | 'paused';
   userComment?: string;

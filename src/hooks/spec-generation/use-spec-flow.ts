@@ -13,6 +13,7 @@ export type GenerationStage =
   | 'research'
   | 'challenge'
   | 'synthesis'
+  | 'review'
   | 'voting'
   | 'spec'
   | 'complete'
@@ -167,7 +168,7 @@ const researchSummary = `📊 **Research Complete:**\n• ${round.research.lengt
         const findingsPreview = result.findings.slice(0, 500);
 
         addDialogue({
-          agent: result.expertId as any, // Cast to any or AgentType if possible
+          agent: result.expertId as AgentType,
           message: `🔍 **Research Findings** (${result.model})\n\n${findingsPreview}...\n\n_Tools: ${toolsList} • Cost: $${result.cost.toFixed(4)}_`,
           timestamp: new Date().toISOString(),
           type: 'discussion'
@@ -218,7 +219,7 @@ const researchSummary = `📊 **Research Complete:**\n• ${round.research.lengt
       round.challengeResponses?.forEach((response) => {
         const challenge = round.challenges?.find((c) => c.id === response.challengeId);
         addDialogue({
-          agent: response.challenger as any,
+          agent: response.challenger as AgentType,
           message: `🎯 **Contrarian Challenge:**\n\n**Question:** ${challenge?.question || 'Challenge'}\n\n**Devil's Advocate Position:**\n${response.challenge}\n\n**Evidence Against:** ${response.evidenceAgainst.join('; ')}\n\n${response.alternativeApproach ? `**Alternative Approach:** ${response.alternativeApproach}\n\n` : ''}_Risk Score: ${response.riskScore}/10 • Cost: $${response.cost.toFixed(4)}_`,
           timestamp: new Date().toISOString(),
           type: 'discussion'
@@ -278,7 +279,7 @@ const researchSummary = `📊 **Research Complete:**\n• ${round.research.lengt
       synthesisData.syntheses?.forEach((s) => {
         const quality = s.researchQuality || {};
         addDialogue({
-          agent: s.expertId as any,
+          agent: s.expertId as AgentType,
           message: `📝 **Final Synthesis:**\n\n${s.synthesis}\n\n_Research depth: ${quality.toolsUsed || 0} tools • $${(quality.cost || 0).toFixed(4)}_`,
           timestamp: s.timestamp,
           type: 'answer'
@@ -288,6 +289,61 @@ const researchSummary = `📊 **Research Complete:**\n• ${round.research.lengt
       toast({
         title: '✓ Synthesis Complete',
         description: `${synthesisData.syntheses?.length || 0} expert syntheses in ${(synthesisDuration / 1000).toFixed(1)}s`
+      });
+
+      // ========================================
+      // STAGE 3.5: QUALITY REVIEW
+      // ========================================
+      round.stage = 'review';
+      setCurrentStage('review');
+      toast({
+        title: '🔍 Quality Review',
+        description: 'Heavy-model verification of synthesis outputs...'
+      });
+
+      const reviewStartTime = Date.now();
+      const reviewData = await api.runReview(synthesisData.syntheses, round.research);
+      const reviewDuration = Date.now() - reviewStartTime;
+
+      round.review = reviewData.review;
+      const reviewMetadata = reviewData.metadata;
+
+      const criticalIssues = round.review?.issues?.filter(i => i.severity === 'critical').length || 0;
+      const majorIssues = round.review?.issues?.filter(i => i.severity === 'major').length || 0;
+      const reviewPassed = round.review?.passed || false;
+
+      const reviewSummary = `🔍 **Quality Review Complete (${reviewMetadata.reviewModel}):**\n• Score: ${round.review?.overallScore || 0}/100\n• Status: ${reviewPassed ? '✅ PASSED' : '⚠️ NEEDS ATTENTION'}\n• Issues: ${criticalIssues} critical, ${majorIssues} major\n• Citations: ${round.review?.citationAnalysis?.totalCitations || 0} total, ${round.review?.citationAnalysis?.missingCitations || 0} missing\n• Review time: ${(reviewDuration / 1000).toFixed(1)}s`;
+
+      addDialogue({
+        agent: 'system',
+        message: reviewSummary,
+        timestamp: new Date().toISOString(),
+        type: 'discussion'
+      });
+
+      if (round.review?.issues && round.review.issues.length > 0) {
+        round.review.issues.forEach((issue) => {
+          const severityEmoji = issue.severity === 'critical' ? '🚨' : issue.severity === 'major' ? '⚠️' : 'ℹ️';
+          addDialogue({
+            agent: 'system',
+            message: `${severityEmoji} **[${issue.severity.toUpperCase()}] ${issue.category}**\n\n${issue.description}\n\n**Remediation:** ${issue.remediation}${issue.affectedExpert ? `\n\n_Affected: ${issue.affectedExpert}_` : ''}`,
+            timestamp: new Date().toISOString(),
+            type: 'discussion'
+          });
+        });
+      }
+
+      addHistory('output', {
+        stage: 'review',
+        score: round.review?.overallScore || 0,
+        passed: reviewPassed,
+        issues: round.review?.issues?.length || 0,
+        duration: reviewDuration
+      });
+
+      toast({
+        title: reviewPassed ? '✓ Review Passed' : '⚠️ Review Issues Found',
+        description: `Score: ${round.review?.overallScore || 0}/100 • ${criticalIssues + majorIssues} issues • ${(reviewDuration / 1000).toFixed(1)}s`
       });
 
       // ========================================
@@ -316,7 +372,7 @@ const researchSummary = `📊 **Research Complete:**\n• ${round.research.lengt
       round.votes.forEach((v) => {
         const emoji = v.approved ? '✅' : '❌';
         addDialogue({
-          agent: v.agent as any,
+          agent: v.agent as AgentType,
           message: `${emoji} **Vote:** ${v.approved ? 'APPROVED' : 'NEEDS ANOTHER ROUND'}\n\n${v.reasoning}\n\n_Confidence: ${v.confidence}%_`,
           timestamp: v.timestamp,
           type: 'vote'
@@ -332,7 +388,10 @@ const researchSummary = `📊 **Research Complete:**\n• ${round.research.lengt
       round.status = 'complete';
       updateCurrentRound(round); // Update the round in state
 
-      const approvalRate = round.votes.filter((v) => v.approved).length / round.votes.length;
+      // Guard against division by zero when votes array is empty
+      const approvalRate = round.votes.length > 0
+        ? round.votes.filter((v) => v.approved).length / round.votes.length
+        : 0;
 
       if (approvalRate >= 0.6 || roundNumber >= 3) {
         // ========================================
@@ -560,7 +619,7 @@ const researchSummary = `📊 **Research Complete:**\n• ${round.research.lengt
       const response = await api.chatWithAgent(agentConfigs, pmAgent.agent, prompt);
       
       addDialogue({
-        agent: pmAgent.agent as any,
+        agent: pmAgent.agent as AgentType,
         message: response.response,
         timestamp: response.timestamp,
         type: 'question'
@@ -612,7 +671,7 @@ const researchSummary = `📊 **Research Complete:**\n• ${round.research.lengt
       
       // Add agent response to dialogue
       addDialogue({
-        agent: response.agent as any,
+        agent: response.agent as AgentType,
         message: response.response,
         timestamp: response.timestamp,
         type: 'discussion' // or a new 'chat' type if we defined it

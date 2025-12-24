@@ -15,8 +15,16 @@ export interface ModelConfig {
 
 /**
  * Model Registry - Single Source of Truth
- * Last Verified: December 21, 2025 via Groq /v1/models + OpenRouter listings
+ * Last Verified: December 23, 2025 via Exa search + Evidence Ledger
  * Evidence Ledger: docs/reports/model-evidence-ledger-2025-12-19.md
+ *
+ * Verified Models (11 total):
+ * - gpt-5.2, gpt-5.2-codex (OpenAI)
+ * - claude-opus-4.5 (Anthropic)
+ * - gemini-3-flash (Google)
+ * - deepseek-v3, deepseek-v3.2, deepseek-v3.2-speciale (DeepSeek)
+ * - kimi-k2-thinking (MoonshotAI)
+ * - groq-llama-3.3-70b, groq-llama-3.1-8b (Groq)
  */
 export const MODELS: Record<string, ModelConfig> = {
   // ═══════════════════════════════════════════════════════════════
@@ -104,22 +112,30 @@ export const MODELS: Record<string, ModelConfig> = {
   },
 
   // ═══════════════════════════════════════════════════════════════
-  // LEGACY ALIASES (for backward compatibility)
+  // DEEPSEEK V3.2 MODELS (Verified Dec 20, 2025)
   // ═══════════════════════════════════════════════════════════════
 
-  // Alias: deepseek-v3.2 -> deepseek-v3 (no V3.2 exists on OpenRouter)
   'deepseek-v3.2': {
     provider: 'deepseek',
-    model: 'deepseek-chat',
-    costPer1MTokensInput: 0.30,
-    costPer1MTokensOutput: 1.20,
-    strengths: ['balanced', 'efficiency', 'general_purpose', 'coding'],
+    model: 'deepseek-v3.2', // OpenRouter: deepseek/deepseek-v3.2
+    costPer1MTokensInput: 0.27, // Verified Dec 20, 2025
+    costPer1MTokensOutput: 0.41,
+    strengths: ['reasoning', 'tool_use', 'agentic', 'coding'],
     contextWindow: 163840,
     speed: 'fast'
+  },
+
+  'deepseek-v3.2-speciale': {
+    provider: 'deepseek',
+    model: 'deepseek-v3.2-speciale', // OpenRouter: deepseek/deepseek-v3.2-speciale
+    costPer1MTokensInput: 0.27, // Verified Dec 20, 2025
+    costPer1MTokensOutput: 0.41,
+    strengths: ['complex_reasoning', 'math', 'competitions', 'gold_medal_level'],
+    contextWindow: 163840,
+    speed: 'medium' // Higher compute, slightly slower
   }
 
-  // NOTE: deepseek-v3.2-speciale REMOVED - not found on any provider
-  // NOTE: claude-octopus-4.5 renamed to claude-opus-4.5
+  // NOTE: claude-opus-4.5 is the correct name (not "octopus")
 };
 
 // Fallback model if preferred model fails

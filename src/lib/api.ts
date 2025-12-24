@@ -3,7 +3,7 @@ import { AgentConfig, TechStackItem } from '@/types/spec';
 import { RoundData } from '@/types/schemas';
 
 // Helper to handle Supabase function errors
-async function invokeFunction<T>(functionName: string, body: any): Promise<T> {
+async function invokeFunction<T>(functionName: string, body: Record<string, unknown>): Promise<T> {
   const { data, error } = await supabase.functions.invoke(functionName, { body });
   if (error) {
     throw new Error(error.message || `Failed to invoke ${functionName}`);
@@ -79,6 +79,27 @@ export const api = {
     });
   },
 
+  runReview: async (
+    syntheses: RoundData['syntheses'],
+    researchResults: RoundData['researchResults']
+  ) => {
+    return invokeFunction<{
+      review: RoundData['review'];
+      metadata: {
+        reviewModel: string;
+        latencyMs: number;
+        synthesesReviewed: number;
+        passThreshold: number;
+      };
+    }>('multi-agent-spec', {
+      stage: 'review',
+      roundData: {
+        syntheses,
+        researchResults
+      }
+    });
+  },
+
   collectVotes: async (
     agentConfigs: AgentConfig[],
     syntheses: RoundData['syntheses']
@@ -126,7 +147,7 @@ export const api = {
   saveSpec: async (
     title: string,
     content: string,
-    metadata: any = {}
+    metadata: Record<string, unknown> = {}
   ) => {
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) {

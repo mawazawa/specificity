@@ -19,7 +19,8 @@ test.describe('Bug Fix: Duplicate Rate Limit Tables Cleanup', () => {
     // Try to select from the old rate_limits (plural) table
     // This should FAIL because we cleaned it up
     const { error } = await supabase
-      .from('rate_limits' as any) // TypeScript doesn't know about this table (which is correct)
+      // @ts-expect-error Intentionally accessing non-existent table to verify it was removed
+      .from('rate_limits')
       .select('id')
       .limit(1);
 
@@ -76,7 +77,8 @@ test.describe('Bug Fix: Duplicate Rate Limit Tables Cleanup', () => {
 
   test('AFTER FIX: Old cleanup_old_rate_limits function should NOT exist', async () => {
     // Try to call the old function - should fail
-    const { error } = await supabase.rpc('cleanup_old_rate_limits' as any);
+    // @ts-expect-error Intentionally calling non-existent function to verify it was removed
+    const { error } = await supabase.rpc('cleanup_old_rate_limits');
 
     // We EXPECT an error - the function should not exist
     expect(error).toBeTruthy();

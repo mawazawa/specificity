@@ -10,6 +10,7 @@
  */
 
 import { createClient, SupabaseClient } from 'jsr:@supabase/supabase-js@2';
+import type { PromptMetadata } from './prompt-types.ts';
 
 const PROMPT_FETCH_TIMEOUT_MS = Number(Deno.env.get('PROMPT_FETCH_TIMEOUT_MS') || 3000);
 const PROMPT_USAGE_TIMEOUT_MS = Number(Deno.env.get('PROMPT_USAGE_TIMEOUT_MS') || 2000);
@@ -35,14 +36,7 @@ interface PromptTemplate {
   content: string;
   version: number;
   category: string;
-  metadata: {
-    default_count?: number;
-    supports_variables?: boolean;
-    variables?: string[];
-    temperature?: number;
-    recommended_model?: string;
-    [key: string]: any;
-  };
+  metadata: PromptMetadata;
   is_active: boolean;
 }
 
@@ -154,7 +148,7 @@ export class PromptService {
    */
   async renderPrompt(
     name: string,
-    variables: Record<string, any> = {}
+    variables: Record<string, string | number | boolean> = {}
   ): Promise<string> {
     const template = await this.getPrompt(name);
 
@@ -295,7 +289,7 @@ export const promptService = new PromptService();
  */
 export async function renderPrompt(
   name: string,
-  variables: Record<string, any> = {}
+  variables: Record<string, string | number | boolean> = {}
 ): Promise<string> {
   return promptService.renderPrompt(name, variables);
 }

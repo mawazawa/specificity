@@ -48,13 +48,14 @@ async function runLint(
         duration: Date.now() - start,
         output,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as { stdout?: string; stderr?: string; message?: string };
       resolve({
         name: lint.name,
         script: lint.script,
         passed: false,
         duration: Date.now() - start,
-        output: error.stdout || error.stderr || error.message,
+        output: err.stdout || err.stderr || err.message || 'Unknown error',
       });
     }
   });

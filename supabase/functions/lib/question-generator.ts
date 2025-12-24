@@ -86,7 +86,15 @@ export async function generateDynamicQuestions(
     }
 
     // Validate and map questions
-    const questions: ResearchQuestion[] = result.questions.map((q: any, index: number) => ({
+    interface RawQuestion {
+      id?: string;
+      question?: string;
+      domain?: string;
+      priority?: number;
+      requiredExpertise?: string[];
+    }
+
+    const questions: ResearchQuestion[] = result.questions.map((q: RawQuestion, index: number) => ({
       id: q.id || `q${index + 1}`,
       question: q.question || 'No question provided',
       domain: q.domain || 'technical',

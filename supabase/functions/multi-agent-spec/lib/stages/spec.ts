@@ -16,7 +16,8 @@ export const handleSpecStage = async (roundData: RoundData | undefined) => {
 
     const weightedContext = syntheses.map((s: any) => {
         const quality = s.researchQuality || {};
-        const researchDepth = (quality.toolsUsed || 0) / Math.max(avgToolsUsed, 1);
+        // Guard against division by zero: if avgToolsUsed is 0, use neutral weight of 1
+        const researchDepth = avgToolsUsed > 0 ? (quality.toolsUsed || 0) / avgToolsUsed : 1;
         const weight = Math.min(researchDepth * 100, 100);
         return `${s.expertName} (research depth: ${weight.toFixed(0)}%):\n${s.synthesis}`;
     }).join('\n\n');
@@ -95,7 +96,7 @@ export const handleSpecStageComplete = async (roundData: RoundData | undefined, 
             1000
         );
         // Attempt to parse JSON from potential markdown blocks
-        const match = techStackJson.match(/```json\n([\s\S]*?)\n```/) || techStackJson.match(/[\[]\s*\{[\s\S]*\}\s*[\]]/);
+        const match = techStackJson.match(/```json\n([\s\S]*?)\n```/) || techStackJson.match(/[[\]]\s*\{[\s\S]*\}\s*[[]]/);
         const jsonStr = match ? match[1] || match[0] : techStackJson;
         techStack = JSON.parse(jsonStr);
     } catch (e) {

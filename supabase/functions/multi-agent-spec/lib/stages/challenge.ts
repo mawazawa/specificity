@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { generateChallenges, executeChallenges, resolveDebates } from '../../../lib/challenge-generator.ts';
 import { corsHeaders } from '../utils/api.ts';
 import { AgentConfig, RoundData } from '../types.ts';
@@ -66,7 +65,10 @@ export const handleChallengeStage = async (
 
     // Calculate challenge costs
     const totalChallengeCost = challengeResponses.reduce((sum, c) => sum + c.cost, 0);
-    const avgRiskScore = challengeResponses.reduce((sum, c) => sum + c.riskScore, 0) / challengeResponses.length;
+    // Guard against division by zero when no challenge responses
+    const avgRiskScore = challengeResponses.length > 0
+        ? challengeResponses.reduce((sum, c) => sum + c.riskScore, 0) / challengeResponses.length
+        : 0;
 
     return new Response(
         JSON.stringify({

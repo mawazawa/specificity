@@ -9,9 +9,11 @@
  */
 
 import { corsHeaders } from '../utils/api.ts';
-import { RoundData } from '../types.ts';
+import { RoundData, expertSynthesisSchema } from '../types.ts';
 import { callOpenRouter, retryWithBackoff } from '../../../lib/openrouter-client.ts';
 import { trackPromptUsage } from '../../../lib/prompt-service.ts';
+
+type ExpertSynthesis = typeof expertSynthesisSchema._output;
 
 export interface ReviewResult {
   overallScore: number; // 0-100
@@ -85,7 +87,7 @@ export const handleReviewStage = async (
   }
 
   // Prepare synthesis summary for review
-  const synthesisContext = syntheses.map((s: any, idx: number) => {
+  const synthesisContext = syntheses.map((s: ExpertSynthesis, idx: number) => {
     const research = researchResults[idx];
     return `
 ## Expert: ${s.expertName} (${s.expertId})
@@ -276,7 +278,7 @@ Previous review found these CRITICAL issues:
 ${criticalIssues.map((i, idx) => `${idx + 1}. [${i.category}] ${i.description}\n   Remediation: ${i.remediation}`).join('\n')}
 
 Original syntheses to verify:
-${(roundData?.syntheses || []).map((s: any) => `- ${s.expertName}: ${s.synthesis.substring(0, 500)}...`).join('\n')}
+${(roundData?.syntheses || []).map((s: ExpertSynthesis) => `- ${s.expertName}: ${s.synthesis.substring(0, 500)}...`).join('\n')}
 
 Determine if these critical issues are:
 1. Valid concerns that must be addressed

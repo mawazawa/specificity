@@ -10,7 +10,7 @@ interface Task {
   description: string;
   status: 'pending' | 'running' | 'complete';
   duration?: number;
-  result?: any;
+  result?: unknown;
 }
 
 interface ProcessViewerProps {
