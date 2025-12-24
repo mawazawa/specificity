@@ -59,6 +59,8 @@ export interface Round {
 export interface TechAlternative {
   name: string;
   logo: string;
+  domain?: string; // For Brandfetch API logo lookup (e.g., "react.dev", "nextjs.org")
+  version?: string; // Technology version (e.g., "19.0.2", "15.1.0")
   rating: number;
   pros: string[];
   cons: string[];

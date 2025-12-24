@@ -44,6 +44,63 @@ export const handleSpecStage = async (roundData: RoundData | undefined) => {
 // Hardcoded system prompt to replace Prompts.SpecGeneration.system
 const SPEC_SYSTEM_PROMPT = "You are a Principal Software Architect. Generate the final specification.";
 
+// Common tech domains mapping for Brandfetch logo lookup
+// When the LLM outputs a domain, Brandfetch will provide the logo automatically
+const KNOWN_TECH_DOMAINS: Record<string, string> = {
+  'react': 'react.dev',
+  'vue': 'vuejs.org',
+  'angular': 'angular.io',
+  'svelte': 'svelte.dev',
+  'next.js': 'nextjs.org',
+  'nextjs': 'nextjs.org',
+  'nuxt': 'nuxt.com',
+  'vite': 'vitejs.dev',
+  'webpack': 'webpack.js.org',
+  'node.js': 'nodejs.org',
+  'nodejs': 'nodejs.org',
+  'deno': 'deno.land',
+  'bun': 'bun.sh',
+  'express': 'expressjs.com',
+  'fastify': 'fastify.io',
+  'supabase': 'supabase.com',
+  'firebase': 'firebase.google.com',
+  'postgresql': 'postgresql.org',
+  'postgres': 'postgresql.org',
+  'mongodb': 'mongodb.com',
+  'redis': 'redis.io',
+  'prisma': 'prisma.io',
+  'drizzle': 'orm.drizzle.team',
+  'openai': 'openai.com',
+  'anthropic': 'anthropic.com',
+  'groq': 'groq.com',
+  'google': 'google.com',
+  'gemini': 'gemini.google.com',
+  'vercel': 'vercel.com',
+  'netlify': 'netlify.com',
+  'cloudflare': 'cloudflare.com',
+  'aws': 'aws.amazon.com',
+  'docker': 'docker.com',
+  'kubernetes': 'kubernetes.io',
+  'github': 'github.com',
+  'typescript': 'typescriptlang.org',
+  'tailwindcss': 'tailwindcss.com',
+  'tailwind': 'tailwindcss.com',
+  'shadcn': 'ui.shadcn.com',
+  'radix': 'radix-ui.com',
+  'framer': 'framer.com',
+  'stripe': 'stripe.com',
+  'clerk': 'clerk.com',
+  'auth0': 'auth0.com',
+  'sentry': 'sentry.io',
+  'vitest': 'vitest.dev',
+  'jest': 'jestjs.io',
+  'playwright': 'playwright.dev',
+  'cypress': 'cypress.io',
+  'zustand': 'zustand-demo.pmnd.rs',
+  'redux': 'redux.js.org',
+  'tanstack': 'tanstack.com',
+};
+
 // Helper to generate tech stack extraction prompt
 const generateTechStackPrompt = (specText: string) => `Analyze the following technical specification and extract the recommended Technology Stack into a structured JSON format.
 
@@ -53,17 +110,39 @@ ${specText.substring(0, 15000)}... [truncated]
 Extract the key technology decisions for these categories: Frontend, Backend, Database, AI/ML, DevOps.
 For each decision, identify the "Selected" tech and 1-2 "Alternatives" mentioned (or reasonable alternatives if not explicit).
 
+IMPORTANT: Include the "domain" field for each technology - this is the official website domain (e.g., "react.dev", "nextjs.org", "supabase.com").
+The domain is used for automatic logo lookup via Brandfetch CDN.
+
 Output ONLY JSON with this schema:
 [
   {
     "category": "Frontend",
-    "selected": { "name": "React", "rating": 5, "pros": ["Ecosystem", "Components"], "cons": ["Complexity"], "logo": "https://..." },
-    "alternatives": [{ "name": "Vue", "rating": 4, "pros": [...], "cons": [...] }]
+    "selected": {
+      "name": "React",
+      "domain": "react.dev",
+      "version": "19.0.2",
+      "rating": 5,
+      "pros": ["Ecosystem", "Components"],
+      "cons": ["Complexity"],
+      "logo": ""
+    },
+    "alternatives": [{
+      "name": "Vue",
+      "domain": "vuejs.org",
+      "version": "3.5.0",
+      "rating": 4,
+      "pros": [...],
+      "cons": [...],
+      "logo": ""
+    }]
   },
   ...
 ]
 
-Try to find real logo URLs if possible, or use placeholder. Ensure "rating" is 1-5.`;
+Common domains: ${Object.entries(KNOWN_TECH_DOMAINS).slice(0, 20).map(([k, v]) => `${k}=${v}`).join(', ')}
+
+Leave "logo" empty - logos are fetched dynamically from Brandfetch CDN using the domain.
+Ensure "rating" is 1-5.`;
 
 export const handleSpecStageComplete = async (roundData: RoundData | undefined, groqApiKey: string) => {
     const { specPrompt } = await handleSpecStage(roundData);

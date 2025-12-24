@@ -1,10 +1,34 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Star, Check, ExternalLink } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { TechStackItem } from "@/types/spec";
+import { TechStackItem, TechAlternative } from "@/types/spec";
+
+/**
+ * Generate Brandfetch CDN URL for technology logos
+ * Falls back to lettermark if logo not found
+ * @see https://docs.brandfetch.com/logo-api/overview
+ */
+function getBrandfetchLogoUrl(domain: string, opts: { width?: number; height?: number; theme?: 'dark' | 'light' } = {}): string {
+  const { width = 64, height = 64, theme = 'dark' } = opts;
+  return `https://cdn.brandfetch.io/${domain}/w/${width}/h/${height}?theme=${theme}&fallback=lettermark`;
+}
+
+/**
+ * Get the best logo URL for a technology
+ * Priority: 1. Brandfetch (if domain available) 2. Provided logo URL 3. Fallback SVG
+ */
+function getTechLogoUrl(tech: TechAlternative): string {
+  if (tech.domain) {
+    return getBrandfetchLogoUrl(tech.domain);
+  }
+  if (tech.logo && tech.logo.trim() !== '') {
+    return tech.logo;
+  }
+  // Fallback to a generic tech icon
+  return '/fallback-icons/generic-tech.svg';
+}
 
 interface TechStackCardProps {
   item: TechStackItem;
@@ -31,6 +55,16 @@ export const TechStackCard = ({ item, onSelect }: TechStackCardProps) => {
     );
   };
 
+  // Handle image load errors by falling back to generic icon
+  const handleImageError = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
+    const target = e.currentTarget;
+    // Prevent infinite loop - only try fallback once
+    if (!target.dataset.fallbackAttempted) {
+      target.dataset.fallbackAttempted = 'true';
+      target.src = '/fallback-icons/generic-tech.svg';
+    }
+  }, []);
+
   const renderTechOption = (tech: typeof item.selected, isSelected: boolean) => (
     <Card
       className={`p-4 transition-all duration-300 cursor-pointer group ${
@@ -44,7 +78,12 @@ export const TechStackCard = ({ item, onSelect }: TechStackCardProps) => {
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3 flex-1 min-w-0">
             <div className="w-10 h-10 rounded-lg bg-background/80 border border-border/30 flex items-center justify-center p-1.5 shrink-0">
-              <img src={tech.logo} alt={tech.name} className="w-full h-full object-contain" />
+              <img
+                src={getTechLogoUrl(tech)}
+                alt={tech.name}
+                className="w-full h-full object-contain"
+                onError={handleImageError}
+              />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">

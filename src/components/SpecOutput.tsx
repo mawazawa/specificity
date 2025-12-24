@@ -11,12 +11,13 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { FileText, CheckCircle2, Download, Copy, FileType, ThumbsUp, ChevronDown, Layers, Share2, Loader2 } from "lucide-react";
+import { FileText, CheckCircle2, Download, Copy, FileType, ThumbsUp, ChevronDown, Layers, Share2, Loader2, Bot, Code, Github } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useState, useRef, useCallback } from "react";
 import { TechStackCard } from "./TechStackCard";
 import { TechStackItem } from "@/types/spec";
 import { SpecMarkdown } from "./SpecOutput/MarkdownComponents";
+import { generateAgentReadyMarkdown, generateSpecJsonString, generateAgentsMd } from "@/lib/spec-serializers";
 
 // Lazy-loaded export utilities - these are heavy dependencies (~700KB total)
 // They are only loaded when the user actually clicks the export button
@@ -170,6 +171,60 @@ export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = fals
     URL.revokeObjectURL(url);
     toast({ title: "Downloaded", description: "Specification saved as text" });
   };
+
+  // Agent-ready export with YAML frontmatter
+  const downloadAgentReady = useCallback(() => {
+    const agentReadyContent = generateAgentReadyMarkdown(spec, techStack);
+    const blob = new Blob([agentReadyContent], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `specification-agent-ready-${new Date().toISOString().split('T')[0]}.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast({
+      title: "Agent-Ready Spec Downloaded",
+      description: "Specification with YAML frontmatter for AI coding agents"
+    });
+  }, [spec, techStack]);
+
+  // JSON export for machine parsing
+  const downloadJson = useCallback(() => {
+    const jsonContent = generateSpecJsonString(spec, techStack);
+    const blob = new Blob([jsonContent], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `specification-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast({
+      title: "JSON Downloaded",
+      description: "Machine-readable specification for CI/CD and tooling"
+    });
+  }, [spec, techStack]);
+
+  // AGENTS.md export for GitHub Copilot / Claude Code
+  const downloadAgentsMd = useCallback(() => {
+    const agentsMdContent = generateAgentsMd(spec, techStack);
+    const blob = new Blob([agentsMdContent], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'AGENTS.md';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast({
+      title: "AGENTS.md Downloaded",
+      description: "Ready for GitHub Copilot, Claude Code, and other AI agents"
+    });
+  }, [spec, techStack]);
 
   const downloadImage = useCallback(async () => {
     if (!specRef.current || exportingImage) return;
@@ -448,6 +503,19 @@ export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = fals
           <Button onClick={downloadPDF} variant="outline" size="sm" className="gap-2" disabled={exportingPdf}>
             {exportingPdf ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />}
             PDF
+          </Button>
+          <Separator orientation="vertical" className="h-6 mx-1" />
+          <Button onClick={downloadAgentReady} variant="outline" size="sm" className="gap-2">
+            <Bot className="w-3 h-3" />
+            Agent-Ready
+          </Button>
+          <Button onClick={downloadJson} variant="outline" size="sm" className="gap-2">
+            <Code className="w-3 h-3" />
+            JSON
+          </Button>
+          <Button onClick={downloadAgentsMd} variant="outline" size="sm" className="gap-2">
+            <Github className="w-3 h-3" />
+            AGENTS.md
           </Button>
           <div className="flex-1" />
           {!readOnly && (
