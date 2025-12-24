@@ -4,9 +4,12 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    include: ['tests/model-routing.spec.ts'], // Only unit tests, not Playwright e2e tests
+    include: [
+      'tests/model-routing.spec.ts',
+      'tests/bug-fixes.spec.ts',
+      'tests/lazy-loading.spec.ts'
+    ], // Only vitest unit tests, not Playwright e2e tests
     exclude: [
-      'tests/**/!(model-routing).spec.ts', // Exclude all other spec files (Playwright e2e)
       'node_modules/**',
       'dist/**',
       '.{idea,git,cache,output,temp}/**',
