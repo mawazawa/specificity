@@ -11,7 +11,15 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { FileText, CheckCircle2, Download, Copy, FileType, ThumbsUp, ChevronDown, Layers, Share2, Loader2, Bot, Code, Github } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { FileText, CheckCircle2, Download, Copy, FileType, ThumbsUp, ChevronDown, Layers, Share2, Loader2, Bot, Code, Github, Image } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useState, useRef, useCallback } from "react";
 import { TechStackCard } from "./TechStackCard";
@@ -625,70 +633,130 @@ export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = fals
           <CheckCircle2 className="w-5 h-5 text-green-500" />
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex flex-wrap gap-2">
+        {/* Action Buttons - Consolidated for clarity */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Primary Actions */}
           <Button onClick={copyToClipboard} variant="outline" size="sm" className="gap-2">
             <Copy className="w-3 h-3" />
-            Copy All
+            Copy
           </Button>
-          <Button onClick={downloadMarkdown} variant="outline" size="sm" className="gap-2">
-            <Download className="w-3 h-3" />
-            Markdown
-          </Button>
-          <Button onClick={downloadText} variant="outline" size="sm" className="gap-2">
-            <FileType className="w-3 h-3" />
-            Text
-          </Button>
+
+          {/* Document Export Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2">
+                <Download className="w-3 h-3" />
+                Download
+                <ChevronDown className="w-3 h-3 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-48">
+              <DropdownMenuLabel className="text-xs text-muted-foreground">Document Formats</DropdownMenuLabel>
+              <DropdownMenuItem onClick={downloadMarkdown} className="gap-2 cursor-pointer">
+                <FileText className="w-4 h-4" />
+                Markdown (.md)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={downloadText} className="gap-2 cursor-pointer">
+                <FileType className="w-4 h-4" />
+                Plain Text (.txt)
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={downloadPDF}
+                className="gap-2 cursor-pointer"
+                disabled={exportingPdf}
+              >
+                {exportingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
+                PDF Document
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={downloadWord}
+                className="gap-2 cursor-pointer"
+                disabled={exportingDocx}
+              >
+                {exportingDocx ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
+                Word (.docx)
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={downloadImage}
+                className="gap-2 cursor-pointer"
+                disabled={exportingImage}
+              >
+                {exportingImage ? <Loader2 className="w-4 h-4 animate-spin" /> : <Image className="w-4 h-4" />}
+                Image (PNG)
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* AI/Agent Export Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2">
+                <Bot className="w-3 h-3" />
+                AI Export
+                <ChevronDown className="w-3 h-3 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-56">
+              <DropdownMenuLabel className="text-xs text-muted-foreground">For AI Coding Agents</DropdownMenuLabel>
+              <DropdownMenuItem onClick={downloadAgentReady} className="gap-2 cursor-pointer">
+                <Bot className="w-4 h-4" />
+                <div className="flex flex-col">
+                  <span>Agent-Ready Spec</span>
+                  <span className="text-xs text-muted-foreground">YAML frontmatter format</span>
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={downloadAgentsMd} className="gap-2 cursor-pointer">
+                <Github className="w-4 h-4" />
+                <div className="flex flex-col">
+                  <span>AGENTS.md</span>
+                  <span className="text-xs text-muted-foreground">GitHub Copilot format</span>
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel className="text-xs text-muted-foreground">Machine Readable</DropdownMenuLabel>
+              <DropdownMenuItem onClick={downloadJson} className="gap-2 cursor-pointer">
+                <Code className="w-4 h-4" />
+                <div className="flex flex-col">
+                  <span>JSON</span>
+                  <span className="text-xs text-muted-foreground">Structured data format</span>
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={downloadSpecKit} className="gap-2 cursor-pointer">
+                <Layers className="w-4 h-4" />
+                <div className="flex flex-col">
+                  <span>GitHub Spec Kit</span>
+                  <span className="text-xs text-muted-foreground">Given/When/Then format</span>
+                </div>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           {!readOnly && onShare && (
             <Button onClick={onShare} variant="outline" size="sm" className="gap-2">
               <Share2 className="w-3 h-3" />
               Share
             </Button>
           )}
-          <Button onClick={downloadImage} variant="outline" size="sm" className="gap-2" disabled={exportingImage}>
-            {exportingImage ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />}
-            PNG
-          </Button>
-          <Button onClick={downloadWord} variant="outline" size="sm" className="gap-2" disabled={exportingDocx}>
-            {exportingDocx ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileText className="w-3 h-3" />}
-            DOCX
-          </Button>
-          <Button onClick={downloadPDF} variant="outline" size="sm" className="gap-2" disabled={exportingPdf}>
-            {exportingPdf ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />}
-            PDF
-          </Button>
-          <Separator orientation="vertical" className="h-6 mx-1" />
-          <Button onClick={downloadAgentReady} variant="outline" size="sm" className="gap-2">
-            <Bot className="w-3 h-3" />
-            Agent-Ready
-          </Button>
-          <Button onClick={downloadJson} variant="outline" size="sm" className="gap-2">
-            <Code className="w-3 h-3" />
-            JSON
-          </Button>
-          <Button onClick={downloadAgentsMd} variant="outline" size="sm" className="gap-2">
-            <Github className="w-3 h-3" />
-            AGENTS.md
-          </Button>
-          <Button onClick={downloadSpecKit} variant="outline" size="sm" className="gap-2">
-            <Layers className="w-3 h-3" />
-            Spec Kit
-          </Button>
+
           <div className="flex-1" />
+
+          {/* Primary Actions - Right aligned */}
           {!readOnly && (
-            <>
-              <Button onClick={onApprove} variant="default" size="sm" className="gap-2">
-                <ThumbsUp className="w-3 h-3" />
-                Approve
-              </Button>
+            <div className="flex items-center gap-2">
               <Button
                 onClick={() => setShowRefinements(!showRefinements)}
-                variant="secondary"
+                variant="ghost"
                 size="sm"
+                className="text-muted-foreground hover:text-foreground"
               >
-                Refine Further
+                Refine
               </Button>
-            </>
+              <Button onClick={onApprove} variant="default" size="sm" className="gap-2">
+                <ThumbsUp className="w-3 h-3" />
+                Approve Spec
+              </Button>
+            </div>
           )}
         </div>
 

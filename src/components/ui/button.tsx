@@ -1,7 +1,6 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
-import { motion, useMotionValue, useSpring } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
@@ -35,95 +34,166 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
+  /** Enable magnetic hover effect - only use for hero CTAs */
   magnetic?: boolean;
+  /** Enable ripple click effect */
+  ripple?: boolean;
 }
 
+/**
+ * Lightweight Button Component
+ *
+ * Performance optimized (December 2025):
+ * - Default: Standard button with no motion overhead
+ * - magnetic={true}: Enables magnetic hover effect (loads Framer Motion)
+ * - ripple={true}: Enables ripple click effect
+ *
+ * Use magnetic only for hero CTAs and primary actions.
+ */
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, magnetic = true, ...props }, ref) => {
-    const localRef = React.useRef<HTMLButtonElement>(null);
-    const buttonRef = ref || localRef;
-    const x = useMotionValue(0);
-    const y = useMotionValue(0);
-    const mouseX = useSpring(x, { stiffness: 500, damping: 30 });
-    const mouseY = useSpring(y, { stiffness: 500, damping: 30 });
+  ({ className, variant, size, asChild = false, magnetic = false, ripple = false, ...props }, ref) => {
+    const Comp = asChild ? Slot : "button";
 
-    React.useEffect(() => {
-      const element = buttonRef.current;
-      if (!element || !magnetic) return;
+    // For non-magnetic buttons, render a simple button without motion overhead
+    if (!magnetic && !ripple) {
+      return (
+        <Comp
+          className={cn(buttonVariants({ variant, size, className }))}
+          ref={ref}
+          {...props}
+        />
+      );
+    }
 
-      const updatePosition = (e: MouseEvent) => {
-        const rect = element.getBoundingClientRect();
-        const { clientX, clientY } = e;
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        const deltaX = clientX - centerX;
-        const deltaY = clientY - centerY;
-        x.set(deltaX * 0.15); // Adjust strength (0.1 to 0.3)
-        y.set(deltaY * 0.15);
-      };
+    // Only import motion components when actually needed
+    return (
+      <InteractiveButton
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        magnetic={magnetic}
+        ripple={ripple}
+        {...props}
+      />
+    );
+  }
+);
+Button.displayName = "Button";
 
-      element.addEventListener("mousemove", updatePosition);
-      return () => element.removeEventListener("mousemove", updatePosition);
-    }, [x, y, magnetic, buttonRef]);
+/**
+ * Interactive Button with motion effects
+ * Only loaded when magnetic or ripple is enabled
+ */
+const InteractiveButton = React.forwardRef<
+  HTMLButtonElement,
+  ButtonProps & { magnetic: boolean; ripple: boolean }
+>(({ className, magnetic, ripple, onClick, children, ...props }, ref) => {
+  const [motionComponents, setMotionComponents] = React.useState<{
+    motion: typeof import("framer-motion")["motion"];
+    useMotionValue: typeof import("framer-motion")["useMotionValue"];
+    useSpring: typeof import("framer-motion")["useSpring"];
+  } | null>(null);
 
-    const [ripple, setRipple] = React.useState<{x: number; y: number; size: number} | null>(null);
+  const buttonRef = React.useRef<HTMLButtonElement>(null);
+  const combinedRef = ref || buttonRef;
 
-    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const [rippleState, setRippleState] = React.useState<{x: number; y: number; size: number} | null>(null);
+  const [position, setPosition] = React.useState({ x: 0, y: 0 });
+
+  // Lazy load framer-motion only when needed
+  React.useEffect(() => {
+    import("framer-motion").then((mod) => {
+      setMotionComponents({
+        motion: mod.motion,
+        useMotionValue: mod.useMotionValue,
+        useSpring: mod.useSpring,
+      });
+    });
+  }, []);
+
+  // Magnetic effect handler
+  React.useEffect(() => {
+    const element = buttonRef.current;
+    if (!element || !magnetic) return;
+
+    const updatePosition = (e: MouseEvent) => {
+      const rect = element.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const deltaX = (e.clientX - centerX) * 0.15;
+      const deltaY = (e.clientY - centerY) * 0.15;
+      setPosition({ x: deltaX, y: deltaY });
+    };
+
+    const resetPosition = () => setPosition({ x: 0, y: 0 });
+
+    element.addEventListener("mousemove", updatePosition);
+    element.addEventListener("mouseleave", resetPosition);
+    return () => {
+      element.removeEventListener("mousemove", updatePosition);
+      element.removeEventListener("mouseleave", resetPosition);
+    };
+  }, [magnetic]);
+
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (ripple) {
       const rect = e.currentTarget.getBoundingClientRect();
       const size = Math.max(rect.width, rect.height);
-      const x = e.clientX - rect.left - size / 2;
-      const y = e.clientY - rect.top - size / 2;
-      setRipple({x, y, size});
-      // Clear ripple after animation
-      setTimeout(() => setRipple(null), 600);
-      // Call original onClick if exists
-      if (props.onClick) {
-        props.onClick(e as React.MouseEvent<HTMLButtonElement>);
-      }
-    };
+      setRippleState({
+        x: e.clientX - rect.left - size / 2,
+        y: e.clientY - rect.top - size / 2,
+        size,
+      });
+      setTimeout(() => setRippleState(null), 600);
+    }
+    onClick?.(e);
+  };
 
-    // Note: rippleSpring removed - using direct animation instead
-
-    const Comp = asChild ? Slot : motion.button;
-
-    const buttonProps = {
-      ...props,
-      onClick: (e: React.MouseEvent<HTMLButtonElement>) => {
-        if (asChild) {
-          // For asChild, ripple not supported or handle differently
-        } else {
-          handleClick(e);
-        }
-        if (props.onClick) props.onClick(e);
-      },
-    };
+  // Render with motion if loaded, otherwise fallback
+  if (motionComponents) {
+    const { motion } = motionComponents;
+    const MotionButton = motion.button;
 
     return (
-      <Comp
-        className={cn(buttonVariants({ variant, size, className }))}
+      <MotionButton
+        className={className}
         ref={buttonRef}
-        style={{ x: mouseX, y: mouseY }}
-        animate={magnetic ? { x: mouseX, y: mouseY } : undefined}
-        {...buttonProps}
+        onClick={handleClick}
+        animate={magnetic ? { x: position.x, y: position.y } : undefined}
+        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+        {...props}
       >
-        {ripple && (
+        {children}
+        {rippleState && (
           <motion.div
             className="absolute bg-white/20 rounded-full pointer-events-none"
             style={{
-              left: ripple.x,
-              top: ripple.y,
-              width: ripple.size,
-              height: ripple.size,
+              left: rippleState.x,
+              top: rippleState.y,
+              width: rippleState.size,
+              height: rippleState.size,
             }}
             initial={{ scale: 0, opacity: 0.5 }}
             animate={{ scale: 1, opacity: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
           />
         )}
-      </Comp>
+      </MotionButton>
     );
   }
-);
-Button.displayName = "Button";
+
+  // Fallback while loading
+  return (
+    <button
+      className={className}
+      ref={buttonRef}
+      onClick={handleClick}
+      style={magnetic ? { transform: `translate(${position.x}px, ${position.y}px)` } : undefined}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+});
+InteractiveButton.displayName = "InteractiveButton";
 
 export { Button, buttonVariants };
