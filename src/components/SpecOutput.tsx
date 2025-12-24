@@ -17,7 +17,7 @@ import { useState, useRef, useCallback } from "react";
 import { TechStackCard } from "./TechStackCard";
 import { TechStackItem } from "@/types/spec";
 import { SpecMarkdown } from "./SpecOutput/MarkdownComponents";
-import { generateAgentReadyMarkdown, generateSpecJsonString, generateAgentsMd } from "@/lib/spec-serializers";
+import { generateAgentReadyMarkdown, generateSpecJsonString, generateAgentsMd, generateSpecKitMarkdown } from "@/lib/spec-serializers";
 
 // Lazy-loaded export utilities - these are heavy dependencies (~700KB total)
 // They are only loaded when the user actually clicks the export button
@@ -223,6 +223,24 @@ export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = fals
     toast({
       title: "AGENTS.md Downloaded",
       description: "Ready for GitHub Copilot, Claude Code, and other AI agents"
+    });
+  }, [spec, techStack]);
+
+  // GitHub Spec Kit format with Given/When/Then acceptance criteria
+  const downloadSpecKit = useCallback(() => {
+    const specKitContent = generateSpecKitMarkdown(spec, techStack);
+    const blob = new Blob([specKitContent], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `spec-kit-${new Date().toISOString().split('T')[0]}.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast({
+      title: "Spec Kit Downloaded",
+      description: "GitHub Spec Kit format with Given/When/Then acceptance criteria"
     });
   }, [spec, techStack]);
 
@@ -516,6 +534,10 @@ export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = fals
           <Button onClick={downloadAgentsMd} variant="outline" size="sm" className="gap-2">
             <Github className="w-3 h-3" />
             AGENTS.md
+          </Button>
+          <Button onClick={downloadSpecKit} variant="outline" size="sm" className="gap-2">
+            <Layers className="w-3 h-3" />
+            Spec Kit
           </Button>
           <div className="flex-1" />
           {!readOnly && (
