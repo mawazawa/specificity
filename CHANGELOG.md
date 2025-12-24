@@ -2,6 +2,14 @@
 
 All notable changes to Specificity will be documented in this file.
 
+## [1.1.1] - 2025-12-23
+
+### Security
+- Updated Vite 5.4.21 → 7.3.0 (fixes GHSA-67mh-4wv8-2f99)
+- pnpm audit: 0 vulnerabilities
+
+---
+
 ## [1.1.0] - 2025-12-23
 
 ### Added
