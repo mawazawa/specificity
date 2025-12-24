@@ -57,7 +57,7 @@ export class WebSearchTool extends BaseTool {
             useAutoprompt: true,
             numResults: Math.min(numResults, 20),
             // CRITICAL: Filter to recent content only (December 2025)
-            startPublishedDate: '2025-11-01'
+            // startPublishedDate: '2025-11-01'
           })
         })
       );

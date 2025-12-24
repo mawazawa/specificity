@@ -28,6 +28,7 @@ import { VoteTally } from "@/components/VoteTally";
 import { DialoguePanel } from "@/components/DialoguePanel";
 import { LandingHero } from "@/components/LandingHero";
 import { SampleSpecGallery } from "@/components/SampleSpecGallery";
+import { StickyHeader } from "@/components/StickyHeader";
 import { AgentConfig, TechStackItem } from "@/types/spec";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, MessageSquare, LayoutGrid, LogOut, Folder } from "lucide-react";
@@ -185,6 +186,9 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background grid-background">
+      {/* Sticky Header - appears on scroll when on landing page */}
+      <StickyHeader onGetStarted={handleGetStarted} showLanding={showLanding} />
+
       {/* Sign Out Button */}
       <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
         <Button variant="outline" size="sm" asChild className="gap-2">
@@ -310,7 +314,7 @@ const AgentCardsSection = ({ agentConfigs, onAgentConfigChange }: AgentCardsSect
     <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 gap-4 max-w-5xl mx-auto" role="list">
       {agentConfigs.slice(0, 8).map((config) => (
         <div key={config.agent} role="listitem">
-          <AgentCard config={config} onChange={onAgentConfigChange} />
+          <AgentCard config={config} onChange={onAgentConfigChange} isLandingPage={true} />
         </div>
       ))}
     </div>

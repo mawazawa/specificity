@@ -67,7 +67,7 @@ export const AnimatedButton = ({ children, onClick, className = "", ...props }: 
     <button
       ref={ref}
       onClick={onClick}
-      className={`relative w-[320px] h-[120px] bg-background/10 backdrop-blur-sm no-underline group cursor-pointer shadow-2xl shadow-primary/20 rounded-full p-px text-xs font-semibold leading-6 text-foreground inline-block ${className}`}
+      className={`relative w-[320px] h-[120px] bg-background/10 backdrop-blur-sm no-underline group cursor-pointer shadow-2xl shadow-primary/20 rounded-full p-px text-xs font-semibold leading-6 text-foreground inline-block focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background ${className}`}
       {...props}
     >
       <span className="absolute inset-0 overflow-hidden rounded-full">

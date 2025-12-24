@@ -14,10 +14,10 @@ interface ChatInputProps {
   mode?: 'round' | 'direct';
 }
 
-export const ChatInput = ({ 
-  onSend, 
-  isPaused, 
-  onPause, 
+export const ChatInput = ({
+  onSend,
+  isPaused,
+  onPause,
   onResume,
   isProcessing,
   placeholder = "Add your thoughts or guidance...",
@@ -77,12 +77,12 @@ export const ChatInput = ({
                   onKeyDown={handleKeyDown}
                   placeholder={placeholder}
                   className="min-h-[100px] resize-none bg-card/50 backdrop-blur-sm border-border/30 rounded-2xl text-sm focus:ring-2 focus:ring-primary/30"
-                  disabled={isProcessing}
+                  disabled={false}
                 />
                 <div className="flex gap-2">
                   <Button
                     onClick={handleSend}
-                    disabled={!message.trim() || isProcessing}
+                    disabled={!message.trim()}
                     className="flex-1 h-12 rounded-full bg-gradient-to-r from-primary via-primary/90 to-primary/80 hover:from-primary/90 hover:via-primary/80 hover:to-primary/70 shadow-lg shadow-primary/20 font-semibold"
                   >
                     <Send className="w-4 h-4 mr-2" />

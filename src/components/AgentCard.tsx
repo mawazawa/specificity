@@ -28,9 +28,11 @@ const agentInfo = {
 interface AgentCardProps {
   config: AgentConfig;
   onChange: (config: AgentConfig) => void;
+  /** When true, hides interactive controls (Switch, Advanced Settings) for landing page display */
+  isLandingPage?: boolean;
 }
 
-export const AgentCard = ({ config, onChange }: AgentCardProps) => {
+export const AgentCard = ({ config, onChange, isLandingPage = false }: AgentCardProps) => {
   const agent = agentInfo[config.agent as keyof typeof agentInfo] ?? {
     name: config.agent,
     role: "AI Agent",
@@ -136,16 +138,18 @@ export const AgentCard = ({ config, onChange }: AgentCardProps) => {
             </div>
           </div>
 
-          {/* Enable switch */}
-          <Switch
-            checked={config.enabled}
-            onCheckedChange={(enabled) => onChange({ ...config, enabled })}
-            className="shrink-0 data-[state=checked]:bg-primary shadow-lg"
-          />
+          {/* Enable switch - hidden on landing page */}
+          {!isLandingPage && (
+            <Switch
+              checked={config.enabled}
+              onCheckedChange={(enabled) => onChange({ ...config, enabled })}
+              className="shrink-0 data-[state=checked]:bg-primary shadow-lg"
+            />
+          )}
         </div>
 
-        {/* Advanced settings - collapsible */}
-        {config.enabled && (
+        {/* Advanced settings - collapsible, hidden on landing page */}
+        {!isLandingPage && config.enabled && (
           <div className="space-y-4 animate-fade-in">
             <button
               onClick={() => setShowAdvanced(!showAdvanced)}

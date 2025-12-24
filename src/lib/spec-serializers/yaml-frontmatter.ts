@@ -128,6 +128,21 @@ function extractEnvVars(specContent: string): SpecMetadata['env_vars'] {
   ];
 
   const foundVars = new Set<string>();
+  
+  // Common false positives to exclude
+  const IGNORED_WORDS = new Set([
+    'TODO', 'NOTE', 'WARNING', 'INFO', 'ERROR', 'IMPORTANT', 'FIXME',
+    'HTTP', 'HTTPS', 'JSON', 'XML', 'YAML', 'HTML', 'CSS', 'SQL',
+    'GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD',
+    'API', 'URL', 'URI', 'ID', 'UUID', 'JWT', 'REST', 'SOAP', 'GRAPHQL',
+    'MVP', 'POC', 'ROI', 'KPI', 'OKR',
+    'AWS', 'GCP', 'AZURE', 'S3', 'EC2',
+    'CI', 'CD', 'CLI', 'GUI', 'UX', 'UI',
+    'TRUE', 'FALSE', 'NULL', 'UNDEFINED',
+    'REACT', 'VUE', 'NEXT', 'NUXT', 'NODE', 'DENO',
+    'AUTH', 'OAUTH', 'SSO', 'RBAC', 'ABAC',
+    'TCP', 'UDP', 'IP', 'DNS', 'SSL', 'TLS'
+  ]);
 
   for (const pattern of patterns) {
     let match;
@@ -135,8 +150,17 @@ function extractEnvVars(specContent: string): SpecMetadata['env_vars'] {
       const name = match[1];
       const description = match[2].trim().substring(0, 100);
 
-      // Skip if already found or if it's not a real env var pattern
-      if (foundVars.has(name) || name.length < 3 || name.length > 50) continue;
+      // Filter out false positives
+      if (
+        foundVars.has(name) || 
+        name.length < 3 || 
+        name.length > 50 ||
+        IGNORED_WORDS.has(name) ||
+        // Heuristic: If it has no underscores, it's likely a word, unless it ends with ID/KEY/URL/SECRET
+        (!name.includes('_') && !['PORT', 'HOST', 'ENV', 'DEBUG'].includes(name) && !name.endsWith('KEY') && !name.endsWith('ID') && !name.endsWith('URL') && !name.endsWith('SECRET'))
+      ) {
+        continue;
+      }
 
       foundVars.add(name);
       envVars.push({

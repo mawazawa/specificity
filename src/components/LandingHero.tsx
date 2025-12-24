@@ -22,9 +22,9 @@ export const LandingHero = ({ onGetStarted }: LandingHeroProps) => {
 
   return (
     <div className="space-y-32 animate-fade-in relative">
-      {/* Grid background overlay */}
-      <div 
-        className="fixed inset-0 pointer-events-none opacity-15 z-0"
+      {/* Grid background overlay - reduced opacity for less visual noise */}
+      <div
+        className="fixed inset-0 pointer-events-none opacity-[0.05] z-0"
         style={{
           backgroundImage: `
             linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px),
@@ -36,12 +36,12 @@ export const LandingHero = ({ onGetStarted }: LandingHeroProps) => {
 
       {/* HERO SECTION - Clean, Focused, Single CTA */}
       <section
-        className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-gradient-to-b from-background via-background/95 to-background"
+        className="relative min-h-[70vh] flex items-center justify-center overflow-hidden bg-gradient-to-b from-background via-background/95 to-background"
         aria-labelledby="hero-heading"
       >
         <DottedGlowBackground
           className="pointer-events-none"
-          opacity={0.85}
+          opacity={0.5}
           gap={16}
           radius={2.2}
           colorLightVar="--foreground"
@@ -51,20 +51,20 @@ export const LandingHero = ({ onGetStarted }: LandingHeroProps) => {
           backgroundOpacity={0.08}
           speedMin={0.25}
           speedMax={0.85}
-          speedScale={1.3}
+          speedScale={0.8}
         />
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, ease: "easeOut" }}
-          className="relative z-10 text-center space-y-12 max-w-6xl mx-auto px-4 py-12"
+          className="relative z-10 text-center space-y-8 max-w-6xl mx-auto px-4 py-8"
         >
           {/* Main Headline */}
-          <div className="space-y-6">
+          <div className="space-y-5">
             <h1
               id="hero-heading"
-              className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[1.05]"
+              className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.05]"
               style={{
                 background: "linear-gradient(135deg, hsl(var(--foreground)), hsl(var(--accent)))",
                 WebkitBackgroundClip: "text",
@@ -74,7 +74,7 @@ export const LandingHero = ({ onGetStarted }: LandingHeroProps) => {
               }}
             >
               <span className="block">Production-Ready Specs</span>
-              <span className="block text-3xl md:text-5xl lg:text-6xl font-light mt-4 opacity-90">
+              <span className="block text-2xl md:text-4xl lg:text-5xl font-light mt-3 opacity-90">
                 in 30 Minutes
               </span>
             </h1>
@@ -87,23 +87,23 @@ export const LandingHero = ({ onGetStarted }: LandingHeroProps) => {
             </p>
           </div>
 
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 pt-4 max-w-4xl mx-auto">
-            <div className="text-center space-y-2" role="group" aria-label="8 Expert Advisors">
-              <div className="text-5xl md:text-6xl font-extralight text-foreground">8</div>
-              <div className="text-sm text-muted-foreground/80 font-medium">Expert Advisors</div>
+          {/* Stats Grid - tightened spacing */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-2 max-w-4xl mx-auto">
+            <div className="text-center space-y-1.5" role="group" aria-label="8 Expert Advisors">
+              <div className="text-4xl md:text-5xl font-extralight text-foreground">8</div>
+              <div className="text-sm text-muted-foreground font-medium">Expert Advisors</div>
             </div>
-            <div className="text-center space-y-2" role="group" aria-label="30 minute delivery">
-              <div className="text-5xl md:text-6xl font-extralight text-foreground">30m</div>
-              <div className="text-sm text-muted-foreground/80 font-medium">Delivery Time</div>
+            <div className="text-center space-y-1.5" role="group" aria-label="30 minute delivery">
+              <div className="text-4xl md:text-5xl font-extralight text-foreground">30m</div>
+              <div className="text-sm text-muted-foreground font-medium">Delivery Time</div>
             </div>
-            <div className="text-center space-y-2" role="group" aria-label="15 comprehensive sections">
-              <div className="text-5xl md:text-6xl font-extralight text-foreground">15</div>
-              <div className="text-sm text-muted-foreground/80 font-medium">Comprehensive Sections</div>
+            <div className="text-center space-y-1.5" role="group" aria-label="15 comprehensive sections">
+              <div className="text-4xl md:text-5xl font-extralight text-foreground">15</div>
+              <div className="text-sm text-muted-foreground font-medium">Comprehensive Sections</div>
             </div>
-            <div className="text-center space-y-2" role="group" aria-label="20 dollar per spec">
-              <div className="text-5xl md:text-6xl font-extralight text-foreground">$20</div>
-              <div className="text-sm text-muted-foreground/80 font-medium">Per Specification</div>
+            <div className="text-center space-y-1.5" role="group" aria-label="20 dollar per spec">
+              <div className="text-4xl md:text-5xl font-extralight text-foreground">$20</div>
+              <div className="text-sm text-muted-foreground font-medium">Per Specification</div>
             </div>
           </div>
 
@@ -125,7 +125,7 @@ export const LandingHero = ({ onGetStarted }: LandingHeroProps) => {
                 Get Started
               </span>
             </AnimatedButton>
-            <div className="flex items-center justify-center gap-6 mt-6 text-xs text-muted-foreground/70">
+            <div className="flex items-center justify-center gap-6 mt-5 text-xs text-muted-foreground">
               <span className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-success" aria-hidden="true" />
                 <span>30-min delivery</span>

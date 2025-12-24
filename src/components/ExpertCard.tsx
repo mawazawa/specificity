@@ -85,7 +85,7 @@ export const ExpertCard = ({ expert, index }: ExpertCardProps) => {
                 {expert.title}
               </p>
             </div>
-            <p className="text-xs text-muted-foreground/80 leading-relaxed px-2">
+            <p className="text-xs text-muted-foreground leading-relaxed px-2">
               {expert.role}
             </p>
 
@@ -153,7 +153,7 @@ export const ExpertCard = ({ expert, index }: ExpertCardProps) => {
 
           {/* Expand indicator */}
           <div className="text-center">
-            <p className="text-[10px] text-muted-foreground/50">
+            <p className="text-[10px] text-muted-foreground/70">
               {isExpanded ? 'Click to collapse' : 'Click to learn more'}
             </p>
           </div>

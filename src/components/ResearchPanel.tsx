@@ -46,7 +46,7 @@ export const ResearchPanel = ({ results, isSearching }: ResearchPanelProps) => {
                       <span>•</span>
                       <span>{(result.duration / 1000).toFixed(1)}s</span>
                       <span>•</span>
-                      <span>${result.cost.toFixed(4)}</span>
+                      {/* Cost hidden for production */}
                     </div>
                   </div>
                   {result.toolsUsed && result.toolsUsed.length > 0 && (

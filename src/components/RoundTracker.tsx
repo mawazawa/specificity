@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Round } from "@/types/spec";
-import { CheckCircle2, Loader2, XCircle, MessageSquare, Search, Users, Vote, FileText } from "lucide-react";
+import { CheckCircle2, Loader2, XCircle, MessageSquare, Search, Users, Vote, FileText, ShieldAlert, ClipboardCheck } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface RoundTrackerProps {
@@ -11,7 +11,9 @@ interface RoundTrackerProps {
 const stageIcons = {
   questions: MessageSquare,
   research: Search,
+  challenge: ShieldAlert,
   answers: Users,
+  review: ClipboardCheck,
   voting: Vote,
   spec: FileText
 };
@@ -19,7 +21,9 @@ const stageIcons = {
 const stageNames = {
   questions: "Questions",
   research: "Research",
+  challenge: "Challenge",
   answers: "Analysis",
+  review: "Review",
   voting: "Voting",
   spec: "Spec"
 };

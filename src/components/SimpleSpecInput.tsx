@@ -132,6 +132,49 @@ export const SimpleSpecInput = ({ onSubmit, isLoading, defaultValue }: SimpleSpe
   const charMax = 5000;
   const isValid = charCount >= charMin && charCount <= charMax;
 
+  // Dynamic button text for contextual feedback
+  const getButtonContent = () => {
+    if (isLoading) {
+      return (
+        <>
+          <Loader2 className="w-5 h-5 animate-spin" />
+          Generating Your Spec...
+        </>
+      );
+    }
+    if (charCount === 0) {
+      return (
+        <>
+          <Sparkles className="w-5 h-5 opacity-50" />
+          Start typing your idea...
+        </>
+      );
+    }
+    if (charCount < charMin) {
+      return (
+        <>
+          <Sparkles className="w-5 h-5 opacity-50" />
+          Keep going... ({charMin - charCount} more chars)
+        </>
+      );
+    }
+    if (charCount > charMax) {
+      return (
+        <>
+          <Sparkles className="w-5 h-5 text-destructive" />
+          Too long ({charCount - charMax} over limit)
+        </>
+      );
+    }
+    // Valid state - show ready indicator
+    return (
+      <>
+        <Sparkles className="w-5 h-5" />
+        Generate My Specification ($20)
+      </>
+    );
+  };
+
   return (
     <>
       <ConfirmationDialog
@@ -194,22 +237,14 @@ Example: Build a mobile fitness app where users can log workouts, track progress
           onClick={handleSubmit}
           disabled={!isValid || isLoading}
           size="lg"
-          className="h-14 text-base font-medium group relative overflow-hidden"
+          className={`h-14 text-base font-medium group relative overflow-hidden transition-all duration-300 ${
+            isValid && !isLoading ? 'ring-2 ring-primary/20 ring-offset-2 ring-offset-background' : ''
+          }`}
           data-testid="generate-spec-button"
         >
           <div className="absolute inset-0 bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_100%] animate-shimmer opacity-0 group-hover:opacity-20 transition-opacity duration-500" />
           <span className="relative flex items-center justify-center gap-2">
-            {isLoading ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                Generating Your Spec...
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-5 h-5" />
-                Generate My Specification ($20)
-              </>
-            )}
+            {getButtonContent()}
           </span>
         </Button>
       </div>

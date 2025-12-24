@@ -3,6 +3,10 @@ import App from "./App.tsx";
 import "./index.css";
 import { initSentry } from "./lib/sentry";
 
+// Geist font (Vercel's premium typeface)
+import "@fontsource-variable/geist";
+import "@fontsource/geist-mono";
+
 initSentry();
 
 createRoot(document.getElementById("root")!).render(<App />);

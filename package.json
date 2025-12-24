@@ -35,6 +35,8 @@
     "eval:baseline": "npx tsx evals/runner/eval-runner.ts --baseline evals/baselines/latest.json"
   },
   "dependencies": {
+    "@fontsource-variable/geist": "^5.2.8",
+    "@fontsource/geist-mono": "^5.2.7",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",
