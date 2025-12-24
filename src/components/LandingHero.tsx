@@ -87,24 +87,31 @@ export const LandingHero = ({ onGetStarted }: LandingHeroProps) => {
             </p>
           </div>
 
-          {/* Stats Grid - tightened spacing */}
+          {/* Stats Grid - with hover micro-interactions */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-2 max-w-4xl mx-auto">
-            <div className="text-center space-y-1.5" role="group" aria-label="8 Expert Advisors">
-              <div className="text-4xl md:text-5xl font-extralight text-foreground">8</div>
-              <div className="text-sm text-muted-foreground font-medium">Expert Advisors</div>
-            </div>
-            <div className="text-center space-y-1.5" role="group" aria-label="30 minute delivery">
-              <div className="text-4xl md:text-5xl font-extralight text-foreground">30m</div>
-              <div className="text-sm text-muted-foreground font-medium">Delivery Time</div>
-            </div>
-            <div className="text-center space-y-1.5" role="group" aria-label="15 comprehensive sections">
-              <div className="text-4xl md:text-5xl font-extralight text-foreground">15</div>
-              <div className="text-sm text-muted-foreground font-medium">Comprehensive Sections</div>
-            </div>
-            <div className="text-center space-y-1.5" role="group" aria-label="20 dollar per spec">
-              <div className="text-4xl md:text-5xl font-extralight text-foreground">$20</div>
-              <div className="text-sm text-muted-foreground font-medium">Per Specification</div>
-            </div>
+            {[
+              { value: "8", label: "Expert Advisors", ariaLabel: "8 Expert Advisors" },
+              { value: "30m", label: "Delivery Time", ariaLabel: "30 minute delivery" },
+              { value: "15", label: "Comprehensive Sections", ariaLabel: "15 comprehensive sections" },
+              { value: "$20", label: "Per Specification", ariaLabel: "20 dollar per spec" },
+            ].map((stat) => (
+              <motion.div
+                key={stat.label}
+                className="text-center space-y-1.5 cursor-default select-none"
+                role="group"
+                aria-label={stat.ariaLabel}
+                whileHover={{ scale: 1.05 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              >
+                <motion.div
+                  className="text-4xl md:text-5xl font-extralight text-foreground transition-colors duration-300"
+                  whileHover={{ color: "hsl(var(--accent))" }}
+                >
+                  {stat.value}
+                </motion.div>
+                <div className="text-sm text-muted-foreground font-medium">{stat.label}</div>
+              </motion.div>
+            ))}
           </div>
 
           {/* Single CTA */}

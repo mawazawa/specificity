@@ -113,6 +113,65 @@ export async function checkRateLimit(
     }
 }
 
+/**
+ * Check user subscription plan and credits
+ */
+export async function checkSubscription(
+    supabaseUrl: string,
+    supabaseKey: string,
+    userId: string
+): Promise<{ plan: 'free' | 'pro' | 'enterprise'; credits: number }> {
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    try {
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('plan, credits')
+            .eq('id', userId)
+            .single();
+
+        if (error || !data) {
+            console.error('Subscription check error:', { type: 'subscription_error', user_id: userId, error });
+            return { plan: 'free', credits: 0 };
+        }
+
+        return {
+            plan: data.plan as 'free' | 'pro' | 'enterprise',
+            credits: data.credits || 0
+        };
+    } catch (error) {
+        console.error('Subscription check exception:', { type: 'subscription_exception', user_id: userId });
+        return { plan: 'free', credits: 0 };
+    }
+}
+
+/**
+ * Deduct 1 credit from user
+ */
+export async function deductCredit(
+    supabaseUrl: string,
+    supabaseKey: string,
+    userId: string
+): Promise<boolean> {
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    try {
+        const { error } = await supabase.rpc('deduct_user_credit', {
+            p_user_id: userId
+        });
+
+        if (error) {
+            console.error('Deduct credit error:', { type: 'deduct_credit_error', user_id: userId, error });
+            return false;
+        }
+
+        return true;
+    } catch (error) {
+        console.error('Deduct credit exception:', { type: 'deduct_credit_exception', user_id: userId });
+        return false;
+    }
+}
+
 export const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',

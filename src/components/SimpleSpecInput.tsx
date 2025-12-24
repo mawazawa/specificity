@@ -170,7 +170,7 @@ export const SimpleSpecInput = ({ onSubmit, isLoading, defaultValue }: SimpleSpe
     return (
       <>
         <Sparkles className="w-5 h-5" />
-        Generate My Specification ($20)
+        Generate My Specification — Free
       </>
     );
   };
@@ -190,9 +190,14 @@ export const SimpleSpecInput = ({ onSubmit, isLoading, defaultValue }: SimpleSpe
         <Textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Describe your product idea in a few sentences...
-
-Example: Build a mobile fitness app where users can log workouts, track progress, compete with friends, and get AI-powered coaching recommendations."
+          onKeyDown={(e) => {
+            // Cmd/Ctrl+Enter to submit
+            if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && isValid && !isLoading) {
+              e.preventDefault();
+              handleSubmit();
+            }
+          }}
+          placeholder="Describe your product idea in a few sentences... (⌘+Enter to submit)"
           className="min-h-[160px] text-base resize-none bg-background/50 border-border/50 focus:border-primary focus:ring-primary"
           disabled={isLoading}
         />

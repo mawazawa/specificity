@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { FileText, CheckCircle2, Download, Copy, FileType, ThumbsUp, ChevronDown, Layers, Share2, Loader2, Bot, Code, Github, Image } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { TechStackCard } from "./TechStackCard";
 import { TechStackItem } from "@/types/spec";
 import { SpecMarkdown } from "./SpecOutput/MarkdownComponents";
@@ -47,6 +47,7 @@ interface SpecOutputProps {
   onShare?: () => void;
   readOnly?: boolean;
   initialTechStack?: TechStackItem[];
+  mockupUrl?: string;
 }
 
 const SUGGESTED_REFINEMENTS = [
@@ -55,7 +56,7 @@ const SUGGESTED_REFINEMENTS = [
   "Include cost estimates and timeline"
 ];
 
-export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = false, initialTechStack }: SpecOutputProps) => {
+export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = false, initialTechStack, mockupUrl }: SpecOutputProps) => {
   const [showRefinements, setShowRefinements] = useState(false);
   const [selectedRefinements, setSelectedRefinements] = useState<string[]>([]);
   const [customRefinement, setCustomRefinement] = useState("");
@@ -116,6 +117,14 @@ export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = fals
       ]
     }
   ]);
+
+  // Sync techStack when initialTechStack changes (Fixes "Truth Gap")
+  useEffect(() => {
+    if (initialTechStack && initialTechStack.length > 0) {
+      setTechStack(initialTechStack);
+    }
+  }, [initialTechStack]);
+
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     techStack: true,
     dependencies: false,
@@ -807,6 +816,26 @@ export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = fals
         <div ref={specRef} className="p-4 rounded-lg bg-background/30">
           <SpecMarkdown content={spec} />
         </div>
+
+        {/* Visual Mockup Section - NEW for Visual Spec Era */}
+        {(initialTechStack as any)?.mockup_url && (
+          <div className="space-y-4 pt-6 border-t border-border/20">
+            <div className="flex items-center gap-2 text-primary">
+              <Image className="w-4 h-4" />
+              <h3 className="text-sm font-medium">AI-Generated UI Mockup</h3>
+            </div>
+            <div className="relative aspect-video rounded-xl overflow-hidden border border-border/30 bg-black/20 group">
+              <img 
+                src={(initialTechStack as any).mockup_url} 
+                alt="Product Mockup" 
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
+                <p className="text-[10px] text-white/80 italic">Conceptual UI generated based on your specification</p>
+              </div>
+            </div>
+          </div>
+        )}
       </Card>
 
       {/* Interactive Tech Stack Section */}

@@ -82,6 +82,7 @@ export interface SpecOutput {
   testStrategy: string[];
   approvedBy: string[];
   dissentedBy: string[];
+  mockup_url?: string; // AI-generated UI mockup URL
 }
 
 export interface SpecSection {

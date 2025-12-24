@@ -117,8 +117,8 @@ export const ConfirmationDialog = ({
           </AlertDialogDescription>
         </AlertDialogHeader>
 
-        <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-          <AlertDialogCancel className="sm:flex-1">
+        <AlertDialogFooter className="flex-col-reverse sm:flex-row gap-2">
+          <AlertDialogCancel className="sm:flex-1 text-muted-foreground hover:text-foreground">
             Cancel
           </AlertDialogCancel>
           <AlertDialogAction

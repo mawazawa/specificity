@@ -24,6 +24,7 @@ interface ChatViewProps {
   onChatWithAgent?: (agentId: string, message: string) => Promise<boolean>;
   currentStage?: string;
   onProceedToGeneration?: () => void;
+  mockupUrl?: string;
 }
 
 export const ChatView = ({ 
@@ -34,7 +35,8 @@ export const ChatView = ({
   isProcessing,
   onChatWithAgent,
   currentStage,
-  onProceedToGeneration
+  onProceedToGeneration,
+  mockupUrl
 }: ChatViewProps) => {
   const [selectedMentor, setSelectedMentor] = useState<AgentType | null>(null);
   const [activeChatAgent, setActiveChatAgent] = useState<AgentType | null>(null);
@@ -107,6 +109,7 @@ export const ChatView = ({
                 timestamp={entry.timestamp}
                 type={entry.type}
                 onAvatarClick={handleAvatarClick}
+                mockupUrl={entry.type === 'spec' ? mockupUrl : undefined}
               />
             ))
           )}

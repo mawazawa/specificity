@@ -748,14 +748,35 @@ All corrections are backed by Exa-verified sources from Dec 20, 2025.
 
 ---
 
-## Verification Sources (Dec 20, 2025)
+---
 
-| Finding | Source URL | Verified |
-|---------|------------|----------|
-| DeepSeek V3.2-Speciale on OpenRouter | https://openrouter.ai/deepseek/deepseek-v3.2-speciale | Dec 20, 2025 |
-| DeepSeek V3.2 release announcement | https://api-docs.deepseek.com/news/news251201 | Dec 1, 2025 |
-| Deno 2.1 Supabase rollout | https://github.com/orgs/supabase/discussions/37941 | Aug 15, 2025 |
-| PostgREST v14 release | https://supabase.com/changelog | Dec 11, 2025 |
-| Vite 8 Beta announcement | https://vite.dev/blog/announcing-vite8-beta | Dec 2025 |
-| React 19 release | https://react.dev/blog/2024/12/05/react-19 | Dec 2024 |
-| Supabase Deno 2 docs | https://supabase.com/docs/guides/functions/deno2 | Dec 2025 |
+# Phase 13: Monetization & Visual Specification Era ✅ COMPLETED
+*Date: December 24, 2025*
+*Goal: Transform into a revenue-generating product with unique visual value.*
+
+- [x] **13.1 Fix "Truth Gap" in Tech Stack** ✅
+  - **Action:** Sync `SpecOutput.tsx` state with real AI research results via `useEffect`.
+  - **Completed:** Dec 24, 2025.
+
+- [x] **13.2 Subscription Foundation** ✅
+  - **Action:** Create `profiles` table with `plan` ('free', 'pro', 'enterprise') and `credits`.
+  - **Completed:** Migration `20251224000000_create_profiles_table.sql`.
+
+- [x] **13.3 Plan-Based Gating** ✅
+  - **Action:** Update `multi-agent-spec` edge function to check and deduct credits for free users.
+  - **Completed:** Dec 24, 2025.
+
+- [x] **13.4 Visual Spec Infrastructure** ✅
+  - **Action:** Add `mockup_url` support to Spec flow, including rendering in `SpecOutput` and `ChatMessage`.
+  - **Completed:** Dec 24, 2025.
+
+- [x] **13.5 Pro Upgrade UI** ✅
+  - **Action:** Add `SubscriptionModal` and Upgrade/Credits indicator to `StickyHeader`.
+  - **Completed:** Dec 24, 2025.
+
+---
+
+## Strategic Next Steps
+1.  **Stripe API Integration:** Replace mock upgrade logic with real Stripe Checkout sessions.
+2.  **GPT Image 1.5 Integration:** Implement the `visualize` tool in the backend to generate real mockups.
+3.  **Team/Org Management:** Add `organizations` table to support B2B sales.

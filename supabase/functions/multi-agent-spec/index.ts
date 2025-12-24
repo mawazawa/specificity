@@ -28,7 +28,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.75.1';
 // Import new architecture modules
 import { ToolRegistry } from '../tools/registry.ts';
 import { detectPromptInjection, sanitizeInput } from './lib/utils/security.ts';
-import { checkRateLimit, corsHeaders } from './lib/utils/api.ts';
+import { checkRateLimit, checkSubscription, deductCredit, corsHeaders } from './lib/utils/api.ts';
 import { requestSchema } from './lib/types.ts';
 
 // Import stage handlers
@@ -168,37 +168,45 @@ serve(async (req) => {
     if (stage === 'questions') {
       if (isAdmin) {
         console.log('[RateLimit] Admin user bypassing rate limit:', user.id);
-        rateLimitRemaining = 999; // Indicate unlimited for admin
+        rateLimitRemaining = 999;
       } else {
-        console.log('[RateLimit] Checking rate limit for user:', user.id);
-        const rateLimit = await checkRateLimit(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, user.id, 'multi-agent-spec', 100);
+        // Check subscription and credits
+        const sub = await checkSubscription(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, user.id);
+        console.log('[Subscription] User plan:', sub.plan, 'Credits:', sub.credits);
 
-        if (!rateLimit.allowed) {
-          console.warn('[RateLimit] Rate limit exceeded:', { type: 'rate_limit_exceeded', user_id: user.id });
-          const retryAfterSeconds = 3600; // 1 hour
-          const resetTime = new Date(Date.now() + retryAfterSeconds * 1000);
-
+        if (sub.plan === 'free' && sub.credits <= 0) {
           return new Response(
             JSON.stringify({
-              error: 'Rate limit exceeded. You can generate up to 100 specifications per hour. Please try again later.',
-              retryAfter: retryAfterSeconds,
-              resetAt: resetTime.toISOString(),
-              code: 'RATE_LIMIT_EXCEEDED'
+              error: 'You have run out of free credits. Please upgrade to Pro for unlimited specifications.',
+              code: 'OUT_OF_CREDITS',
+              suggestion: 'upgrade_to_pro'
             }),
-            {
-              status: 429,
-              headers: {
-                ...corsHeaders,
-                'Content-Type': 'application/json',
-                'X-RateLimit-Remaining': '0',
-                'X-RateLimit-Reset': resetTime.toISOString(),
-                'Retry-After': String(retryAfterSeconds)
-              }
-            }
+            { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
 
-        rateLimitRemaining = rateLimit.remaining;
+        // Check standard rate limit (requests per hour)
+        const maxPerHour = sub.plan === 'free' ? 5 : sub.plan === 'pro' ? 50 : 500;
+        const rateLimit = await checkRateLimit(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, user.id, 'multi-agent-spec', maxPerHour);
+
+        if (!rateLimit.allowed) {
+          console.warn('[RateLimit] Rate limit exceeded:', { type: 'rate_limit_exceeded', user_id: user.id });
+          return new Response(
+            JSON.stringify({
+              error: `Rate limit exceeded for your ${sub.plan} plan. Please try again in an hour or upgrade.`,
+              code: 'RATE_LIMIT_EXCEEDED'
+            }),
+            { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        // Deduct credit for free users
+        if (sub.plan === 'free') {
+          await deductCredit(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, user.id);
+          rateLimitRemaining = sub.credits - 1;
+        } else {
+          rateLimitRemaining = rateLimit.remaining;
+        }
         console.log('[RateLimit] Request allowed:', { remaining: rateLimitRemaining });
       }
     }

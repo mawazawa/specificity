@@ -96,6 +96,7 @@ const Index = () => {
     sessionState,
     generatedSpec,
     techStack,
+    mockupUrl,
     dialogueEntries,
     tasks,
     startRefinement,
@@ -150,14 +151,16 @@ const Index = () => {
     [isProcessing, dialogueEntries.length, generatedSpec, sessionState.rounds.length]
   );
 
-  // Scroll to input and focus
+  // Scroll to input and focus immediately (focus works during smooth scroll)
   const handleGetStarted = useCallback(() => {
     const inputElement = document.querySelector('[data-spec-input]');
+    const textareaElement = document.querySelector('[data-spec-input] textarea') as HTMLTextAreaElement;
+
+    // Focus first - browser will keep focus during smooth scroll
+    textareaElement?.focus();
+
+    // Then scroll - the focused element stays focused
     inputElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    setTimeout(() => {
-      const textareaElement = document.querySelector('[data-spec-input] textarea') as HTMLTextAreaElement;
-      textareaElement?.focus();
-    }, 500);
   }, []);
 
   // Handle form submission
@@ -237,6 +240,7 @@ const Index = () => {
             tasks={tasks}
             generatedSpec={generatedSpec}
             techStack={techStack}
+            mockupUrl={mockupUrl}
             agentConfigs={agentConfigs}
             dialogueEntries={dialogueEntries}
             isDialogueOpen={isDialogueOpen}
@@ -332,6 +336,7 @@ interface ActiveSessionContentProps {
   tasks: any[];
   generatedSpec: string;
   techStack: TechStackItem[];
+  mockupUrl: string;
   agentConfigs: AgentConfig[];
   dialogueEntries: any[];
   isDialogueOpen: boolean;
@@ -353,6 +358,8 @@ const ActiveSessionContent = ({
   currentStage,
   tasks,
   generatedSpec,
+  techStack,
+  mockupUrl,
   agentConfigs,
   dialogueEntries,
   isDialogueOpen,
@@ -401,6 +408,7 @@ const ActiveSessionContent = ({
           onChatWithAgent={onChatWithAgent}
           currentStage={currentStage}
           onProceedToGeneration={onProceedToGeneration}
+          mockupUrl={mockupUrl}
         />
       ) : (
                   <PanelsView
@@ -411,6 +419,7 @@ const ActiveSessionContent = ({
                                 sessionState={sessionState}
                                 generatedSpec={generatedSpec}
                                 techStack={techStack}
+                                mockupUrl={mockupUrl}
                                 agentConfigs={agentConfigs}
                                 onPause={onPause}                    onResume={onResume}
                     onShareSpec={onShareSpec}
@@ -436,6 +445,7 @@ interface PanelsViewProps {
   sessionState: any;
   generatedSpec: string;
   techStack: TechStackItem[];
+  mockupUrl: string;
   agentConfigs: AgentConfig[];
   onPause: () => void;
   onResume: (comment?: string) => void;
@@ -449,6 +459,8 @@ const PanelsView = ({
   tasks,
   sessionState,
   generatedSpec,
+  techStack,
+  mockupUrl,
   agentConfigs,
   onPause,
   onResume,
@@ -496,6 +508,7 @@ const PanelsView = ({
             <SpecOutput
               spec={generatedSpec}
               initialTechStack={techStack}
+              mockupUrl={mockupUrl}
               onApprove={() => toast({ title: "Approved!", description: "Specification has been approved" })}
               onRefine={(refinements) => toast({ title: "Refining...", description: `Applying ${refinements.length} refinement(s)` })}
               onShare={onShareSpec}

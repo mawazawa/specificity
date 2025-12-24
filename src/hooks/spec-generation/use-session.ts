@@ -15,12 +15,14 @@ interface FullSessionState {
   session: SessionState;
   generatedSpec: string;
   techStack: TechStackItem[];
+  mockupUrl: string;
 }
 
 const initialState: FullSessionState = {
   session: initialSessionState,
   generatedSpec: '',
-  techStack: []
+  techStack: [],
+  mockupUrl: ''
 };
 
 type SessionAction =
@@ -31,6 +33,7 @@ type SessionAction =
   | { type: 'SET_PAUSED'; payload: boolean }
   | { type: 'SET_SPEC'; payload: string }
   | { type: 'SET_TECH_STACK'; payload: TechStackItem[] }
+  | { type: 'SET_MOCKUP_URL'; payload: string }
   | { type: 'RESET_SESSION' }
   | { type: 'SET_SESSION_STATE'; payload: Partial<SessionState> };
 
@@ -94,6 +97,12 @@ function sessionReducer(state: FullSessionState, action: SessionAction): FullSes
         techStack: action.payload
       };
 
+    case 'SET_MOCKUP_URL':
+      return {
+        ...state,
+        mockupUrl: action.payload
+      };
+
     case 'RESET_SESSION':
       return initialState;
 
@@ -139,6 +148,10 @@ export function useSession() {
     dispatch({ type: 'SET_TECH_STACK', payload: techStack });
   }, []);
 
+  const setMockupUrl = useCallback((url: string) => {
+    dispatch({ type: 'SET_MOCKUP_URL', payload: url });
+  }, []);
+
   const resetSession = useCallback(() => {
     dispatch({ type: 'RESET_SESSION' });
   }, []);
@@ -151,6 +164,7 @@ export function useSession() {
     sessionState: state.session,
     generatedSpec: state.generatedSpec,
     techStack: state.techStack,
+    mockupUrl: state.mockupUrl,
     startSession,
     addRound,
     updateCurrentRound,
@@ -158,6 +172,7 @@ export function useSession() {
     setPaused,
     setGeneratedSpec,
     setTechStack,
+    setMockupUrl,
     resetSession,
     setSessionState
   };

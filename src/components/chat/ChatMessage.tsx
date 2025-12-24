@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { AgentType } from "@/types/spec";
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
-import { MessageSquare, Search, Vote, FileText, User } from "lucide-react";
+import { MessageSquare, Search, Vote, FileText, User, Image as ImageIcon } from "lucide-react";
 import { mentorProfiles } from "@/types/mentor";
 import elonAvatar from "@/assets/optimized/elon-musk-nobg.webp";
 import steveAvatar from "@/assets/optimized/steve-jobs-nobg.webp";
@@ -20,6 +20,7 @@ interface ChatMessageProps {
   timestamp: string;
   type: 'question' | 'answer' | 'vote' | 'research' | 'spec' | 'user';
   onAvatarClick?: (agent: AgentType) => void;
+  mockupUrl?: string;
 }
 
 const agentAvatars: Record<AgentType, string> = {
@@ -39,7 +40,8 @@ export const ChatMessage = ({
   message, 
   timestamp, 
   type,
-  onAvatarClick 
+  onAvatarClick,
+  mockupUrl
 }: ChatMessageProps) => {
   const isUser = agent === 'user';
   const profile = !isUser ? mentorProfiles[agent as AgentType] : null;
@@ -114,7 +116,7 @@ export const ChatMessage = ({
           isUser 
             ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20' 
             : 'bg-card/80 backdrop-blur-sm border-border/30'
-        } rounded-2xl ${isUser ? 'rounded-tr-sm' : 'rounded-tl-sm'}`}>
+        } rounded-2xl ${isUser ? 'rounded-tr-sm' : 'rounded-tl-sm'} space-y-4`}>
           <div className={`prose prose-sm max-w-none ${isUser ? 'prose-invert' : ''}`}>
             <ReactMarkdown
               components={{
@@ -132,6 +134,26 @@ export const ChatMessage = ({
               {message}
             </ReactMarkdown>
           </div>
+
+          {/* AI-Generated Mockup in Chat */}
+          {type === 'spec' && mockupUrl && (
+            <div className="space-y-2 animate-in fade-in zoom-in-95 duration-500 delay-300">
+              <div className="flex items-center gap-2 text-[10px] font-medium text-primary/80 uppercase tracking-tight">
+                <ImageIcon className="w-3 h-3" />
+                Conceptual Mockup
+              </div>
+              <div className="relative aspect-video rounded-lg overflow-hidden border border-border/20 shadow-inner group cursor-zoom-in">
+                <img 
+                  src={mockupUrl} 
+                  alt="AI Generated UI" 
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <p className="text-white text-[10px] font-medium px-2 py-1 bg-primary/80 rounded-full">View Visual Spec</p>
+                </div>
+              </div>
+            </div>
+          )}
         </Card>
       </div>
     </motion.div>
