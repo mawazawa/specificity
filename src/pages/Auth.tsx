@@ -63,6 +63,7 @@ const Auth = () => {
         toast({
           title: "Success!",
           description: "Account created successfully. You can now sign in.",
+          variant: "success",
         });
         // Switch to login tab
         document.querySelector('[value="login"]')?.dispatchEvent(new Event('click', { bubbles: true }));
@@ -118,6 +119,7 @@ const Auth = () => {
         toast({
           title: "Welcome back!",
           description: "Signed in successfully.",
+          variant: "success",
         });
         navigate("/");
       }
@@ -133,13 +135,22 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Specificity AI</CardTitle>
-          <CardDescription className="text-center">
-            Sign in to access your AI-powered spec generation
-          </CardDescription>
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Subtle gradient orbs for depth */}
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+
+      <Card className="w-full max-w-md relative z-10 border-border/20 bg-card/80 backdrop-blur-xl shadow-2xl">
+        <CardHeader className="space-y-4 pb-2">
+          <div className="mx-auto w-12 h-12 rounded-xl bg-gradient-to-br from-accent to-primary flex items-center justify-center shadow-lg">
+            <span className="text-white font-bold text-lg">S</span>
+          </div>
+          <div className="space-y-1">
+            <CardTitle className="text-2xl font-semibold text-center tracking-tight">Welcome back</CardTitle>
+            <CardDescription className="text-center text-muted-foreground/80">
+              Sign in to continue to Specificity
+            </CardDescription>
+          </div>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="login" className="w-full">
@@ -218,8 +229,8 @@ const Auth = () => {
             </TabsContent>
           </Tabs>
         </CardContent>
-        <CardFooter>
-          <p className="text-sm text-muted-foreground text-center w-full">
+        <CardFooter className="pt-4">
+          <p className="text-xs text-muted-foreground/60 text-center w-full">
             By continuing, you agree to our Terms of Service and Privacy Policy
           </p>
         </CardFooter>

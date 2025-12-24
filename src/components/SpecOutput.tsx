@@ -585,7 +585,8 @@ export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = fals
       doc.save(`${projectName.toLowerCase().replace(/\s+/g, '-')}-specification-${new Date().toISOString().split('T')[0]}.pdf`);
       toast({
         title: "PDF Downloaded",
-        description: "Professional specification with cover page and table of contents"
+        description: "Professional specification with cover page and table of contents",
+        variant: "success",
       });
     } catch (error) {
       console.error('PDF generation error:', error);
