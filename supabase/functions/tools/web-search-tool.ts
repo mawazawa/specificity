@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BaseTool, ToolParameter, ToolResult } from './base-tool.ts';
+import { queueExaRequest } from '../lib/rate-limiter.ts';
 
 export class WebSearchTool extends BaseTool {
   name = 'web_search';
-  description = 'Search the web for latest information (November 2025). Always use this to verify technology recommendations are current.';
+  description = 'Search the web for latest information (December 2025). Always use this to verify technology recommendations are current.';
 
   parameters: ToolParameter[] = [
     {
@@ -42,21 +43,24 @@ export class WebSearchTool extends BaseTool {
     }
 
     try {
-      const response = await this.fetchWithTimeout('https://api.exa.ai/search', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${EXA_API_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          query,
-          type: 'neural',
-          useAutoprompt: true,
-          numResults: Math.min(numResults, 20),
-          // CRITICAL: Filter to recent content only (November 2025)
-          startPublishedDate: '2025-11-01'
+      // Use rate-limited queue to prevent 429 errors
+      const response = await queueExaRequest(() =>
+        this.fetchWithTimeout('https://api.exa.ai/search', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${EXA_API_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            query,
+            type: 'neural',
+            useAutoprompt: true,
+            numResults: Math.min(numResults, 20),
+            // CRITICAL: Filter to recent content only (December 2025)
+            startPublishedDate: '2025-11-01'
+          })
         })
-      });
+      );
 
       if (!response.ok) {
         throw new Error(`Exa API error: ${response.status}`);
