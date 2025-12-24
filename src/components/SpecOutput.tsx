@@ -11,16 +11,25 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { FileText, CheckCircle2, Download, Copy, FileType, ThumbsUp, ChevronDown, Layers, Share2 } from "lucide-react";
+import { FileText, CheckCircle2, Download, Copy, FileType, ThumbsUp, ChevronDown, Layers, Share2, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { useState, useRef } from "react";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
-import { Document, Packer, Paragraph, TextRun, HeadingLevel } from "docx";
-import { saveAs } from "file-saver";
+import { useState, useRef, useCallback } from "react";
 import { TechStackCard } from "./TechStackCard";
 import { TechStackItem } from "@/types/spec";
 import { SpecMarkdown } from "./SpecOutput/MarkdownComponents";
+
+// Lazy-loaded export utilities - these are heavy dependencies (~700KB total)
+// They are only loaded when the user actually clicks the export button
+const loadPdfLibraries = () => Promise.all([
+  import("jspdf"),
+  import("html2canvas"),
+  import("file-saver")
+]);
+
+const loadDocxLibraries = () => Promise.all([
+  import("docx"),
+  import("file-saver")
+]);
 
 interface SpecOutputProps {
   spec: string;
@@ -41,6 +50,9 @@ export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = fals
   const [showRefinements, setShowRefinements] = useState(false);
   const [selectedRefinements, setSelectedRefinements] = useState<string[]>([]);
   const [customRefinement, setCustomRefinement] = useState("");
+  const [exportingPdf, setExportingPdf] = useState(false);
+  const [exportingDocx, setExportingDocx] = useState(false);
+  const [exportingImage, setExportingImage] = useState(false);
   const [techStack, setTechStack] = useState<TechStackItem[]>(initialTechStack || [
     {
       category: "Backend",
@@ -104,8 +116,6 @@ export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = fals
 
   const specRef = useRef<HTMLDivElement>(null);
 
-  if (!spec) return null;
-
   const handleTechSelect = (category: string, techName: string) => {
     setTechStack(prev => prev.map(item => {
       if (item.category === category) {
@@ -161,9 +171,14 @@ export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = fals
     toast({ title: "Downloaded", description: "Specification saved as text" });
   };
 
-  const downloadImage = async () => {
-    if (!specRef.current) return;
+  const downloadImage = useCallback(async () => {
+    if (!specRef.current || exportingImage) return;
+    setExportingImage(true);
     try {
+      const [, html2canvasModule, fileSaverModule] = await loadPdfLibraries();
+      const html2canvas = html2canvasModule.default;
+      const { saveAs } = fileSaverModule;
+
       const canvas = await html2canvas(specRef.current, {
         scale: 2, // Retain high resolution
         useCORS: true,
@@ -182,11 +197,19 @@ export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = fals
         description: "Could not generate image.",
         variant: "destructive"
       });
+    } finally {
+      setExportingImage(false);
     }
-  };
+  }, [exportingImage]);
 
-  const downloadWord = async () => {
+  const downloadWord = useCallback(async () => {
+    if (exportingDocx) return;
+    setExportingDocx(true);
     try {
+      const [docxModule, fileSaverModule] = await loadDocxLibraries();
+      const { Document, Packer, Paragraph, TextRun, HeadingLevel } = docxModule;
+      const { saveAs } = fileSaverModule;
+
       const lines = spec.split('\n');
       const docChildren = lines.map(line => {
         if (line.startsWith('# ')) {
@@ -233,11 +256,18 @@ export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = fals
         description: "Could not generate Word document.",
         variant: "destructive"
       });
+    } finally {
+      setExportingDocx(false);
     }
-  };
+  }, [spec, exportingDocx]);
 
-  const downloadPDF = () => {
+  const downloadPDF = useCallback(async () => {
+    if (exportingPdf) return;
+    setExportingPdf(true);
     try {
+      const [jspdfModule] = await loadPdfLibraries();
+      const jsPDF = jspdfModule.default;
+
       const doc = new jsPDF();
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
@@ -339,8 +369,10 @@ export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = fals
         description: "Could not generate PDF. Try downloading as Markdown instead.",
         variant: "destructive"
       });
+    } finally {
+      setExportingPdf(false);
     }
-  };
+  }, [spec, exportingPdf]);
 
   const handleRefine = () => {
     const allRefinements = [...selectedRefinements];
@@ -362,6 +394,9 @@ export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = fals
         : [...prev, refinement]
     );
   };
+
+  // Early return must come AFTER all hooks to satisfy React rules
+  if (!spec) return null;
 
   return (
     <div className="space-y-6">
@@ -402,16 +437,16 @@ export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = fals
               Share
             </Button>
           )}
-          <Button onClick={downloadImage} variant="outline" size="sm" className="gap-2">
-            <Download className="w-3 h-3" />
+          <Button onClick={downloadImage} variant="outline" size="sm" className="gap-2" disabled={exportingImage}>
+            {exportingImage ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />}
             PNG
           </Button>
-          <Button onClick={downloadWord} variant="outline" size="sm" className="gap-2">
-            <FileText className="w-3 h-3" />
+          <Button onClick={downloadWord} variant="outline" size="sm" className="gap-2" disabled={exportingDocx}>
+            {exportingDocx ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileText className="w-3 h-3" />}
             DOCX
           </Button>
-          <Button onClick={downloadPDF} variant="outline" size="sm" className="gap-2">
-            <Download className="w-3 h-3" />
+          <Button onClick={downloadPDF} variant="outline" size="sm" className="gap-2" disabled={exportingPdf}>
+            {exportingPdf ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />}
             PDF
           </Button>
           <div className="flex-1" />
