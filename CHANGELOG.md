@@ -2,7 +2,7 @@
 
 All notable changes to Specificity will be documented in this file.
 
-## [1.2.0] - 2025-12-26 22:45 UTC
+## [1.2.0] - 2025-12-26 23:15 UTC
 
 ### Added
 - **Turn-End Requirements** in CLAUDE.md for mandatory TODO.md updates at every turn
@@ -12,6 +12,22 @@ All notable changes to Specificity will be documented in this file.
 - Complete file tree documentation in README.md (350+ files)
 - Dependency analysis with confidence scores (82-100%)
 - Multi-viewpoint analysis (user, developer, business, security, performance)
+
+### Security (Action 1 - 98% confidence)
+- **sessionDataSchema** with Zod validation for localStorage (`src/types/schemas.ts`)
+- **safeJsonParse** utility prevents XSS/corruption (`src/lib/utils.ts`)
+- **useSessionPersistence** now validates session data before hydrating
+- Toast notification when corrupted session is detected and cleared
+- Input validation schemas: userInputSchema, chatMessageSchema, safeUrlSchema
+- Tech logo domain whitelist for URL security
+
+### Observability (Action 2 - 95% confidence)
+- **Sentry.captureException** in ErrorBoundary.componentDidCatch
+- React component stack context attached to all errors
+- Error fingerprinting for intelligent deduplication
+- Breadcrumbs for error recovery tracking
+- eventId display and "Report Issue" button in error UI
+- boundaryName prop for multi-boundary error identification
 
 ### Changed
 - Updated @supabase/supabase-js: 2.75.1 → 2.89.0
