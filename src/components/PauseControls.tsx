@@ -1,22 +1,38 @@
-import { useState } from "react";
+import { useState, useCallback, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Pause, Play, MessageSquare } from "lucide-react";
+import { Pause, Play, MessageSquare, Loader2 } from "lucide-react";
 
 interface PauseControlsProps {
   isPaused: boolean;
   onPause: () => void;
   onResume: (comment?: string) => void;
+  isProcessing?: boolean; // Add prop to track processing state
 }
 
-export const PauseControls = ({ isPaused, onPause, onResume }: PauseControlsProps) => {
+export const PauseControls = ({ isPaused, onPause, onResume, isProcessing = false }: PauseControlsProps) => {
   const [comment, setComment] = useState("");
+  const [isResuming, setIsResuming] = useState(false);
+  const resumeRef = useRef(false); // Ref to prevent race conditions
 
-  const handleResume = () => {
+  // Fix: Debounce resume to prevent double-clicks and race conditions
+  const handleResume = useCallback(() => {
+    // Prevent multiple rapid clicks
+    if (resumeRef.current || isResuming || isProcessing) return;
+
+    resumeRef.current = true;
+    setIsResuming(true);
+
     onResume(comment || undefined);
     setComment("");
-  };
+
+    // Reset after a short delay to allow the parent to process
+    setTimeout(() => {
+      resumeRef.current = false;
+      setIsResuming(false);
+    }, 1000);
+  }, [comment, onResume, isResuming, isProcessing]);
 
   if (!isPaused) {
     return (
@@ -48,10 +64,15 @@ export const PauseControls = ({ isPaused, onPause, onResume }: PauseControlsProp
         />
         <Button
           onClick={handleResume}
+          disabled={isResuming || isProcessing}
           className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-fluid"
         >
-          <Play className="w-4 h-4 mr-2" />
-          Resume Session
+          {isResuming ? (
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+          ) : (
+            <Play className="w-4 h-4 mr-2" />
+          )}
+          {isResuming ? "Resuming..." : "Resume Session"}
         </Button>
       </div>
     </Card>

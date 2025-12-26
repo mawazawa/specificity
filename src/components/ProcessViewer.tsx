@@ -19,11 +19,12 @@ interface ProcessViewerProps {
 }
 
 export const ProcessViewer = ({ tasks, currentStage }: ProcessViewerProps) => {
-  if (tasks.length === 0) return null;
-
   const runningTasks = tasks.filter(t => t.status === 'running').length;
   const completedTasks = tasks.filter(t => t.status === 'complete').length;
-  const progress = (completedTasks / tasks.length) * 100;
+  const progress = tasks.length > 0 ? (completedTasks / tasks.length) * 100 : 0;
+
+  // Fix: Show loading state even when no tasks yet (was returning null, confusing users)
+  if (tasks.length === 0 && !currentStage) return null;
 
   return (
     <Card className="p-6 bg-gradient-to-br from-card/90 via-card/70 to-card/50 backdrop-blur-2xl border border-border/30 rounded-2xl shadow-xl">
@@ -39,7 +40,9 @@ export const ProcessViewer = ({ tasks, currentStage }: ProcessViewerProps) => {
                 {currentStage}
               </h3>
               <p className="text-[10px] text-muted-foreground/60 mt-0.5">
-                {runningTasks} running • {completedTasks}/{tasks.length} complete
+                {tasks.length === 0
+                  ? "Initializing..."
+                  : `${runningTasks} running • ${completedTasks}/${tasks.length} complete`}
               </p>
             </div>
           </div>

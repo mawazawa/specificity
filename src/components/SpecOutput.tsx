@@ -262,7 +262,18 @@ export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = fals
   }, [spec, techStack]);
 
   const downloadImage = useCallback(async () => {
-    if (!specRef.current || exportingImage) return;
+    if (exportingImage) return;
+
+    // Fix: Show error instead of silent failure when element not found
+    if (!specRef.current) {
+      toast({
+        title: "Export Failed",
+        description: "Specification content not found. Please try again.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setExportingImage(true);
     try {
       const [, html2canvasModule, fileSaverModule] = await loadPdfLibraries();
@@ -278,6 +289,13 @@ export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = fals
         if (blob) {
           saveAs(blob, `specification-${new Date().toISOString().split('T')[0]}.png`);
           toast({ title: "Image Downloaded", description: "Specification saved as PNG" });
+        } else {
+          // Fix: Show error instead of silent failure when blob creation fails
+          toast({
+            title: "Export Failed",
+            description: "Could not create image. Please try again.",
+            variant: "destructive"
+          });
         }
       });
     } catch (error) {

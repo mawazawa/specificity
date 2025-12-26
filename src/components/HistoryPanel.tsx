@@ -41,8 +41,10 @@ export const HistoryPanel = ({ history }: HistoryPanelProps) => {
                         {new Date(entry.timestamp).toLocaleTimeString()}
                       </span>
                     </div>
-                    <div className="prose prose-sm prose-invert max-w-none prose-p:text-xs prose-p:text-foreground/70">
-                      <ReactMarkdown>{JSON.stringify(entry.data, null, 2)}</ReactMarkdown>
+                    <div className="text-xs text-foreground/70 font-mono whitespace-pre-wrap bg-background/30 rounded-md p-3 overflow-x-auto">
+                      {typeof entry.data === 'string'
+                        ? entry.data
+                        : JSON.stringify(entry.data, null, 2)}
                     </div>
                   </div>
                 </Card>

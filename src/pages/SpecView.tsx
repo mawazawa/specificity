@@ -1,18 +1,26 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { SpecOutput } from "@/components/SpecOutput";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowLeft, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 export default function SpecView() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [spec, setSpec] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchSpec() {
-      if (!id) return;
+      // Fix: Handle missing ID - was causing infinite loading
+      if (!id) {
+        setError("No specification ID provided");
+        setLoading(false);
+        return;
+      }
       try {
         const { data, error } = await supabase
           .from('specifications')
@@ -40,10 +48,28 @@ export default function SpecView() {
     );
   }
 
+  // Fix: Add back navigation and helpful error UI
   if (error || !spec) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background text-muted-foreground">
-        {error || "Specification not found"}
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <Card className="p-8 max-w-md w-full text-center space-y-4">
+          <AlertCircle className="w-12 h-12 text-destructive mx-auto" />
+          <h2 className="text-lg font-semibold">
+            {error || "Specification not found"}
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            The specification you're looking for doesn't exist or you don't have access to it.
+          </p>
+          <div className="flex gap-3 justify-center pt-2">
+            <Button variant="outline" onClick={() => navigate(-1)} className="gap-2">
+              <ArrowLeft className="w-4 h-4" />
+              Go Back
+            </Button>
+            <Button onClick={() => navigate("/specs")}>
+              View All Specs
+            </Button>
+          </div>
+        </Card>
       </div>
     );
   }

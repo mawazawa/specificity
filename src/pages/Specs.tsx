@@ -21,15 +21,18 @@ const Specs = () => {
   const [specs, setSpecs] = useState<SpecRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null); // Track which spec is being deleted
 
   const loadSpecs = async () => {
     try {
       setIsLoading(true);
       setError(null);
 
+      // Fix: Filter by user_id to only show user's own specs
       const { data, error: fetchError } = await supabase
         .from("specifications")
         .select("id, title, created_at, is_public")
+        .eq("user_id", user?.id)
         .order("created_at", { ascending: false });
 
       if (fetchError) {
@@ -55,6 +58,8 @@ const Specs = () => {
     const confirmed = window.confirm("Delete this specification? This cannot be undone.");
     if (!confirmed) return;
 
+    // Fix: Add loading state to prevent double-clicks
+    setDeletingId(id);
     try {
       const { error: deleteError } = await supabase
         .from("specifications")
@@ -74,6 +79,8 @@ const Specs = () => {
         description: "Could not delete specification.",
         variant: "destructive"
       });
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -125,9 +132,19 @@ const Specs = () => {
                     <ExternalLink className="w-4 h-4" />
                     Open
                   </Button>
-                  <Button variant="destructive" size="sm" onClick={() => handleDelete(spec.id)} className="gap-2">
-                    <Trash2 className="w-4 h-4" />
-                    Delete
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => handleDelete(spec.id)}
+                    disabled={deletingId === spec.id}
+                    className="gap-2"
+                  >
+                    {deletingId === spec.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="w-4 h-4" />
+                    )}
+                    {deletingId === spec.id ? "Deleting..." : "Delete"}
                   </Button>
                 </div>
               </Card>

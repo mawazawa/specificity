@@ -156,7 +156,8 @@ export const SpecInput = ({ onSubmit, isLoading, defaultValue }: SpecInputProps)
           <div className="flex gap-3 justify-center">
             <Button
               onClick={isRecording ? stopRecording : startRecording}
-              disabled={isLoading}
+              // Fix: Only disable when loading AND not recording (so user can always stop recording)
+              disabled={isLoading && !isRecording}
               variant="outline"
               size="lg"
               className={`group relative overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.3)] hover:shadow-[0_6px_16px_rgba(0,0,0,0.4)] transform hover:translate-y-[-2px] active:translate-y-[0px] transition-all duration-200 ${
