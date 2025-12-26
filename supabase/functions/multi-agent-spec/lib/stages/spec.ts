@@ -437,12 +437,22 @@ export const handleSpecStageComplete = async (roundData: RoundData | undefined, 
     const sectionContents: string[] = [];
     
     // Generate sections in batches of 3 for parallelism without overwhelming the API
+    // Use Promise.allSettled for graceful partial failure - spec can still be useful with some sections missing
     for (let i = 0; i < SPEC_SECTIONS.length; i += 3) {
       const batch = SPEC_SECTIONS.slice(i, i + 3);
-      const batchResults = await Promise.all(
+      const settledResults = await Promise.allSettled(
         batch.map(section => generateSection(section, context, productIdea))
       );
-      sectionContents.push(...batchResults);
+
+      settledResults.forEach((result, idx) => {
+        if (result.status === 'fulfilled') {
+          sectionContents.push(result.value);
+        } else {
+          const section = batch[idx];
+          console.error(`[Spec] Section ${section.id} failed:`, result.reason);
+          sectionContents.push(`## ${section.title}\n\n*Generation failed - please regenerate this section*`);
+        }
+      });
     }
     
     // Combine all sections into final spec

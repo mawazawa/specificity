@@ -2,8 +2,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { AgentConfig, TechStackItem } from '@/types/spec';
 import { RoundData } from '@/types/schemas';
 
-// Default timeout for API calls (2 minutes - spec generation can take time)
-const DEFAULT_TIMEOUT_MS = 120000;
+// Default timeout for API calls
+// Spec generation takes ~30 minutes (8-stage pipeline with research, debate, synthesis)
+// We use 35 minutes (2,100,000ms) to allow buffer for network latency
+const DEFAULT_TIMEOUT_MS = 2100000;
+
+// Shorter timeout for quick operations (chat, voice-to-text)
+const QUICK_TIMEOUT_MS = 120000;
 
 // Helper to handle Supabase function errors with timeout
 async function invokeFunction<T>(
@@ -171,12 +176,13 @@ export const api = {
     targetAgent: string,
     message: string
   ) => {
+    // Chat uses quick timeout since it's a single agent response
     return invokeFunction<{ response: string; agent: string; timestamp: string }>('multi-agent-spec', {
       stage: 'chat',
       agentConfigs,
       targetAgent,
       userInput: message
-    });
+    }, QUICK_TIMEOUT_MS);
   },
 
   /**

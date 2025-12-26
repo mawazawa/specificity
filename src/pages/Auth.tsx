@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2 } from "lucide-react";
+import { Loader2, Mail, ArrowLeft } from "lucide-react";
 import { z } from "zod";
 
 const emailSchema = z.string().email("Invalid email address");
@@ -18,6 +18,8 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [activeTab, setActiveTab] = useState("login");
+  const [pendingVerification, setPendingVerification] = useState(false);
+  const [verificationEmail, setVerificationEmail] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -61,13 +63,14 @@ const Auth = () => {
           throw error;
         }
       } else {
+        // Show verification pending state
+        setVerificationEmail(email);
+        setPendingVerification(true);
         toast({
-          title: "Success!",
-          description: "Account created successfully. You can now sign in.",
+          title: "Check your email!",
+          description: "We've sent a verification link to your email address.",
           variant: "success",
         });
-        // Switch to login tab using React state (fixed: was using DOM manipulation)
-        setActiveTab("login");
       }
     } catch (error: unknown) {
       toast({
@@ -142,6 +145,75 @@ const Auth = () => {
       <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
 
       <Card className="w-full max-w-md relative z-10 border-border/20 bg-card/80 backdrop-blur-xl shadow-2xl">
+        {pendingVerification ? (
+          // Verification pending state
+          <>
+            <CardHeader className="space-y-4 pb-2">
+              <div className="mx-auto w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-lg">
+                <Mail className="w-6 h-6 text-white" />
+              </div>
+              <div className="space-y-1">
+                <CardTitle className="text-2xl font-semibold text-center tracking-tight">Check your email</CardTitle>
+                <CardDescription className="text-center text-muted-foreground/80">
+                  We sent a verification link to
+                </CardDescription>
+                <p className="text-center font-medium text-foreground">{verificationEmail}</p>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground text-center">
+                Click the link in the email to verify your account. If you don't see it, check your spam folder.
+              </p>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={async () => {
+                  setIsLoading(true);
+                  try {
+                    const { error } = await supabase.auth.resend({
+                      type: 'signup',
+                      email: verificationEmail,
+                      options: {
+                        emailRedirectTo: `${window.location.origin}/`
+                      }
+                    });
+                    if (error) throw error;
+                    toast({
+                      title: "Email resent!",
+                      description: "Check your inbox for the verification link.",
+                      variant: "success"
+                    });
+                  } catch (err) {
+                    toast({
+                      title: "Error",
+                      description: err instanceof Error ? err.message : "Failed to resend email",
+                      variant: "destructive"
+                    });
+                  } finally {
+                    setIsLoading(false);
+                  }
+                }}
+                disabled={isLoading}
+              >
+                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                Resend verification email
+              </Button>
+              <Button
+                variant="ghost"
+                className="w-full"
+                onClick={() => {
+                  setPendingVerification(false);
+                  setActiveTab("login");
+                }}
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to sign in
+              </Button>
+            </CardContent>
+          </>
+        ) : (
+          // Normal auth flow
+          <>
         <CardHeader className="space-y-4 pb-2">
           <div className="mx-auto w-12 h-12 rounded-xl bg-gradient-to-br from-accent to-primary flex items-center justify-center shadow-lg">
             <span className="text-white font-bold text-lg">S</span>
@@ -235,6 +307,8 @@ const Auth = () => {
             By continuing, you agree to our Terms of Service and Privacy Policy
           </p>
         </CardFooter>
+          </>
+        )}
       </Card>
     </div>
   );

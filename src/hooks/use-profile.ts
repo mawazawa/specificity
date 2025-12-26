@@ -59,25 +59,28 @@ export function useProfile() {
     };
   }, []);
 
-  const upgradeToPro = async () => {
-    // TODO: SECURITY - Move to server-side Edge Function with Stripe verification
-    // This client-side update is a placeholder. In production:
-    // 1. Call Edge Function that verifies Stripe payment
-    // 2. Edge Function updates profile with service_role key
-    // 3. RLS policy should DENY direct client writes to plan/credits columns
-    console.warn('[Security] upgradeToPro should be server-side. This is a dev placeholder.');
+  const upgradeToPro = async (stripeSessionId: string, planType: 'pro' | 'enterprise' = 'pro') => {
+    // Server-side upgrade via Edge Function with Stripe verification
+    const { data, error } = await supabase.functions.invoke('upgrade-to-pro', {
+      body: { stripeSessionId, planType }
+    });
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('Authentication required');
+    if (error) {
+      console.error('[upgradeToPro] Edge function error:', error);
+      throw new Error(error.message || 'Failed to upgrade account');
+    }
 
-    // In production, this should be: await supabase.functions.invoke('upgrade-to-pro')
-    const { error } = await supabase
-      .from('profiles')
-      .update({ plan: 'pro', credits: 999 })
-      .eq('id', user.id);
+    if (data?.error) {
+      // Handle specific error cases (e.g., payment required)
+      if (data.checkoutUrl) {
+        throw new Error(`PAYMENT_REQUIRED:${data.checkoutUrl}`);
+      }
+      throw new Error(data.error);
+    }
 
-    if (error) throw error;
+    // Refresh profile to get updated plan/credits
     await fetchProfile();
+    return data;
   };
 
   return { profile, isLoading, error, refresh: fetchProfile, upgradeToPro };

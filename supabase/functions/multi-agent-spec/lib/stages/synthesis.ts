@@ -72,7 +72,18 @@ export const handleSynthesisStage = async (
         };
     });
 
-    const syntheses = await Promise.all(synthesisPromises);
+    // Use Promise.allSettled for graceful partial failure handling
+    // If one agent fails, others still contribute to synthesis
+    const settledResults = await Promise.allSettled(synthesisPromises);
+
+    const syntheses = settledResults
+        .filter((result): result is PromiseFulfilledResult<any> => result.status === 'fulfilled')
+        .map(result => result.value);
+
+    const failedCount = settledResults.filter(r => r.status === 'rejected').length;
+    if (failedCount > 0) {
+        console.warn(`[Synthesis] ${failedCount}/${settledResults.length} syntheses failed, continuing with ${syntheses.length} successful`);
+    }
 
     const battleTestedCount = syntheses.filter(s => s.researchQuality.battleTested).length;
     console.log(`[Enhanced] Synthesized ${syntheses.length} expert recommendations (${battleTestedCount} battle-tested)`);

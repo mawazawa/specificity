@@ -18,7 +18,9 @@ interface UseAuthReturn {
   user: User | null;
   session: Session | null;
   isLoading: boolean;
+  isEmailVerified: boolean;
   signOut: () => Promise<void>;
+  resendVerificationEmail: () => Promise<void>;
 }
 
 export const useAuth = (): UseAuthReturn => {
@@ -70,6 +72,9 @@ export const useAuth = (): UseAuthReturn => {
     return () => clearInterval(interval);
   }, [navigate]);
 
+  // Check if user's email is verified
+  const isEmailVerified = Boolean(user?.email_confirmed_at);
+
   // Memoized sign out function
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();
@@ -80,10 +85,46 @@ export const useAuth = (): UseAuthReturn => {
     });
   }, [navigate, toast]);
 
+  // Resend verification email
+  const resendVerificationEmail = useCallback(async () => {
+    if (!user?.email) {
+      toast({
+        title: 'Error',
+        description: 'No email address found',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: user.email,
+      options: {
+        emailRedirectTo: `${window.location.origin}/`
+      }
+    });
+
+    if (error) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive'
+      });
+    } else {
+      toast({
+        title: 'Email Sent',
+        description: 'Verification email has been resent. Please check your inbox.',
+        variant: 'success'
+      });
+    }
+  }, [user?.email, toast]);
+
   return {
     user,
     session,
     isLoading,
-    signOut
+    isEmailVerified,
+    signOut,
+    resendVerificationEmail
   };
 };

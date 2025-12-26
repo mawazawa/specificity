@@ -66,7 +66,18 @@ export const handleVotingStage = async (
         }
     });
 
-    const votes = await Promise.all(votePromises);
+    // Use Promise.allSettled for graceful partial failure handling
+    // If one agent's vote fails, others still count toward consensus
+    const settledResults = await Promise.allSettled(votePromises);
+
+    const votes = settledResults
+        .filter((result): result is PromiseFulfilledResult<any> => result.status === 'fulfilled')
+        .map(result => result.value);
+
+    const failedCount = settledResults.filter(r => r.status === 'rejected').length;
+    if (failedCount > 0) {
+        console.warn(`[Voting] ${failedCount}/${settledResults.length} votes failed, continuing with ${votes.length} successful`);
+    }
 
     return new Response(
         JSON.stringify({ votes }),
