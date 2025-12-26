@@ -17,6 +17,7 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [activeTab, setActiveTab] = useState("login");
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -65,8 +66,8 @@ const Auth = () => {
           description: "Account created successfully. You can now sign in.",
           variant: "success",
         });
-        // Switch to login tab
-        document.querySelector('[value="login"]')?.dispatchEvent(new Event('click', { bubbles: true }));
+        // Switch to login tab using React state (fixed: was using DOM manipulation)
+        setActiveTab("login");
       }
     } catch (error: unknown) {
       toast({
@@ -153,7 +154,7 @@ const Auth = () => {
           </div>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="login" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="login">Sign In</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>

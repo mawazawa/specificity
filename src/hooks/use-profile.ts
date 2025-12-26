@@ -60,10 +60,17 @@ export function useProfile() {
   }, []);
 
   const upgradeToPro = async () => {
-    // Mock upgrade for now
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    // TODO: SECURITY - Move to server-side Edge Function with Stripe verification
+    // This client-side update is a placeholder. In production:
+    // 1. Call Edge Function that verifies Stripe payment
+    // 2. Edge Function updates profile with service_role key
+    // 3. RLS policy should DENY direct client writes to plan/credits columns
+    console.warn('[Security] upgradeToPro should be server-side. This is a dev placeholder.');
 
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Authentication required');
+
+    // In production, this should be: await supabase.functions.invoke('upgrade-to-pro')
     const { error } = await supabase
       .from('profiles')
       .update({ plan: 'pro', credits: 999 })

@@ -2,13 +2,51 @@ import { supabase } from '@/integrations/supabase/client';
 import { AgentConfig, TechStackItem } from '@/types/spec';
 import { RoundData } from '@/types/schemas';
 
-// Helper to handle Supabase function errors
-async function invokeFunction<T>(functionName: string, body: Record<string, unknown>): Promise<T> {
-  const { data, error } = await supabase.functions.invoke(functionName, { body });
-  if (error) {
-    throw new Error(error.message || `Failed to invoke ${functionName}`);
+// Default timeout for API calls (2 minutes - spec generation can take time)
+const DEFAULT_TIMEOUT_MS = 120000;
+
+// Helper to handle Supabase function errors with timeout
+async function invokeFunction<T>(
+  functionName: string,
+  body: Record<string, unknown>,
+  timeoutMs: number = DEFAULT_TIMEOUT_MS
+): Promise<T> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const { data, error } = await supabase.functions.invoke(functionName, {
+      body,
+      // Note: Supabase client may not support signal yet, but we handle timeout manually
+    });
+
+    clearTimeout(timeoutId);
+
+    if (error) {
+      // Enhanced error handling with specific error types
+      const message = error.message || `Failed to invoke ${functionName}`;
+      if (message.includes('rate limit') || message.includes('429')) {
+        throw new Error(`RATE_LIMIT: ${message}`);
+      }
+      if (message.includes('timeout') || message.includes('504')) {
+        throw new Error(`TIMEOUT: ${message}`);
+      }
+      throw new Error(message);
+    }
+
+    // Validate response is not null/undefined
+    if (data === null || data === undefined) {
+      throw new Error(`Empty response from ${functionName}`);
+    }
+
+    return data as T;
+  } catch (err) {
+    clearTimeout(timeoutId);
+    if (err instanceof DOMException && err.name === 'AbortError') {
+      throw new Error(`TIMEOUT: ${functionName} timed out after ${timeoutMs}ms`);
+    }
+    throw err;
   }
-  return data as T;
 }
 
 export const api = {

@@ -174,7 +174,7 @@ function useToast() {
         listeners.splice(index, 1);
       }
     };
-  }, [state]);
+  }, []); // Fixed: Remove 'state' from deps to prevent listener array pollution
 
   return {
     ...state,

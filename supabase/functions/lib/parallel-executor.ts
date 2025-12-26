@@ -45,16 +45,44 @@ export async function executeParallelResearch(
 
   const startTime = Date.now();
 
-  // Execute all agents simultaneously
-  const results = await Promise.all(
+  // Execute all agents simultaneously with graceful partial failure handling
+  const settledResults = await Promise.allSettled(
     assignments.map(assignment =>
       executeAgentAssignment(assignment, tools, context)
     )
   );
 
+  // Extract successful results and log failures
+  const results: AgentResearchResult[] = [];
+  settledResults.forEach((result, index) => {
+    if (result.status === 'fulfilled') {
+      results.push(result.value);
+    } else {
+      // Create fallback result for failed agent
+      const assignment = assignments[index];
+      console.error(`[ParallelExecutor] Agent ${assignment?.expertName || index} failed:`, result.reason);
+      results.push({
+        expertId: assignment?.expertId || `failed-${index}`,
+        expertName: assignment?.expertName || `Agent ${index}`,
+        questions: assignment?.questions || [],
+        findings: `Research failed: ${result.reason instanceof Error ? result.reason.message : 'Unknown error'}`,
+        toolsUsed: [],
+        duration: Date.now() - startTime,
+        model: assignment?.model || 'unknown',
+        cost: 0,
+        tokensUsed: 0
+      });
+    }
+  });
+
   const duration = Date.now() - startTime;
   const totalCost = results.reduce((sum, r) => sum + r.cost, 0);
   const totalTools = results.reduce((sum, r) => sum + r.toolsUsed.length, 0);
+  const failedCount = settledResults.filter(r => r.status === 'rejected').length;
+
+  if (failedCount > 0) {
+    console.warn(`[ParallelExecutor] ${failedCount}/${assignments.length} agents failed, continuing with partial results`);
+  }
 
   console.log(`[ParallelExecutor] ✓ Completed in ${duration}ms`);
   console.log(`[ParallelExecutor]   Total cost: $${totalCost.toFixed(4)}`);

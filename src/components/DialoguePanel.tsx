@@ -106,13 +106,14 @@ export const DialoguePanel = ({ entries, isOpen = false, onToggle }: DialoguePan
                   size="sm"
                   onClick={handleToggle}
                   className="h-8 w-8 p-0 hover:bg-background/40 rounded-lg"
+                  aria-label="Close dialogue panel"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-4 h-4" aria-hidden="true" />
                 </Button>
               </div>
 
               {/* Dialogue Content */}
-              <ScrollArea className="h-[500px] p-4">
+              <ScrollArea className="h-[500px] p-4" aria-label="Agent dialogue transcript">
                 <div className="space-y-3">
                   {entries.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full py-12 text-center">
@@ -167,7 +168,8 @@ export const DialoguePanel = ({ entries, isOpen = false, onToggle }: DialoguePan
               {/* Footer */}
               <div className="p-3 border-t border-border/20 bg-gradient-to-r from-transparent to-primary/5">
                 <p className="text-[10px] text-muted-foreground/60 text-center">
-                  🔴 Live roundtable • Real-time conversation
+                  <span aria-label="Live status indicator" className="inline-block w-2 h-2 bg-destructive rounded-full mr-1 align-middle"></span>
+                  Live roundtable • Real-time conversation
                 </p>
               </div>
             </Card>
@@ -182,16 +184,17 @@ export const DialoguePanel = ({ entries, isOpen = false, onToggle }: DialoguePan
             <Button
               onClick={handleToggle}
               className="relative h-16 w-16 rounded-full bg-gradient-to-br from-primary via-primary/90 to-primary/70 hover:from-primary/95 hover:via-primary/85 hover:to-primary/75 shadow-[0_8px_24px_-4px] shadow-primary/40 hover:shadow-[0_12px_32px_-4px] hover:shadow-primary/50 border-2 border-primary/30 transition-all duration-300 hover:scale-105 active:scale-95"
+              aria-label={`Open dialogue panel${entries.length > 0 ? `, ${entries.length} new messages` : ''}`}
             >
-              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/30 via-white/10 to-transparent" />
-              <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/15 to-transparent rounded-full" />
-              <MessageSquare className="w-6 h-6 relative z-10" />
+              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/30 via-white/10 to-transparent" aria-hidden="true" />
+              <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/15 to-transparent rounded-full" aria-hidden="true" />
+              <MessageSquare className="w-6 h-6 relative z-10" aria-hidden="true" />
               {entries.length > 0 && (
-                <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center border-2 border-background shadow-lg">
+                <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center border-2 border-background shadow-lg" aria-hidden="true">
                   {entries.length}
                 </div>
               )}
-              <div className="absolute inset-0 rounded-full bg-primary/40 blur-xl animate-pulse" />
+              <div className="absolute inset-0 rounded-full bg-primary/40 blur-xl animate-pulse" aria-hidden="true" />
             </Button>
           </motion.div>
         )}
