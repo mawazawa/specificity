@@ -2,6 +2,10 @@
  * useSessionPersistence Hook - Extracted from Index.tsx
  * Handles debounced localStorage persistence with quota management
  *
+ * Security improvements:
+ * - Zod schema validation on hydration (prevents XSS/corruption)
+ * - Safe JSON parsing with error recovery
+ *
  * Performance improvements:
  * - Debounced writes (2s delay, 10s maxWait) vs every state change
  * - Quota error handling
@@ -11,15 +15,10 @@
 
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { safeJsonParse } from '@/lib/utils';
+import { sessionDataSchema, type SessionData } from '@/types/schemas';
 import type { DialogueEntry } from '@/components/DialoguePanel';
 import type { SessionState } from '@/types/spec';
-
-interface SessionData {
-  generatedSpec: string;
-  dialogueEntries: DialogueEntry[];
-  sessionState: SessionState;
-  timestamp: string;
-}
 
 interface UseSessionPersistenceProps {
   userId: string | undefined;
@@ -131,7 +130,7 @@ export const useSessionPersistence = ({
     }, DEBOUNCE_DELAY);
   }, [persistSession]);
 
-  // Hydrate on mount
+  // Hydrate on mount with schema validation
   useEffect(() => {
     const key = getStorageKey();
     if (!key) {
@@ -139,25 +138,47 @@ export const useSessionPersistence = ({
       return;
     }
 
-    try {
-      const savedSession = localStorage.getItem(key);
-      if (savedSession) {
-        const parsed: SessionData = JSON.parse(savedSession);
-        const sessionAge = Date.now() - new Date(parsed.timestamp).getTime();
+    const savedSession = localStorage.getItem(key);
+    if (!savedSession) {
+      setIsHydrated(true);
+      return;
+    }
 
-        if (sessionAge < MAX_SESSION_AGE_MS) {
-          setHydratedData(parsed);
-          toast({
-            title: 'Session Restored',
-            description: 'Your previous work has been recovered'
-          });
-        } else {
-          // Clear expired session
-          localStorage.removeItem(key);
-        }
-      }
-    } catch (error) {
-      console.error('[SessionPersistence] Hydration failed:', error);
+    // Use safe parsing with Zod schema validation
+    const parseResult = safeJsonParse(savedSession, sessionDataSchema);
+
+    if (!parseResult.success) {
+      console.error('[SessionPersistence] Session validation failed:', parseResult.error);
+      // Clear corrupted session
+      localStorage.removeItem(key);
+      toast({
+        title: 'Session Corrupted',
+        description: 'Previous session data was invalid and has been cleared',
+        variant: 'destructive'
+      });
+      setIsHydrated(true);
+      return;
+    }
+
+    const parsed = parseResult.data;
+    const sessionAge = Date.now() - new Date(parsed.timestamp).getTime();
+
+    if (sessionAge < MAX_SESSION_AGE_MS) {
+      // Cast to the interface type expected by consumers
+      setHydratedData(parsed as unknown as Partial<{
+        generatedSpec: string;
+        dialogueEntries: DialogueEntry[];
+        sessionState: SessionState;
+        timestamp: string;
+      }>);
+      toast({
+        title: 'Session Restored',
+        description: 'Your previous work has been recovered'
+      });
+    } else {
+      // Clear expired session
+      localStorage.removeItem(key);
+      console.log('[SessionPersistence] Session expired, cleared');
     }
 
     setIsHydrated(true);

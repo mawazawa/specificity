@@ -1,5 +1,100 @@
 import { z } from "zod";
 
+// ============================================================================
+// SESSION PERSISTENCE SCHEMAS
+// Used for validating localStorage data to prevent corruption/XSS attacks
+// ============================================================================
+
+// Dialogue entry schema for session persistence
+export const dialogueEntrySchema = z.object({
+  id: z.string(),
+  agentId: z.string().optional(),
+  agentName: z.string().optional(),
+  content: z.string(),
+  timestamp: z.string(),
+  type: z.enum(['question', 'research', 'challenge', 'synthesis', 'vote', 'spec', 'chat', 'system']).optional(),
+  metadata: z.record(z.unknown()).optional(),
+});
+
+export type DialogueEntrySchema = z.infer<typeof dialogueEntrySchema>;
+
+// Round schema for session state
+export const sessionRoundSchema = z.object({
+  id: z.string(),
+  stage: z.string(),
+  status: z.enum(['pending', 'in-progress', 'complete', 'paused', 'failed']),
+  data: z.record(z.unknown()).optional(),
+  userComment: z.string().optional(),
+  timestamp: z.string().optional(),
+});
+
+// Session state schema
+export const sessionStateSchema = z.object({
+  isPaused: z.boolean(),
+  currentStage: z.string().nullable(),
+  rounds: z.array(sessionRoundSchema),
+  error: z.string().nullable().optional(),
+});
+
+// Complete session data schema for localStorage
+export const sessionDataSchema = z.object({
+  generatedSpec: z.string(),
+  dialogueEntries: z.array(dialogueEntrySchema),
+  sessionState: sessionStateSchema,
+  timestamp: z.string(),
+  version: z.number().optional(), // For future migrations
+});
+
+export type SessionData = z.infer<typeof sessionDataSchema>;
+
+// ============================================================================
+// INPUT VALIDATION SCHEMAS
+// Used for validating user inputs before API calls
+// ============================================================================
+
+// User spec input (25-5000 characters as per SimpleSpecInput validation)
+export const userInputSchema = z.string()
+  .min(25, 'Input must be at least 25 characters')
+  .max(5000, 'Input must be at most 5000 characters')
+  .transform(s => s.trim());
+
+// Chat message (1-2000 characters)
+export const chatMessageSchema = z.string()
+  .min(1, 'Message cannot be empty')
+  .max(2000, 'Message must be at most 2000 characters')
+  .transform(s => s.trim());
+
+// Safe URL schema with protocol validation
+export const safeUrlSchema = z.string().url().refine(
+  (url) => {
+    try {
+      const parsed = new URL(url);
+      return ['http:', 'https:'].includes(parsed.protocol);
+    } catch {
+      return false;
+    }
+  },
+  { message: 'URL must use http or https protocol' }
+);
+
+// Tech logo domain whitelist for security
+export const ALLOWED_LOGO_DOMAINS = [
+  'cdn.brandfetch.io',
+  'img.logo.dev',
+  'logo.clearbit.com',
+  'avatars.githubusercontent.com',
+  'raw.githubusercontent.com',
+] as const;
+
+export const techLogoDomainSchema = z.string().refine(
+  (domain) => ALLOWED_LOGO_DOMAINS.some(allowed => domain.endsWith(allowed)),
+  { message: 'Logo domain not in whitelist' }
+);
+
+// ============================================================================
+// BACKEND SCHEMAS (Copied from supabase/functions)
+// ============================================================================
+
 // Copied from supabase/functions/multi-agent-spec/lib/types.ts and associated files
 // to ensure frontend-backend type parity.
 
