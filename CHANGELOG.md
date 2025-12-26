@@ -2,6 +2,47 @@
 
 All notable changes to Specificity will be documented in this file.
 
+## [1.2.0] - 2025-12-26 22:45 UTC
+
+### Added
+- **Turn-End Requirements** in CLAUDE.md for mandatory TODO.md updates at every turn
+- **Temporal Metacognition Protocol** - Claude validates documentation recency dynamically
+- **TODO.md** with 10 high-leverage actions (129 atomic subtasks)
+- **docs/HIGH_LEVERAGE_ACTIONS.md** - Comprehensive roadmap with confidence scores
+- Complete file tree documentation in README.md (350+ files)
+- Dependency analysis with confidence scores (82-100%)
+- Multi-viewpoint analysis (user, developer, business, security, performance)
+
+### Changed
+- Updated @supabase/supabase-js: 2.75.1 → 2.89.0
+- Updated @playwright/test: 1.56.1 → 1.57.0
+- README.md now includes dependency decision matrix
+
+### Fixed
+- 10 UX bugs affecting user experience (commit 149c7d1):
+  - TOAST_REMOVE_DELAY memory leak (1000000ms → 5000ms)
+  - HistoryPanel rendering JSON as Markdown
+  - SpecView infinite loading on missing ID
+  - SpecView error state with no back navigation
+  - Delete button missing loading state
+  - Specs query missing user filter
+  - ProcessViewer returning null when no tasks
+  - Voice recording button disabled during recording
+  - Resume button race condition
+  - Download buttons silent failure
+
+### Security
+- RLS policies enabled on prompts tables (commit 6b15115)
+- Comprehensive resilience and security improvements (commit 01d1223)
+
+### Quality Metrics
+- TypeScript: 0 errors
+- ESLint: 0 errors
+- Dependencies: All at secure versions
+- Bundle: 430KB gzipped
+
+---
+
 ## [1.1.1] - 2025-12-23
 
 ### Security

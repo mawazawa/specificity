@@ -469,4 +469,81 @@ npm run test:unit:coverage
 
 ---
 
+## Turn-End Requirements (MANDATORY)
+
+**At the end of EVERY turn, before finishing, Claude MUST:**
+
+### 1. Update TODO.md with Next 10 High-Leverage Actions
+
+```markdown
+# Requirements for TODO.md Updates
+- Identify 10 highest-leverage actions based on current codebase state
+- Each action MUST have a confidence score (0-100%)
+- Each action MUST be broken into 10-20 atomic subtasks
+- Each atomic subtask MUST touch ≤5 files (scope constraint)
+- Include web research citations for technical decisions
+- Validate documentation recency (check if docs are current as of today)
+```
+
+### 2. Validate Documentation Recency
+
+```bash
+# Dynamic requirement: Recency validation moves with time
+# Today's date is the reference point for "current"
+# Check that:
+- README.md reflects current dependencies
+- CLAUDE.md tech stack versions are accurate
+- Any external docs referenced are still valid (2025+)
+- Model versions in docs match actual usage
+```
+
+### 3. Update CHANGELOG.md with Timestamps
+
+```markdown
+# CHANGELOG Entry Format
+## [Version] - YYYY-MM-DD HH:MM UTC
+
+### Added
+- Feature additions with file paths
+
+### Changed
+- Modifications with before/after
+
+### Fixed
+- Bug fixes with issue references
+
+### Security
+- Security improvements with severity
+```
+
+### 4. Temporal Metacognition Protocol
+
+Claude has **temporal metacognition** - awareness that:
+- Documentation ages and becomes stale
+- Dependencies release new versions
+- Best practices evolve
+- Previous recommendations may need updating
+
+**At each turn, validate:**
+| Check | Action |
+|-------|--------|
+| Dependency versions | `npm outdated` or check package.json |
+| Doc timestamps | Check "Last Updated" dates |
+| External links | Verify URLs still work |
+| Model availability | Confirm AI models still available |
+
+### 5. Completion Checklist
+
+Before ending any turn, verify:
+
+- [ ] TODO.md updated with next 10 actions
+- [ ] Each action has confidence score
+- [ ] Each action has 10-20 atomic subtasks
+- [ ] Each subtask touches ≤5 files
+- [ ] CHANGELOG.md updated with timestamp
+- [ ] Documentation recency validated
+- [ ] Web research citations included where needed
+
+---
+
 *Last Updated: December 26, 2025*
