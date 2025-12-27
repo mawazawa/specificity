@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, Zap, Package, Smartphone } from "lucide-react";
 import { motion } from "framer-motion";
+import { getInteractiveProps } from "@/lib/a11y";
 
 interface SampleSpec {
   title: string;
@@ -86,8 +87,12 @@ export const SampleSpecGallery = ({ onSelectSample }: SampleSpecGalleryProps) =>
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
           >
-            <Card className="p-5 hover:border-primary/50 transition-all duration-300 hover:shadow-lg group cursor-pointer h-full flex flex-col"
-              onClick={() => handleSampleClick(sample.input)}
+            <Card
+              className="p-5 hover:border-primary/50 transition-all duration-300 hover:shadow-lg group cursor-pointer h-full flex flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+              {...getInteractiveProps(
+                () => handleSampleClick(sample.input),
+                `Use ${sample.title} template`
+              )}
             >
               <div className="flex items-start gap-4 mb-3">
                 <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center group-hover:scale-110 transition-transform">

@@ -2,7 +2,7 @@
 
 All notable changes to Specificity will be documented in this file.
 
-## [1.2.0] - 2025-12-26 23:15 UTC
+## [1.2.0] - 2025-12-27 00:00 UTC
 
 ### Added
 - **Turn-End Requirements** in CLAUDE.md for mandatory TODO.md updates at every turn
@@ -12,6 +12,21 @@ All notable changes to Specificity will be documented in this file.
 - Complete file tree documentation in README.md (350+ files)
 - Dependency analysis with confidence scores (82-100%)
 - Multi-viewpoint analysis (user, developer, business, security, performance)
+
+### Accessibility (Action 3 - 92% confidence)
+- **src/lib/a11y.ts** - New accessibility utilities for keyboard navigation
+- `getInteractiveProps()` - Adds role, tabIndex, onKeyDown to interactive elements
+- `createKeyboardClickHandler()` - Handles Enter/Space key activation
+- `prefersReducedMotion()` - Check for reduced motion preference
+- SampleSpecGallery cards now keyboard accessible with visible focus rings
+
+### Performance (Action 4 - 90% confidence)
+- **AgentCard** memory leak fixed - removed motion values from useEffect deps
+- Added cleanup for `mousemove` listener in AgentCard
+- **LiveAgentCard** wrapped in `React.memo` to prevent unnecessary re-renders
+- Memoized `extractInsights()` and `getTagsFromText()` with useMemo
+- Optimized `getTagsFromText()` - single toLowerCase() instead of 6 calls
+- Added `loading="lazy"` to avatar images for faster FCP
 
 ### Security (Action 1 - 98% confidence)
 - **sessionDataSchema** with Zod validation for localStorage (`src/types/schemas.ts`)

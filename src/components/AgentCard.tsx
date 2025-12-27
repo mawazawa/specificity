@@ -52,6 +52,8 @@ export const AgentCard = ({ config, onChange, isLandingPage = false }: AgentCard
     damping: 40 
   });
 
+  // FIX: Removed x, y from dependencies to prevent memory leak
+  // Motion values are refs and don't need to trigger effect re-runs
   useEffect(() => {
     const element = ref.current;
     if (!element) return;
@@ -80,8 +82,10 @@ export const AgentCard = ({ config, onChange, isLandingPage = false }: AgentCard
     return () => {
       element.removeEventListener("mouseenter", handleMouseEnter);
       element.removeEventListener("mouseleave", handleMouseLeave);
+      element.removeEventListener("mousemove", updateTilt);
     };
-  }, [x, y]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty deps - motion values are stable refs
 
   return (
     <motion.div
@@ -108,9 +112,10 @@ export const AgentCard = ({ config, onChange, isLandingPage = false }: AgentCard
               <div className={`absolute -inset-1 bg-gradient-to-br ${agent.color} rounded-2xl opacity-75 group-hover/avatar:opacity-100 blur group-hover/avatar:blur-md transition-all duration-500`} />
               <div className={`relative w-28 h-28 rounded-2xl bg-gradient-to-br ${agent.color} overflow-hidden shadow-2xl ring-2 ring-white/10 group-hover/avatar:ring-white/20 transition-all duration-500 transform group-hover/avatar:scale-105`}>
                 <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-black/10" />
-                <img 
-                  src={agent.avatar} 
-                  alt={agent.name} 
+                <img
+                  src={agent.avatar}
+                  alt={agent.name}
+                  loading="lazy"
                   className="relative w-full h-full object-cover"
                 />
                 <div className="absolute bottom-2 right-2 w-3 h-3 bg-green-400 rounded-full ring-2 ring-background shadow-lg animate-pulse" />

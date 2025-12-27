@@ -1,3 +1,4 @@
+import { useMemo, memo } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MessageSquare, ThumbsUp, ThumbsDown, Sparkles, Brain, Target } from "lucide-react";
@@ -25,15 +26,17 @@ const extractInsights = (text: string) => {
   return sentences.slice(0, 3).map(s => s.trim());
 };
 
+// FIX: Optimized to call toLowerCase only once instead of 6 times
 const getTagsFromText = (text: string) => {
+  const lowerText = text.toLowerCase();
   const tags = [];
-  if (text.toLowerCase().includes('scale') || text.toLowerCase().includes('growth')) {
+  if (lowerText.includes('scale') || lowerText.includes('growth')) {
     tags.push({ label: 'Scale', icon: Target });
   }
-  if (text.toLowerCase().includes('innovation') || text.toLowerCase().includes('ai')) {
+  if (lowerText.includes('innovation') || lowerText.includes('ai')) {
     tags.push({ label: 'Innovation', icon: Sparkles });
   }
-  if (text.toLowerCase().includes('ux') || text.toLowerCase().includes('design') || text.toLowerCase().includes('user')) {
+  if (lowerText.includes('ux') || lowerText.includes('design') || lowerText.includes('user')) {
     tags.push({ label: 'UX', icon: Brain });
   }
   return tags.slice(0, 2);
@@ -47,10 +50,19 @@ interface LiveAgentCardProps {
   isActive?: boolean;
 }
 
-export const LiveAgentCard = ({ agent, output, vote, question, isActive }: LiveAgentCardProps) => {
+// FIX: Wrapped in memo to prevent unnecessary re-renders
+export const LiveAgentCard = memo(function LiveAgentCard({ agent, output, vote, question, isActive }: LiveAgentCardProps) {
   const agentData = agentInfo[agent as keyof typeof agentInfo];
-  const insights = output ? extractInsights(output) : [];
-  const tags = output ? getTagsFromText(output) : [];
+
+  // FIX: Memoized expensive text parsing operations
+  const insights = useMemo(
+    () => (output ? extractInsights(output) : []),
+    [output]
+  );
+  const tags = useMemo(
+    () => (output ? getTagsFromText(output) : []),
+    [output]
+  );
   
   return (
     <Card className={`relative p-4 bg-gradient-to-br from-card/70 via-card/50 to-card/30 backdrop-blur-xl border transition-all duration-500 overflow-hidden ${
