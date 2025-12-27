@@ -10,7 +10,7 @@ async function runTests() {
 
   // Initialize service
   const service = new PromptService();
-  service.setSessionId('test-session-' + Date.now());
+  service.setSessionId(`test-session-${  Date.now()}`);
 
   try {
     // Test 1: Get a single prompt

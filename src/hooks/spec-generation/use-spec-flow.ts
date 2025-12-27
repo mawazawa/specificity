@@ -62,7 +62,7 @@ export function useSpecFlow({ agentConfigs }: UseSpecFlowProps) {
     if (errMessage.includes('OPENROUTER') || errMessage.includes('OpenRouter')) {
       return {
         title: '⚠️ OpenRouter API Issue',
-        message: 'Falling back to Groq. ' + errMessage
+        message: `Falling back to Groq. ${  errMessage}`
       };
     }
 

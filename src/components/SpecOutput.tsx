@@ -472,7 +472,7 @@ export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = fals
           doc.setTextColor(entry.level === 2 ? 24 : 82, entry.level === 2 ? 24 : 82, entry.level === 2 ? 27 : 91);
           doc.setFont(undefined, entry.level === 2 ? 'bold' : 'normal');
 
-          const truncatedTitle = entry.title.length > 50 ? entry.title.substring(0, 47) + '...' : entry.title;
+          const truncatedTitle = entry.title.length > 50 ? `${entry.title.substring(0, 47)  }...` : entry.title;
           doc.text(`${index + 1}. ${truncatedTitle}`, margin + indent, tocY);
           tocY += 8;
 

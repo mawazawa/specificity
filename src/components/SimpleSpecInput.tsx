@@ -131,7 +131,7 @@ export const SimpleSpecInput = ({ onSubmit, isLoading, defaultValue }: SimpleSpe
 
           if (data?.text) {
             setInput(prev => prev + (prev ? ' ' : '') + data.text);
-            toast({ title: "Transcription complete", description: data.text.substring(0, 60) + '...' });
+            toast({ title: "Transcription complete", description: `${data.text.substring(0, 60)  }...` });
           } else {
             throw new Error('No transcription returned');
           }

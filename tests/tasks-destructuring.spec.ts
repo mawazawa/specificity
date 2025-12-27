@@ -76,7 +76,7 @@ test.describe('Tasks Destructuring Bug Fix', () => {
               await btn.click({ force: true });
               await page.waitForTimeout(300);
               if (!(await welcomeDialog.isVisible().catch(() => false))) {
-                console.log('Dialog dismissed by clicking button ' + i);
+                console.log(`Dialog dismissed by clicking button ${  i}`);
                 break;
               }
             }

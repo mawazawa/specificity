@@ -99,7 +99,7 @@ describe('validateUserInput', () => {
     });
 
     it('should trim whitespace', () => {
-      const input = '   ' + 'a'.repeat(25) + '   ';
+      const input = `   ${  'a'.repeat(25)  }   `;
       const result = validateUserInput(input);
 
       expect(result.success).toBe(true);

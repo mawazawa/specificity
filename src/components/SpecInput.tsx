@@ -96,7 +96,7 @@ export const SpecInput = ({ onSubmit, isLoading, defaultValue }: SpecInputProps)
         if (data?.text) {
           console.log('Transcription result:', data.text);
           setInput(prev => prev + (prev ? ' ' : '') + data.text);
-          toast({ title: "Transcription complete", description: data.text.substring(0, 50) + '...' });
+          toast({ title: "Transcription complete", description: `${data.text.substring(0, 50)  }...` });
         } else {
           throw new Error('No transcription returned');
         }

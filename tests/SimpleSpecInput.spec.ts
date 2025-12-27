@@ -80,7 +80,7 @@ test.describe('SimpleSpecInput defaultValue Synchronization Bug Fix', () => {
 
     // Exactly 25 characters (the minimum required)
     const exactlyMinChars = "Build a mobile fitness"; // 22 chars
-    const minChars = exactlyMinChars + "app"; // 25 chars total
+    const minChars = `${exactlyMinChars  }app`; // 25 chars total
 
     await specInput.fill(minChars);
     const value = await specInput.inputValue();
