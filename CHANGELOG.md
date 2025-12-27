@@ -2,6 +2,42 @@
 
 All notable changes to Specificity will be documented in this file.
 
+## [1.4.1] - 2025-12-27 11:56 UTC
+
+### Smart Error Boundaries (Action 24 - 93% confidence)
+- **src/components/error-boundaries.tsx** - Specialized error boundaries
+- `SpecGenerationBoundary` - With retry and clear session options
+- `ChatBoundary` - Lightweight chat error handling
+- `ExportBoundary` - Export-specific error UI
+- `PageBoundary` - Full-page error with navigation
+- `useErrorBoundary` hook for function components
+- `withErrorHandling` async wrapper utility
+
+### Distributed Tracing (Action 26 - 89% confidence)
+- **src/lib/tracing.ts** - End-to-end tracing utilities
+- `SpecGenerationTracer` class with span management
+- Trace ID generation (32 hex chars) and span IDs (16 hex chars)
+- `getTraceHeaders()` - Headers for API propagation
+- `TraceSummary` - Comprehensive trace reports
+- Sentry integration for trace context correlation
+
+### localStorage Encryption (Action 27 - 88% confidence)
+- **src/lib/secure-storage.ts** - Encrypted storage utilities
+- `SecureStorage` class with AES-GCM encryption
+- Web Crypto API for key derivation
+- IndexedDB for secure key storage
+- TTL support for automatic expiry
+- Graceful fallback for non-encrypted data
+- `migrateToEncrypted()` utility
+
+### Quality Metrics
+- TypeScript: 0 errors
+- ESLint: 0 errors
+- Unit Tests: **279 passing tests**
+- Phase 3 Progress: 8/10 actions complete
+
+---
+
 ## [1.4.0] - 2025-12-27 11:47 UTC
 
 ### TypeScript Configuration (Action 22 - 96% confidence)
