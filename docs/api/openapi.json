@@ -1,0 +1,394 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Specificity AI API",
+    "description": "Multi-agent AI panel for generating professional technical specifications",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Specificity AI",
+      "url": "https://specificity.ai"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://tkkthpoottlqmdopmtuh.supabase.co/functions/v1",
+      "description": "Production"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/multi-agent-spec": {
+      "post": {
+        "operationId": "generateSpec",
+        "summary": "Generate Technical Specification",
+        "description": "Orchestrates 8 AI advisors through an 8-stage pipeline to generate a professional technical specification",
+        "tags": ["Specification"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SpecGenerationRequest"
+              },
+              "examples": {
+                "basic": {
+                  "summary": "Basic spec request",
+                  "value": {
+                    "stage": "questions",
+                    "userInput": "AI-powered task management app for remote teams",
+                    "sessionId": "sess_abc123"
+                  }
+                },
+                "with_context": {
+                  "summary": "Request with context",
+                  "value": {
+                    "stage": "research",
+                    "questions": ["What is the target market?", "What are the key features?"],
+                    "sessionId": "sess_abc123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpecGenerationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - missing or invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (5 requests/hour)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/voice-to-text": {
+      "post": {
+        "operationId": "transcribeVoice",
+        "summary": "Transcribe Voice to Text",
+        "description": "Converts audio input to text using Groq's Whisper API",
+        "tags": ["Voice"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["audio"],
+                "properties": {
+                  "audio": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Audio file (mp3, wav, m4a, webm)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Transcription successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TranscriptionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid audio format",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/upgrade-to-pro": {
+      "post": {
+        "operationId": "upgradeToPro",
+        "summary": "Upgrade to Pro Plan",
+        "description": "Process payment and upgrade user to Pro plan",
+        "tags": ["Billing"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpgradeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Upgrade successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpgradeResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Payment validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Supabase JWT token from authenticated session"
+      }
+    },
+    "schemas": {
+      "SpecGenerationRequest": {
+        "type": "object",
+        "required": ["stage", "sessionId"],
+        "properties": {
+          "stage": {
+            "type": "string",
+            "enum": ["questions", "research", "challenge", "synthesis", "review", "voting", "spec", "chat"],
+            "description": "Current pipeline stage"
+          },
+          "sessionId": {
+            "type": "string",
+            "description": "Unique session identifier"
+          },
+          "userInput": {
+            "type": "string",
+            "minLength": 25,
+            "maxLength": 5000,
+            "description": "User's product/project description"
+          },
+          "questions": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Generated questions from stage 1"
+          },
+          "researchResults": {
+            "type": "object",
+            "description": "Research findings from stage 2"
+          },
+          "challenges": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Devil's advocate challenges from stage 3"
+          },
+          "synthesis": {
+            "type": "string",
+            "description": "Synthesized findings from stage 4"
+          },
+          "reviews": {
+            "type": "array",
+            "items": { "type": "object" },
+            "description": "Quality reviews from stage 5"
+          },
+          "chatMessage": {
+            "type": "string",
+            "description": "User message for chat stage"
+          }
+        }
+      },
+      "SpecGenerationResponse": {
+        "type": "object",
+        "properties": {
+          "stage": {
+            "type": "string",
+            "description": "Completed stage name"
+          },
+          "result": {
+            "oneOf": [
+              { "type": "array", "items": { "type": "string" } },
+              { "type": "object" },
+              { "type": "string" }
+            ],
+            "description": "Stage output (varies by stage)"
+          },
+          "nextStage": {
+            "type": "string",
+            "description": "Next stage to process"
+          },
+          "progress": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Overall progress percentage"
+          },
+          "dialogueEntries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DialogueEntry"
+            },
+            "description": "Agent dialogue entries"
+          }
+        }
+      },
+      "DialogueEntry": {
+        "type": "object",
+        "properties": {
+          "agent": {
+            "type": "string",
+            "enum": ["elon", "steve", "oprah", "zaha", "jony", "bartlett", "amal", "cuban", "system"],
+            "description": "Agent identifier"
+          },
+          "content": {
+            "type": "string",
+            "description": "Agent's message content"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "stage": {
+            "type": "string"
+          }
+        }
+      },
+      "TranscriptionResponse": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "Transcribed text"
+          },
+          "duration": {
+            "type": "number",
+            "description": "Audio duration in seconds"
+          },
+          "language": {
+            "type": "string",
+            "description": "Detected language code"
+          }
+        }
+      },
+      "UpgradeRequest": {
+        "type": "object",
+        "required": ["paymentIntentId"],
+        "properties": {
+          "paymentIntentId": {
+            "type": "string",
+            "description": "Stripe payment intent ID"
+          }
+        }
+      },
+      "UpgradeResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "plan": {
+            "type": "string",
+            "enum": ["free", "pro", "enterprise"]
+          },
+          "validUntil": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Error message"
+          },
+          "code": {
+            "type": "string",
+            "description": "Error code for programmatic handling"
+          },
+          "details": {
+            "type": "object",
+            "description": "Additional error details"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Specification",
+      "description": "Technical specification generation endpoints"
+    },
+    {
+      "name": "Voice",
+      "description": "Voice transcription endpoints"
+    },
+    {
+      "name": "Billing",
+      "description": "Payment and subscription endpoints"
+    }
+  ]
+}

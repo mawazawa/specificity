@@ -5,7 +5,7 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist", "node_modules", "*.config.js", "*.config.ts"] },
+  { ignores: ["dist", "node_modules", "*.config.js", "*.config.ts", "scripts/**", "evals/**"] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
@@ -57,10 +57,17 @@ export default tseslint.config(
   // Production-specific rules (stricter)
   {
     files: ["src/**/*.{ts,tsx}"],
-    ignores: ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts"],
+    ignores: ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "src/lib/logger.ts"],
     rules: {
-      // Stricter console rules for production code
-      "no-console": ["warn", { allow: ["warn", "error"] }],
+      // Strict console rules for production code - use logger.ts instead
+      "no-console": "error",
+    },
+  },
+  // Logger file exception (it wraps console for dev mode)
+  {
+    files: ["src/lib/logger.ts"],
+    rules: {
+      "no-console": "off",
     },
   },
   // Test files (more lenient)

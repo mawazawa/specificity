@@ -1,0 +1,96 @@
+name: Lighthouse CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+
+      - name: Run Lighthouse CI
+        run: |
+          npm install -g @lhci/cli@0.13.x
+          lhci autorun
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+
+      - name: Upload Lighthouse Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lighthouse-report
+          path: .lighthouseci
+          retention-days: 14
+
+      - name: Comment PR with Lighthouse Results
+        uses: actions/github-script@v7
+        if: github.event_name == 'pull_request'
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            // Find the manifest file
+            const lhciDir = '.lighthouseci';
+            if (!fs.existsSync(lhciDir)) {
+              console.log('No Lighthouse results found');
+              return;
+            }
+
+            const manifestPath = path.join(lhciDir, 'manifest.json');
+            if (!fs.existsSync(manifestPath)) {
+              console.log('No manifest.json found');
+              return;
+            }
+
+            const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+            const results = manifest[0];
+
+            if (!results || !results.summary) {
+              console.log('No results in manifest');
+              return;
+            }
+
+            const summary = results.summary;
+
+            const comment = `## ⚡ Lighthouse Report
+
+            | Category | Score |
+            |----------|-------|
+            | 🎨 Performance | ${Math.round(summary.performance * 100)}% |
+            | ♿ Accessibility | ${Math.round(summary.accessibility * 100)}% |
+            | 🔒 Best Practices | ${Math.round(summary['best-practices'] * 100)}% |
+            | 🔍 SEO | ${Math.round(summary.seo * 100)}% |
+
+            [View Full Report](${results.htmlPath || 'See artifacts'})
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
