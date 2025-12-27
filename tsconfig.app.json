@@ -14,12 +14,20 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
-    /* Linting */
+    /* Linting - Incremental strictness (Phase 3 Action 22)
+     * TODO: Enable progressively:
+     * - "strict": true (requires ~200 type fixes)
+     * - "noImplicitAny": true (requires explicit typing)
+     * - "strictNullChecks": true (requires null guards)
+     */
     "strict": false,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "noImplicitAny": false,
-    "noFallthroughCasesInSwitch": false,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitReturns": true,
+    "noUncheckedIndexedAccess": false,
 
     "baseUrl": ".",
     "paths": {
