@@ -28,6 +28,16 @@ All notable changes to Specificity will be documented in this file.
 - Optimized `getTagsFromText()` - single toLowerCase() instead of 6 calls
 - Added `loading="lazy"` to avatar images for faster FCP
 
+### Testing (Action 5 - 88% confidence)
+- **94 new unit tests** for core hooks and utilities:
+  - `use-session.test.ts` - 18 tests for session reducer actions
+  - `use-dialogue.test.ts` - 16 tests for dialogue reducer actions
+  - `use-tasks.test.ts` - 19 tests for task reducer actions
+  - `utils.test.ts` - 21 tests for safeJsonParse and simpleHash
+  - `a11y.test.ts` - 20 tests for keyboard accessibility utilities
+- Updated `vitest.config.ts` to include `src/**/*.test.ts`
+- Total test count: **143 passing tests**
+
 ### Security (Action 1 - 98% confidence)
 - **sessionDataSchema** with Zod validation for localStorage (`src/types/schemas.ts`)
 - **safeJsonParse** utility prevents XSS/corruption (`src/lib/utils.ts`)
