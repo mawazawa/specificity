@@ -362,3 +362,47 @@ All colors MUST be HSL.
     }
   }
 }
+
+/* ============================================================================
+ * REDUCED MOTION SUPPORT
+ * Respects user's prefers-reduced-motion system preference
+ * Disables animations and transitions for users with vestibular disorders
+ * @see https://www.smashingmagazine.com/2021/10/respecting-users-motion-preferences/
+ * ============================================================================
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    /* Disable all animations */
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+
+    /* Reduce transition duration to near-instant */
+    transition-duration: 0.01ms !important;
+
+    /* Disable scroll behavior smooth */
+    scroll-behavior: auto !important;
+  }
+
+  /* Preserve essential animations like loading spinners */
+  .animate-spin {
+    animation: spin 1s linear infinite !important;
+  }
+
+  /* Disable hover transforms */
+  .group-hover\:scale-105:hover,
+  .hover\:scale-105:hover {
+    transform: none !important;
+  }
+
+  /* Disable pulse animations */
+  .animate-pulse {
+    animation: none !important;
+  }
+
+  /* Disable ping animations */
+  .animate-ping {
+    animation: none !important;
+  }
+}

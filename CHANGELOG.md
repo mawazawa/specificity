@@ -48,6 +48,17 @@ All notable changes to Specificity will be documented in this file.
 - **ChatInput** - Character limit display with warning at 100 remaining
 - `validation.test.ts` - 40 tests for validation utilities
 
+### Reduced Motion Support (Action 9 - 90% confidence)
+- **src/hooks/use-reduced-motion.ts** - React hook for reduced motion preference
+- `useReducedMotion()` - Subscribes to system preference changes
+- `getMotionSafeProps()` - Framer Motion props that disable animation
+- `reducedMotionVariants` - Pre-built animation variants for common patterns
+- **AgentCard** 3D tilt disabled when reduced motion preferred
+- **CSS fallbacks** in `src/index.css`:
+  - Global animation/transition duration override to 0.01ms
+  - Preserves essential spinners for loading states
+  - Disables pulse, ping, and hover scale animations
+
 ### Security (Action 1 - 98% confidence)
 - **sessionDataSchema** with Zod validation for localStorage (`src/types/schemas.ts`)
 - **safeJsonParse** utility prevents XSS/corruption (`src/lib/utils.ts`)

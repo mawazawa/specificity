@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { motion, useMotionValue, useSpring } from "framer-motion";
 import { AgentConfig } from "@/types/spec";
 import { ChevronDown, ChevronUp, Settings, Sparkles } from "lucide-react";
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { NeumorphicSlider } from "./NeumorphicSlider";
 import steveJobsAvatar from "@/assets/optimized/steve-jobs-nobg.webp";
 import oprahAvatar from "@/assets/optimized/oprah-nobg.webp";
@@ -40,21 +41,26 @@ export const AgentCard = ({ config, onChange, isLandingPage = false }: AgentCard
     avatar: agentPlaceholder
   };
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
   const ref = useRef<HTMLDivElement>(null);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-  const mouseX = useSpring(x, { 
-    stiffness: 300, 
-    damping: 40 
+  const mouseX = useSpring(x, {
+    stiffness: 300,
+    damping: 40
   });
-  const mouseY = useSpring(y, { 
-    stiffness: 300, 
-    damping: 40 
+  const mouseY = useSpring(y, {
+    stiffness: 300,
+    damping: 40
   });
 
   // FIX: Removed x, y from dependencies to prevent memory leak
   // Motion values are refs and don't need to trigger effect re-runs
+  // A11Y: Disable 3D tilt when user prefers reduced motion
   useEffect(() => {
+    // Skip tilt effect entirely if user prefers reduced motion
+    if (prefersReducedMotion) return;
+
     const element = ref.current;
     if (!element) return;
 
@@ -85,12 +91,12 @@ export const AgentCard = ({ config, onChange, isLandingPage = false }: AgentCard
       element.removeEventListener("mousemove", updateTilt);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty deps - motion values are stable refs
+  }, [prefersReducedMotion]); // Re-run if reduced motion preference changes
 
   return (
     <motion.div
       ref={ref}
-      style={{
+      style={prefersReducedMotion ? {} : {
         rotateX: mouseY,
         rotateY: mouseX,
         transformPerspective: 1000,
