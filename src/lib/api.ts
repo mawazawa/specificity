@@ -1,6 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { AgentConfig, TechStackItem } from '@/types/spec';
-import { RoundData } from '@/types/schemas';
+import { RoundData, userInputSchema, chatMessageSchema } from '@/types/schemas';
 
 // Default timeout for API calls
 // Spec generation takes ~30 minutes (8-stage pipeline with research, debate, synthesis)
@@ -56,8 +56,14 @@ async function invokeFunction<T>(
 
 export const api = {
   generateQuestions: async (userInput: string) => {
+    // Validate user input before API call
+    const validation = userInputSchema.safeParse(userInput);
+    if (!validation.success) {
+      throw new Error(`VALIDATION: ${validation.error.issues[0]?.message || 'Invalid input'}`);
+    }
+
     return invokeFunction<{ questions: RoundData['questions'] }>('multi-agent-spec', {
-      userInput,
+      userInput: validation.data,
       stage: 'questions'
     });
   },
@@ -176,12 +182,18 @@ export const api = {
     targetAgent: string,
     message: string
   ) => {
+    // Validate chat message before API call
+    const validation = chatMessageSchema.safeParse(message);
+    if (!validation.success) {
+      throw new Error(`VALIDATION: ${validation.error.issues[0]?.message || 'Invalid message'}`);
+    }
+
     // Chat uses quick timeout since it's a single agent response
     return invokeFunction<{ response: string; agent: string; timestamp: string }>('multi-agent-spec', {
       stage: 'chat',
       agentConfigs,
       targetAgent,
-      userInput: message
+      userInput: validation.data
     }, QUICK_TIMEOUT_MS);
   },
 

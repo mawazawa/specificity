@@ -36,7 +36,17 @@ All notable changes to Specificity will be documented in this file.
   - `utils.test.ts` - 21 tests for safeJsonParse and simpleHash
   - `a11y.test.ts` - 20 tests for keyboard accessibility utilities
 - Updated `vitest.config.ts` to include `src/**/*.test.ts`
-- Total test count: **143 passing tests**
+- Total test count: **183 passing tests**
+
+### Input Validation (Action 6 - 94% confidence)
+- **src/lib/validation.ts** - Validation utilities with error feedback
+- `validateUserInput()` - Spec input validation (25-5000 chars)
+- `validateChatMessage()` - Chat message validation (1-2000 chars)
+- `validateUrl()` - URL security validation (http/https only)
+- `getCharacterCount()` - Character counter with warning state
+- **API layer validation** - Input validated before Edge Function calls
+- **ChatInput** - Character limit display with warning at 100 remaining
+- `validation.test.ts` - 40 tests for validation utilities
 
 ### Security (Action 1 - 98% confidence)
 - **sessionDataSchema** with Zod validation for localStorage (`src/types/schemas.ts`)

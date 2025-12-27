@@ -1,8 +1,11 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Send, Pause, Play } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { getCharacterCount } from "@/lib/validation";
+
+const MAX_MESSAGE_LENGTH = 2000;
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -25,10 +28,24 @@ export const ChatInput = ({
 }: ChatInputProps) => {
   const [message, setMessage] = useState("");
 
+  // Character count with validation state
+  const charInfo = useMemo(
+    () => getCharacterCount(message.trim(), 1, MAX_MESSAGE_LENGTH),
+    [message]
+  );
+
   const handleSend = () => {
-    if (message.trim()) {
-      onSend(message);
+    if (message.trim() && charInfo.isValid) {
+      onSend(message.trim());
       setMessage("");
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    // Allow typing but enforce max length
+    if (value.length <= MAX_MESSAGE_LENGTH) {
+      setMessage(value);
     }
   };
 
@@ -46,15 +63,23 @@ export const ChatInput = ({
           <div className="relative">
             <Textarea
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              onChange={handleChange}
               onKeyDown={handleKeyDown}
               placeholder={placeholder}
               className="min-h-[60px] pr-16 resize-none bg-card/50 backdrop-blur-sm border-border/30 rounded-2xl text-sm focus:ring-2 focus:ring-primary/30"
               disabled={isProcessing}
+              maxLength={MAX_MESSAGE_LENGTH}
             />
+            <div className="absolute right-14 bottom-3 flex items-center gap-2">
+              <span className={`text-[10px] ${
+                charInfo.isWarning ? 'text-amber-500' : 'text-muted-foreground/50'
+              }`}>
+                {charInfo.remaining}
+              </span>
+            </div>
             <Button
               onClick={handleSend}
-              disabled={!message.trim() || isProcessing}
+              disabled={!message.trim() || !charInfo.isValid || isProcessing}
               size="icon"
               className="absolute right-2 bottom-2 h-10 w-10 rounded-xl bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20"
             >
@@ -71,18 +96,26 @@ export const ChatInput = ({
                 exit={{ opacity: 0, y: -10 }}
                 className="space-y-3"
               >
-                <Textarea
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder={placeholder}
-                  className="min-h-[100px] resize-none bg-card/50 backdrop-blur-sm border-border/30 rounded-2xl text-sm focus:ring-2 focus:ring-primary/30"
-                  disabled={false}
-                />
+                <div className="relative">
+                  <Textarea
+                    value={message}
+                    onChange={handleChange}
+                    onKeyDown={handleKeyDown}
+                    placeholder={placeholder}
+                    className="min-h-[100px] resize-none bg-card/50 backdrop-blur-sm border-border/30 rounded-2xl text-sm focus:ring-2 focus:ring-primary/30"
+                    disabled={false}
+                    maxLength={MAX_MESSAGE_LENGTH}
+                  />
+                  <span className={`absolute right-3 bottom-3 text-[10px] ${
+                    charInfo.isWarning ? 'text-amber-500' : 'text-muted-foreground/50'
+                  }`}>
+                    {charInfo.remaining} characters remaining
+                  </span>
+                </div>
                 <div className="flex gap-2">
                   <Button
                     onClick={handleSend}
-                    disabled={!message.trim()}
+                    disabled={!message.trim() || !charInfo.isValid}
                     className="flex-1 h-12 rounded-full bg-gradient-to-r from-primary via-primary/90 to-primary/80 hover:from-primary/90 hover:via-primary/80 hover:to-primary/70 shadow-lg shadow-primary/20 font-semibold"
                   >
                     <Send className="w-4 h-4 mr-2" />
