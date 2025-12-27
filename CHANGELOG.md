@@ -2,6 +2,48 @@
 
 All notable changes to Specificity will be documented in this file.
 
+## [1.3.1] - 2025-12-27 11:35 UTC
+
+### Database Query Optimization & Indices (Action 13 - 92% confidence)
+- **supabase/migrations/20251227112832_add_performance_indices.sql** - Performance indices
+- `idx_specifications_user_created` - Composite index for user spec listing
+- `idx_specifications_public` - Partial index for public specs
+- `idx_profiles_stripe_customer_id` - Stripe webhook customer lookups
+- `idx_profiles_stripe_subscription_id` - Subscription queries
+- `idx_profiles_plan` - Plan-based user filtering
+- `idx_profiles_email` - Email lookup queries
+- **src/lib/query-performance.ts** - Query performance monitoring utility
+- `withQueryMetrics()` - Wrap queries with performance tracking
+- `trackQuery()` - Decorator for class methods
+- `RECOMMENDED_INDICES` - Documented index recommendations
+
+### Product Analytics & User Tracking (Action 14 - 90% confidence)
+- **src/lib/analytics.ts** - Privacy-respecting analytics module
+- `identify()` - User identification with traits
+- `track()` - Event tracking with Sentry integration
+- `trackPageView()` / `trackFeature()` / `trackSpecFlow()` - Specialized trackers
+- `trackConversion()` - Conversion event tracking
+- `AnalyticsEvents` - Pre-defined event constants
+- Respects `navigator.doNotTrack` preference
+- Session ID management with sessionStorage
+
+### Large Component Refactoring (Action 15 - 88% confidence)
+- **src/lib/export-utils.ts** - Extracted export utilities from SpecOutput
+- `downloadBlob()` - Generic blob download utility
+- `generateFilename()` - Timestamped filename generator
+- `copyToClipboard()` - Clipboard utility with toast feedback
+- `DEFAULT_TECH_STACK` - Extracted default tech stack data
+- `SUGGESTED_REFINEMENTS` - Extracted refinement suggestions
+- `loadPdfLibraries()` / `loadDocxLibraries()` - Lazy loaders
+
+### Quality Metrics
+- TypeScript: 0 errors
+- ESLint: 0 errors (warnings expected)
+- Unit Tests: **238 passing tests** (10 new)
+- Phase 2 Progress: 8/10 actions complete
+
+---
+
 ## [1.3.0] - 2025-12-27 11:25 UTC
 
 ### Dependency Updates & Maintenance (Action 11 - 96% confidence)
