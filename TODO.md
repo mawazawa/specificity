@@ -346,13 +346,243 @@ Use TanStack Query's built-in retry with exponential backoff instead of custom i
 
 ---
 
+# Next 10 High-Leverage Actions (Phase 2)
+
+## Overview
+
+| # | Action | Confidence | Status |
+|---|--------|------------|--------|
+| 11 | Dependency Updates & Maintenance | 96% | Pending |
+| 12 | Core Web Vitals & Performance Monitoring | 94% | Pending |
+| 13 | Database Query Optimization & Indices | 92% | Pending |
+| 14 | Product Analytics & User Tracking | 90% | Pending |
+| 15 | Large Component Refactoring (SpecOutput) | 88% | Pending |
+| 16 | Content Security Policy & Security Headers | 91% | Pending |
+| 17 | Payment Integration (Stripe/Billing) | 87% | Pending |
+| 18 | Environment Configuration & .env Validation | 89% | Pending |
+| 19 | Component Documentation & Storybook | 85% | Pending |
+| 20 | ESLint & Code Quality Enhancement | 86% | Pending |
+
+---
+
+## Action 11: Dependency Updates & Maintenance Strategy
+
+**Confidence: 96%** | **Priority: CRITICAL** | **Effort: Medium**
+
+### Problem
+22 direct dependencies are outdated. Missing structured update strategy creates security/compatibility debt.
+
+### Atomic Subtasks
+
+| # | Task | Files (≤5) |
+|---|------|------------|
+| 11.1 | Create .npmrc with strict version pinning | `.npmrc` |
+| 11.2 | Run npm audit and document findings | Package docs |
+| 11.3 | Update all @radix-ui packages to latest | `package.json` |
+| 11.4 | Update @playwright/test 1.56 → 1.57 | `package.json` |
+| 11.5 | Update @eslint packages | `package.json` |
+| 11.6 | Update @hookform/resolvers | `package.json` |
+| 11.7 | Test all functionality post-upgrade | `tests/**` |
+| 11.8 | Add dependabot configuration | `.github/dependabot.yml` |
+| 11.9 | Document upgrade process | `CLAUDE.md` |
+| 11.10 | Add to CI/CD pipeline | `.github/workflows/ci.yml` |
+
+---
+
+## Action 12: Core Web Vitals & Performance Monitoring
+
+**Confidence: 94%** | **Priority: HIGH** | **Effort: Medium**
+
+### Problem
+Zero tracking of Core Web Vitals (LCP, FID, CLS). No visibility into real-world performance.
+
+### Atomic Subtasks
+
+| # | Task | Files (≤5) |
+|---|------|------------|
+| 12.1 | Install web-vitals library | `package.json` |
+| 12.2 | Create web-vitals reporting utility | `src/lib/web-vitals.ts` |
+| 12.3 | Initialize Web Vitals in main.tsx | `src/main.tsx` |
+| 12.4 | Report metrics to Sentry | `src/lib/web-vitals.ts` |
+| 12.5 | Add bundle size analyzer to build | `vite.config.ts` |
+| 12.6 | Document performance targets | `docs/PERFORMANCE_TARGETS.md` |
+| 12.7 | Create performance monitoring tests | `tests/performance.spec.ts` |
+
+---
+
+## Action 13: Database Query Optimization & Indices
+
+**Confidence: 92%** | **Priority: HIGH** | **Effort: Medium**
+
+### Problem
+Specifications table missing indices for common queries (user_id, created_at, is_public).
+
+### Atomic Subtasks
+
+| # | Task | Files (≤5) |
+|---|------|------------|
+| 13.1 | Add index on specifications(user_id) | `supabase/migrations/*.sql` |
+| 13.2 | Add compound index on (user_id, created_at) | `supabase/migrations/*.sql` |
+| 13.3 | Add index on specifications(is_public) | `supabase/migrations/*.sql` |
+| 13.4 | Enable query logging in Supabase | Supabase config |
+| 13.5 | Analyze slow queries report | Documentation |
+| 13.6 | Add RLS policy indices | `supabase/migrations/*.sql` |
+| 13.7 | Document query patterns | `docs/DATABASE.md` |
+
+---
+
+## Action 14: Product Analytics & User Tracking
+
+**Confidence: 90%** | **Priority: HIGH** | **Effort: High**
+
+### Problem
+Zero product analytics. No visibility into feature usage, conversion funnel, or user segments.
+
+### Atomic Subtasks
+
+| # | Task | Files (≤5) |
+|---|------|------------|
+| 14.1 | Implement PostHog or Mixpanel SDK | `src/lib/analytics.ts` |
+| 14.2 | Track spec generation start events | `src/hooks/spec-generation/use-spec-flow.ts` |
+| 14.3 | Track spec generation completion | `src/hooks/spec-generation/use-spec-flow.ts` |
+| 14.4 | Track stage progression | `src/hooks/spec-generation/use-spec-flow.ts` |
+| 14.5 | Track export/download events | `src/components/SpecOutput.tsx` |
+| 14.6 | Track chat interactions | `src/components/chat/ChatView.tsx` |
+| 14.7 | Document analytics events | `docs/ANALYTICS_EVENTS.md` |
+
+---
+
+## Action 15: Large Component Refactoring (SpecOutput)
+
+**Confidence: 88%** | **Priority: MEDIUM** | **Effort: High**
+
+### Problem
+SpecOutput.tsx is 887 LOC. Markdown rendering, export logic, styling mixed together.
+
+### Atomic Subtasks
+
+| # | Task | Files (≤5) |
+|---|------|------------|
+| 15.1 | Extract markdown rendering | `src/components/SpecOutput/MarkdownRenderer.tsx` |
+| 15.2 | Extract export logic to hook | `src/hooks/use-spec-export.ts` |
+| 15.3 | Extract PDF generation | `src/lib/spec-exporters/pdf.ts` |
+| 15.4 | Extract DOCX generation | `src/lib/spec-exporters/docx.ts` |
+| 15.5 | Extract tech stack display | `src/components/SpecOutput/TechStackDisplay.tsx` |
+| 15.6 | Refactor SpecOutput to use sub-components | `src/components/SpecOutput.tsx` |
+| 15.7 | Add unit tests for sub-components | `src/components/SpecOutput/__tests__/*.test.tsx` |
+
+---
+
+## Action 16: Content Security Policy & Security Headers
+
+**Confidence: 91%** | **Priority: HIGH** | **Effort: Low**
+
+### Problem
+No CSP headers. Vulnerable to XSS, clickjacking, MIME-sniffing.
+
+### Atomic Subtasks
+
+| # | Task | Files (≤5) |
+|---|------|------------|
+| 16.1 | Create CSP policy for production | `vercel.json` or `netlify.toml` |
+| 16.2 | Configure HSTS header | Deployment config |
+| 16.3 | Add X-Frame-Options header | Deployment config |
+| 16.4 | Add X-Content-Type-Options nosniff | Deployment config |
+| 16.5 | Add Referrer-Policy header | Deployment config |
+| 16.6 | Document CSP configuration | `docs/SECURITY_HEADERS.md` |
+| 16.7 | Test headers with online tools | Manual testing |
+
+---
+
+## Action 17: Payment Integration (Stripe/Billing)
+
+**Confidence: 87%** | **Priority: MEDIUM** | **Effort: High**
+
+### Problem
+upgrade-to-pro Edge Function has TODO comment. Payment verification incomplete.
+
+### Atomic Subtasks
+
+| # | Task | Files (≤5) |
+|---|------|------------|
+| 17.1 | Create Stripe integration module | `src/lib/stripe-client.ts` |
+| 17.2 | Add Stripe webhook handler | `supabase/functions/stripe-webhook/index.ts` |
+| 17.3 | Complete upgrade-to-pro function | `supabase/functions/upgrade-to-pro/index.ts` |
+| 17.4 | Create payment form component | `src/components/PaymentForm.tsx` |
+| 17.5 | Implement subscription status check | `src/hooks/use-subscription.ts` |
+| 17.6 | Create billing history page | `src/pages/Billing.tsx` |
+| 17.7 | Document payment flow | `docs/PAYMENT_FLOW.md` |
+
+---
+
+## Action 18: Environment Configuration & .env Validation
+
+**Confidence: 89%** | **Priority: MEDIUM** | **Effort: Low**
+
+### Problem
+No .env.example file. No runtime validation of required environment variables.
+
+### Atomic Subtasks
+
+| # | Task | Files (≤5) |
+|---|------|------------|
+| 18.1 | Create .env.example template | `.env.example` |
+| 18.2 | Document all required env vars | `docs/ENVIRONMENT_SETUP.md` |
+| 18.3 | Create env validation utility | `src/lib/env-validation.ts` |
+| 18.4 | Add validation to app initialization | `src/main.tsx` |
+| 18.5 | Create validation error UI | `src/components/EnvValidationError.tsx` |
+| 18.6 | Add zod schema for env vars | `src/types/env-schema.ts` |
+
+---
+
+## Action 19: Component Documentation & Storybook
+
+**Confidence: 85%** | **Priority: MEDIUM** | **Effort: High**
+
+### Problem
+95+ components with no documentation or visual regression testing.
+
+### Atomic Subtasks
+
+| # | Task | Files (≤5) |
+|---|------|------------|
+| 19.1 | Install Storybook | `package.json`, `.storybook/main.ts` |
+| 19.2 | Create Storybook config for Tailwind | `.storybook/main.ts` |
+| 19.3 | Create stories for ui components | `src/components/ui/**/*.stories.tsx` |
+| 19.4 | Create stories for page components | `src/components/**/*.stories.tsx` |
+| 19.5 | Document component prop types | Stories |
+| 19.6 | Deploy Storybook to Chromatic | `.github/workflows/storybook.yml` |
+
+---
+
+## Action 20: ESLint & Code Quality Enhancement
+
+**Confidence: 86%** | **Priority: MEDIUM** | **Effort: Medium**
+
+### Problem
+ESLint rules don't enforce path alias usage. No forbidden patterns (console.log in prod).
+
+### Atomic Subtasks
+
+| # | Task | Files (≤5) |
+|---|------|------------|
+| 20.1 | Add eslint-plugin-import for alias rules | `eslint.config.js` |
+| 20.2 | Configure no-relative-imports rule | `eslint.config.js` |
+| 20.3 | Add max-lines rule for components | `eslint.config.js` |
+| 20.4 | Add forbidden console.log in production | `eslint.config.js` |
+| 20.5 | Fix all existing violations | `src/**` |
+| 20.6 | Add to pre-commit hooks | `.git/hooks/pre-commit` |
+| 20.7 | Document code quality standards | `docs/CODE_QUALITY.md` |
+
+---
+
 ## Documentation Recency Validation
 
 | Document | Last Updated | Status |
 |----------|--------------|--------|
 | README.md | Dec 26, 2025 | ✅ Current |
 | CLAUDE.md | Dec 26, 2025 | ✅ Current |
-| CHANGELOG.md | Dec 23, 2025 | ⚠️ Needs update |
+| CHANGELOG.md | Dec 27, 2025 | ✅ Current |
 | package.json | Dec 26, 2025 | ✅ Current |
 
 ### External Documentation Validated
@@ -360,6 +590,8 @@ Use TanStack Query's built-in retry with exponential backoff instead of custom i
 - [Zod GitHub](https://github.com/colinhacks/zod) - ✅ Current (v3.25)
 - [WCAG 2.2 Guidelines](https://www.w3.org/TR/WCAG22/) - ✅ Current (2025)
 - [ARIAKit](https://ariakit.org/) - ✅ Current (React Advanced 2025)
+- [web-vitals](https://github.com/GoogleChrome/web-vitals) - ✅ Current (v4.x, 2025)
+- [PostHog](https://posthog.com/docs) - ✅ Current (2025)
 
 ---
 
