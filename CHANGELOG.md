@@ -2,6 +2,51 @@
 
 All notable changes to Specificity will be documented in this file.
 
+## [1.4.2] - 2025-12-27 12:15 UTC
+
+### Edge Function Integration Tests (Action 29 - 86% confidence)
+- **supabase/functions/lib/__tests__/security.test.ts** - Security utility tests
+- Prompt injection detection tests (29 test cases)
+- Input sanitization tests (HTML, quotes, control chars)
+- Unicode normalization and truncation tests
+- Error sanitization tests
+- **supabase/functions/lib/__tests__/structured-logger.test.ts** - Logger tests
+- Request ID generation tests (24 test cases)
+- Logger levels (debug, info, warn, error)
+- Metrics tracking
+- Timer utilities with fake timers
+- Pipeline tracing tests
+- **supabase/functions/lib/__tests__/rate-limiter.test.ts** - Rate limiter tests
+- Queue statistics verification
+- Updated **vitest.config.ts** to include edge function tests
+
+### Large Component Refactoring (Action 30 - 85% confidence)
+- **src/hooks/use-spec-export.ts** - Extracted export hook (250 lines)
+  - Centralized export state management
+  - All download functions (PDF, Word, Image, Markdown, etc.)
+  - AI export functions (Agent-Ready, AGENTS.md, JSON, Spec Kit)
+  - Proper memoization with dependencies
+  - Clean interface for consumers
+- **src/lib/pdf-generator.ts** - Extracted PDF generation (280 lines)
+  - `generateSpecPdf()` async function
+  - Cover page with project title
+  - Table of contents generation
+  - Content rendering with page breaks
+  - Footer with page numbers
+  - Progress callbacks for UI feedback
+- **src/components/SpecOutput.tsx** - Reduced from 887 to 739 lines
+  - 17% reduction in component size
+  - Uses extracted `useSpecExport` hook
+  - Better separation of concerns
+
+### Quality Metrics
+- TypeScript: 0 errors
+- ESLint: 0 errors
+- Unit Tests: **334 passing tests** (55 new)
+- Phase 3: **10/10 actions complete** ✅
+
+---
+
 ## [1.4.1] - 2025-12-27 11:56 UTC
 
 ### Smart Error Boundaries (Action 24 - 93% confidence)

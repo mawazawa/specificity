@@ -1,10 +1,9 @@
 /**
- * SpecOutput Component - Refactored for Performance
+ * SpecOutput Component - Refactored for Maintainability
  *
- * Performance improvements (November 2025):
- * - Extracted markdown components to stable module-level references
- * - Memoized SpecMarkdown component prevents re-parse on state changes
- * - Download functions remain inline (infrequent operations)
+ * Refactoring history:
+ * - November 2025: Extracted markdown components to stable module-level references
+ * - December 2025: Extracted export logic to useSpecExport hook (Action 30)
  */
 
 import { Card } from "@/components/ui/card";
@@ -21,24 +20,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { FileText, CheckCircle2, Download, Copy, FileType, ThumbsUp, ChevronDown, Layers, Share2, Loader2, Bot, Code, Github, Image } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { TechStackCard } from "./TechStackCard";
 import { TechStackItem } from "@/types/spec";
 import { SpecMarkdown } from "./SpecOutput/MarkdownComponents";
-import { generateAgentReadyMarkdown, generateSpecJsonString, generateAgentsMd, generateSpecKitMarkdown } from "@/lib/spec-serializers";
-
-// Lazy-loaded export utilities - these are heavy dependencies (~700KB total)
-// They are only loaded when the user actually clicks the export button
-const loadPdfLibraries = () => Promise.all([
-  import("jspdf"),
-  import("html2canvas"),
-  import("file-saver")
-]);
-
-const loadDocxLibraries = () => Promise.all([
-  import("docx"),
-  import("file-saver")
-]);
+import { useSpecExport } from "@/hooks/use-spec-export";
 
 interface SpecOutputProps {
   spec: string;
@@ -60,9 +46,7 @@ export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = fals
   const [showRefinements, setShowRefinements] = useState(false);
   const [selectedRefinements, setSelectedRefinements] = useState<string[]>([]);
   const [customRefinement, setCustomRefinement] = useState("");
-  const [exportingPdf, setExportingPdf] = useState(false);
-  const [exportingDocx, setExportingDocx] = useState(false);
-  const [exportingImage, setExportingImage] = useState(false);
+  const specRef = useRef<HTMLDivElement>(null);
   const [techStack, setTechStack] = useState<TechStackItem[]>(initialTechStack || [
     {
       category: "Backend",
@@ -132,7 +116,22 @@ export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = fals
     testing: false
   });
 
-  const specRef = useRef<HTMLDivElement>(null);
+  // Use the extracted export hook for all export functionality
+  const {
+    exportingPdf,
+    exportingDocx,
+    exportingImage,
+    copyToClipboard,
+    downloadMarkdown,
+    downloadText,
+    downloadAgentReady,
+    downloadJson,
+    downloadAgentsMd,
+    downloadSpecKit,
+    downloadImage,
+    downloadWord,
+    downloadPDF,
+  } = useSpecExport({ spec, techStack, specRef });
 
   const handleTechSelect = (category: string, techName: string) => {
     setTechStack(prev => prev.map(item => {
@@ -158,157 +157,10 @@ export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = fals
     setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(spec);
-    toast({ title: "Copied!", description: "Specification copied to clipboard" });
-  };
 
-  const downloadMarkdown = () => {
-    const blob = new Blob([spec], { type: 'text/markdown' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `specification-${new Date().toISOString().split('T')[0]}.md`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    toast({ title: "Downloaded", description: "Specification saved as markdown" });
-  };
 
-  const downloadText = () => {
-    const blob = new Blob([spec], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `specification-${new Date().toISOString().split('T')[0]}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    toast({ title: "Downloaded", description: "Specification saved as text" });
-  };
 
-  // Agent-ready export with YAML frontmatter
-  const downloadAgentReady = useCallback(() => {
-    const agentReadyContent = generateAgentReadyMarkdown(spec, techStack);
-    const blob = new Blob([agentReadyContent], { type: 'text/markdown' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `specification-agent-ready-${new Date().toISOString().split('T')[0]}.md`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    toast({
-      title: "Agent-Ready Spec Downloaded",
-      description: "Specification with YAML frontmatter for AI coding agents"
-    });
-  }, [spec, techStack]);
 
-  // JSON export for machine parsing
-  const downloadJson = useCallback(() => {
-    const jsonContent = generateSpecJsonString(spec, techStack);
-    const blob = new Blob([jsonContent], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `specification-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    toast({
-      title: "JSON Downloaded",
-      description: "Machine-readable specification for CI/CD and tooling"
-    });
-  }, [spec, techStack]);
-
-  // AGENTS.md export for GitHub Copilot / Claude Code
-  const downloadAgentsMd = useCallback(() => {
-    const agentsMdContent = generateAgentsMd(spec, techStack);
-    const blob = new Blob([agentsMdContent], { type: 'text/markdown' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'AGENTS.md';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    toast({
-      title: "AGENTS.md Downloaded",
-      description: "Ready for GitHub Copilot, Claude Code, and other AI agents"
-    });
-  }, [spec, techStack]);
-
-  // GitHub Spec Kit format with Given/When/Then acceptance criteria
-  const downloadSpecKit = useCallback(() => {
-    const specKitContent = generateSpecKitMarkdown(spec, techStack);
-    const blob = new Blob([specKitContent], { type: 'text/markdown' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `spec-kit-${new Date().toISOString().split('T')[0]}.md`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    toast({
-      title: "Spec Kit Downloaded",
-      description: "GitHub Spec Kit format with Given/When/Then acceptance criteria"
-    });
-  }, [spec, techStack]);
-
-  const downloadImage = useCallback(async () => {
-    if (exportingImage) return;
-
-    // Fix: Show error instead of silent failure when element not found
-    if (!specRef.current) {
-      toast({
-        title: "Export Failed",
-        description: "Specification content not found. Please try again.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setExportingImage(true);
-    try {
-      const [, html2canvasModule, fileSaverModule] = await loadPdfLibraries();
-      const html2canvas = html2canvasModule.default;
-      const { saveAs } = fileSaverModule;
-
-      const canvas = await html2canvas(specRef.current, {
-        scale: 2, // Retain high resolution
-        useCORS: true,
-        backgroundColor: "#1a1b1e" // Match dark theme
-      });
-      canvas.toBlob((blob) => {
-        if (blob) {
-          saveAs(blob, `specification-${new Date().toISOString().split('T')[0]}.png`);
-          toast({ title: "Image Downloaded", description: "Specification saved as PNG" });
-        } else {
-          // Fix: Show error instead of silent failure when blob creation fails
-          toast({
-            title: "Export Failed",
-            description: "Could not create image. Please try again.",
-            variant: "destructive"
-          });
-        }
-      });
-    } catch (error) {
-      console.error("Image generation error:", error);
-      toast({
-        title: "Export Failed",
-        description: "Could not generate image.",
-        variant: "destructive"
-      });
-    } finally {
-      setExportingImage(false);
-    }
-  }, [exportingImage]);
 
   const downloadWord = useCallback(async () => {
     if (exportingDocx) return;

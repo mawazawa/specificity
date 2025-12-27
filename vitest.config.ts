@@ -10,7 +10,8 @@ export default defineConfig({
       'tests/lazy-loading.spec.ts',
       'tests/round-tracker-coverage.spec.ts',
       'tests/yaml-frontmatter-env-bug.spec.ts',
-      'src/**/*.test.ts'  // Include src unit tests
+      'src/**/*.test.ts',  // Include src unit tests
+      'supabase/functions/lib/__tests__/*.test.ts'  // Edge function tests
     ], // Only vitest unit tests, not Playwright e2e tests
     exclude: [
       'node_modules/**',
