@@ -2,6 +2,38 @@
 
 All notable changes to Specificity will be documented in this file.
 
+## [1.2.1] - 2025-12-27 01:10 UTC
+
+### Error Handling Improvements (Action 7 - 87% confidence)
+- **src/lib/errors.ts** - Error categorization utility with user-friendly messages
+- `categorizeError()` - Categorizes errors into 10 types (validation, network, timeout, rate_limit, auth, permission, not_found, server, client, unknown)
+- `toToastError()` - Converts errors to toast-friendly format
+- `logError()` - Structured error logging with context
+- `isRetryable()` / `isRecoverable()` - Error recovery helpers
+- **SimpleSpecInput.tsx** - FileReader error handling with onerror handler
+- **SpecView.tsx** - Category-specific error UI with appropriate icons (WifiOff, Lock, AlertCircle)
+- **use-profile.ts** - Enhanced error handling with ProfileError interface
+- **useAuth.ts** - getSession error handling with proper error messaging
+
+### API Timeout & Retry Logic (Action 10 - 82% confidence)
+- **src/lib/retry.ts** - Retry utility with exponential backoff
+- `withRetry()` - Execute async functions with automatic retry on transient failures
+- `calculateDelay()` - Exponential backoff with optional jitter
+- `isTransientError()` - Detect retryable errors (network, timeout, rate limit, 5xx)
+- `withRetryWrapper()` - Create retry-wrapped function variants
+- **src/lib/network.ts** - Network status monitoring utilities
+- `useNetworkStatus()` - React hook for online/offline detection
+- `checkConnectivity()` - Active connectivity check
+- `waitForOnline()` - Wait for network recovery
+- **API layer** - Automatic retry (2 retries with 2-15s backoff) for transient failures
+- **retry.test.ts** - 23 tests for retry logic
+
+### Testing
+- **23 new retry tests** for exponential backoff, jitter, abort signals, and error categorization
+- Total test count: **206 passing tests**
+
+---
+
 ## [1.2.0] - 2025-12-27 00:00 UTC
 
 ### Added

@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { AgentConfig, TechStackItem } from '@/types/spec';
 import { RoundData, userInputSchema, chatMessageSchema } from '@/types/schemas';
+import { withRetry, isTransientError } from '@/lib/retry';
 
 // Default timeout for API calls
 // Spec generation takes ~30 minutes (8-stage pipeline with research, debate, synthesis)
@@ -10,48 +11,78 @@ const DEFAULT_TIMEOUT_MS = 2100000;
 // Shorter timeout for quick operations (chat, voice-to-text)
 const QUICK_TIMEOUT_MS = 120000;
 
-// Helper to handle Supabase function errors with timeout
+// Retry configuration for transient failures
+const RETRY_CONFIG = {
+  maxRetries: 2, // 2 retries = 3 total attempts
+  initialDelayMs: 2000, // Start with 2 second delay
+  maxDelayMs: 15000, // Cap at 15 seconds
+  onRetry: (attempt: number, error: unknown, delayMs: number) => {
+    console.log(`[API] Retry attempt ${attempt} after ${delayMs}ms:`, error);
+  },
+};
+
+// Helper to handle Supabase function errors with timeout and retry
 async function invokeFunction<T>(
   functionName: string,
   body: Record<string, unknown>,
-  timeoutMs: number = DEFAULT_TIMEOUT_MS
+  timeoutMs: number = DEFAULT_TIMEOUT_MS,
+  enableRetry = true
 ): Promise<T> {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  const execute = async (): Promise<T> => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-  try {
-    const { data, error } = await supabase.functions.invoke(functionName, {
-      body,
-      // Note: Supabase client may not support signal yet, but we handle timeout manually
+    try {
+      const { data, error } = await supabase.functions.invoke(functionName, {
+        body,
+        // Note: Supabase client may not support signal yet, but we handle timeout manually
+      });
+
+      clearTimeout(timeoutId);
+
+      if (error) {
+        // Enhanced error handling with specific error types
+        const message = error.message || `Failed to invoke ${functionName}`;
+        if (message.includes('rate limit') || message.includes('429')) {
+          throw new Error(`RATE_LIMIT: ${message}`);
+        }
+        if (message.includes('timeout') || message.includes('504')) {
+          throw new Error(`TIMEOUT: ${message}`);
+        }
+        throw new Error(message);
+      }
+
+      // Validate response is not null/undefined
+      if (data === null || data === undefined) {
+        throw new Error(`Empty response from ${functionName}`);
+      }
+
+      return data as T;
+    } catch (err) {
+      clearTimeout(timeoutId);
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        throw new Error(`TIMEOUT: ${functionName} timed out after ${timeoutMs}ms`);
+      }
+      throw err;
+    }
+  };
+
+  // Use retry logic for transient failures if enabled
+  if (enableRetry) {
+    return withRetry(execute, {
+      ...RETRY_CONFIG,
+      isRetryable: (error) => {
+        // Don't retry validation errors
+        const message = error instanceof Error ? error.message : String(error);
+        if (message.startsWith('VALIDATION:')) {
+          return false;
+        }
+        return isTransientError(error);
+      },
     });
-
-    clearTimeout(timeoutId);
-
-    if (error) {
-      // Enhanced error handling with specific error types
-      const message = error.message || `Failed to invoke ${functionName}`;
-      if (message.includes('rate limit') || message.includes('429')) {
-        throw new Error(`RATE_LIMIT: ${message}`);
-      }
-      if (message.includes('timeout') || message.includes('504')) {
-        throw new Error(`TIMEOUT: ${message}`);
-      }
-      throw new Error(message);
-    }
-
-    // Validate response is not null/undefined
-    if (data === null || data === undefined) {
-      throw new Error(`Empty response from ${functionName}`);
-    }
-
-    return data as T;
-  } catch (err) {
-    clearTimeout(timeoutId);
-    if (err instanceof DOMException && err.name === 'AbortError') {
-      throw new Error(`TIMEOUT: ${functionName} timed out after ${timeoutMs}ms`);
-    }
-    throw err;
   }
+
+  return execute();
 }
 
 export const api = {

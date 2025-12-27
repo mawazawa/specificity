@@ -90,10 +90,37 @@ export const SimpleSpecInput = ({ onSubmit, isLoading, defaultValue }: SimpleSpe
   const transcribeAudio = async (audioBlob: Blob) => {
     try {
       const reader = new FileReader();
-      reader.readAsDataURL(audioBlob);
+
+      // Handle FileReader errors (e.g., security restrictions, blob corruption)
+      reader.onerror = () => {
+        const errorMessage = reader.error?.message || 'Failed to read audio file';
+        console.error('[SimpleSpecInput] FileReader error:', reader.error);
+        toast({
+          title: "Audio Processing Failed",
+          description: errorMessage,
+          variant: "destructive"
+        });
+      };
+
       reader.onloadend = async () => {
+        // Validate result before processing
+        if (!reader.result || typeof reader.result !== 'string') {
+          toast({
+            title: "Audio Processing Failed",
+            description: "Could not read audio data. Please try again.",
+            variant: "destructive"
+          });
+          return;
+        }
+
         try {
           const base64Audio = (reader.result as string).split(',')[1];
+
+          // Validate base64 data exists
+          if (!base64Audio) {
+            throw new Error('Invalid audio format');
+          }
+
           const { data, error } = await supabase.functions.invoke('voice-to-text', {
             body: { audio: base64Audio }
           });
@@ -109,18 +136,23 @@ export const SimpleSpecInput = ({ onSubmit, isLoading, defaultValue }: SimpleSpe
             throw new Error('No transcription returned');
           }
         } catch (error) {
-          console.error('Voice-to-text error:', error);
+          console.error('[SimpleSpecInput] Voice-to-text error:', error);
+          const message = error instanceof Error ? error.message : 'Unknown error';
           toast({
-            title: "Failed to transcribe audio",
-            description: error instanceof Error ? error.message : 'Unknown error',
+            title: "Transcription Failed",
+            description: message.includes('timeout')
+              ? 'Request timed out. Please try a shorter recording.'
+              : message,
             variant: "destructive"
           });
         }
       };
+
+      reader.readAsDataURL(audioBlob);
     } catch (error) {
-      console.error('Error transcribing audio:', error);
+      console.error('[SimpleSpecInput] Error transcribing audio:', error);
       toast({
-        title: "Failed to transcribe audio",
+        title: "Transcription Failed",
         description: error instanceof Error ? error.message : 'Unknown error',
         variant: "destructive"
       });

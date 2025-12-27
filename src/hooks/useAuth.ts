@@ -45,15 +45,28 @@ export const useAuth = (): UseAuthReturn => {
     );
 
     // Check for existing session on mount
-    supabase.auth.getSession().then(({ data: { session: existingSession } }) => {
-      setSession(existingSession);
-      setUser(existingSession?.user ?? null);
-      setIsLoading(false);
+    supabase.auth.getSession()
+      .then(({ data: { session: existingSession }, error }) => {
+        if (error) {
+          console.error('[useAuth] Failed to get session:', error.message);
+          setIsLoading(false);
+          navigate('/auth');
+          return;
+        }
 
-      if (!existingSession) {
+        setSession(existingSession);
+        setUser(existingSession?.user ?? null);
+        setIsLoading(false);
+
+        if (!existingSession) {
+          navigate('/auth');
+        }
+      })
+      .catch((error) => {
+        console.error('[useAuth] Session check failed:', error);
+        setIsLoading(false);
         navigate('/auth');
-      }
-    });
+      });
 
     return () => subscription.unsubscribe();
   }, [navigate]);
