@@ -60,7 +60,8 @@ export function usePauseResume({
     setPaused(false);
     toast({ title: 'Resuming', description: 'Continuing with your guidance...' });
 
-    const currentPendingResume = pendingResumeRef.current ?? pendingResume;
+    // Use ONLY the ref value to avoid stale closure issues
+    const currentPendingResume = pendingResumeRef.current;
     if (!currentPendingResume || isProcessing) {
       return;
     }
@@ -88,7 +89,6 @@ export function usePauseResume({
     toast,
     addHistory,
     addDialogue,
-    pendingResume,
     isProcessing,
     setPendingResume,
     runRound,

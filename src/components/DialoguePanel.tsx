@@ -118,9 +118,9 @@ export const DialoguePanel = ({ entries, isOpen = false, onToggle }: DialoguePan
   const [expanded, setExpanded] = useState(isOpen);
 
   const handleToggle = useCallback(() => {
-    setExpanded(!expanded);
+    setExpanded(prev => !prev);
     onToggle?.();
-  }, [expanded, onToggle]);
+  }, [onToggle]);
 
   return (
     <div className="fixed bottom-6 right-6 z-50 w-full max-w-md">

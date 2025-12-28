@@ -2,6 +2,52 @@
 
 All notable changes to Specificity will be documented in this file.
 
+## [1.12.0] - 2025-12-28 14:35 UTC
+
+### Phase 7 Action 1 + Bug Fixes (11 bugs fixed)
+
+#### Action 1: TypeScript Strict Mode Consolidation ✅
+- **tsconfig.app.json & tsconfig.json** - Consolidated to `"strict": true`:
+  - Removed 7 individual strict flags (noImplicitAny, strictNullChecks, etc.)
+  - Single `"strict": true` now covers all flags
+  - Future-proof: auto-includes new strict flags in future TypeScript versions
+  - Bonus: Now includes `useUnknownInCatchVariables` automatically
+
+#### Bug Fixes (11 total, researched with Dec 2025 documentation)
+
+**CRITICAL (1 fixed):**
+- **use-spec-flow.ts:307** - Unsafe fallback chain: Added length check before `agentConfigs[0]` access with meaningful error message
+
+**HIGH (2 fixed):**
+- **storage-quota.ts:155** - localStorage iteration: Fixed unsafe `.key()` loop by pre-calculating sizes and tracking removed bytes
+- **api.ts:287** - Missing null guard: Added `if (!data)` check after saveSpec database call
+
+**MEDIUM (7 fixed):**
+- **SimpleSpecInput.tsx:119** - Unsafe string split: Validated `split(',')` has 2+ elements before accessing index 1
+- **use-pause-resume.ts:63** - Stale closure: Changed to ref-only approach, eliminated mixed ref/state access
+- **SpecOutput.tsx:384** - Unsafe `as any` cast: Removed cast, used existing `mockupUrl` prop
+- **ChatView.tsx:108** - Non-unique React key: Removed array index from key, using `agent-timestamp` only
+- **DialoguePanel.tsx:120** - Stale closure: Changed to functional update `setExpanded(prev => !prev)`
+- **useSessionPersistence.ts:182** - Race condition: Added `isWritingRef` lock to prevent concurrent writes
+- **useSessionPersistence.ts:244** - Unsafe type cast: Removed `as unknown as`, using Zod-inferred types
+
+**LOW (1 fixed):**
+- **Index.tsx:151** - Missing bounds check: Added explicit validation for `currentRound` index
+
+#### Research Sources (December 2025)
+- React 18.3 memory leak patterns (FreeCodeCamp, Medium)
+- TypeScript 5.8 strict mode gotchas (Better Stack, GitHub #61698)
+- localStorage quota handling (MDN, TrackJS)
+- OWASP Top 10 2025 web security vulnerabilities
+
+### Quality Metrics
+- TypeScript: 0 errors (consolidated strict mode)
+- Unit tests: 443 passing
+- Production build: 22.98s
+- Bundle: 430KB gzipped
+
+---
+
 ## [1.11.0] - 2025-12-28 14:00 UTC
 
 ### Phase 5 Complete + Phase 6 Critical Actions

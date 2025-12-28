@@ -14,28 +14,22 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
-    /* Linting - Incremental strictness (Action 56: TypeScript Strict Mode Migration - COMPLETED)
-     * All strict flags enabled:
-     * ✓ "noImplicitAny": true (explicit typing enforced)
-     * ✓ "strictNullChecks": true (null guards enforced)
-     * ✓ "strictFunctionTypes": true (function variance enforced)
-     * ✓ "strictBindCallApply": true (bind/call/apply typing enforced)
-     * ✓ "strictPropertyInitialization": true (class property init enforced)
-     * ✓ "noImplicitThis": true (explicit this typing enforced)
-     * ✓ "alwaysStrict": true (strict mode JavaScript enforced)
+    /* Linting - Full strict mode enabled (Phase 7 Action 1: COMPLETED)
+     * "strict": true consolidates all strict flags:
+     *   - noImplicitAny (explicit typing enforced)
+     *   - strictNullChecks (null guards enforced)
+     *   - strictFunctionTypes (function variance enforced)
+     *   - strictBindCallApply (bind/call/apply typing enforced)
+     *   - strictPropertyInitialization (class property init enforced)
+     *   - noImplicitThis (explicit this typing enforced)
+     *   - alwaysStrict (strict mode JavaScript enforced)
+     *   - useUnknownInCatchVariables (catch vars are 'unknown' instead of 'any')
      *
-     * Next step: Enable "strict": true to consolidate all flags
+     * Individual flags no longer needed - "strict": true enables all current and future strict flags
      */
-    "strict": false,
+    "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "strictBindCallApply": true,
-    "strictPropertyInitialization": true,
-    "noImplicitThis": true,
-    "alwaysStrict": true,
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitReturns": true,

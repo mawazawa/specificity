@@ -116,7 +116,14 @@ export const SimpleSpecInput = ({ onSubmit, isLoading, defaultValue }: SimpleSpe
         }
 
         try {
-          const base64Audio = (reader.result as string).split(',')[1];
+          const splitResult = (reader.result as string).split(',');
+
+          // Validate split result has at least 2 elements before accessing index 1
+          if (splitResult.length < 2) {
+            throw new Error('Invalid audio format: missing base64 data');
+          }
+
+          const base64Audio = splitResult[1];
 
           // Validate base64 data exists
           if (!base64Audio) {

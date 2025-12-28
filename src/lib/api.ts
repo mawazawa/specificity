@@ -282,8 +282,9 @@ export const api = {
       })
       .select('id')
       .single();
-      
+
     if (error) throw new Error(error.message);
+    if (!data) throw new Error('Failed to save specification: No data returned');
     return data;
   }
 };

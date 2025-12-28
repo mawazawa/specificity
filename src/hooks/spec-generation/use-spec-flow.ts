@@ -304,11 +304,11 @@ export function useSpecFlow({ agentConfigs }: UseSpecFlowProps) {
 
     try {
       // Find a suitable agent for PM role (Steve or first enabled)
-      const pmAgent = agentConfigs.find(c => c.enabled && c.agent === 'steve') || 
-                      agentConfigs.find(c => c.enabled) || 
-                      agentConfigs[0];
+      const pmAgent = agentConfigs.find(c => c.enabled && c.agent === 'steve') ||
+                      agentConfigs.find(c => c.enabled) ||
+                      (agentConfigs.length > 0 ? agentConfigs[0] : null);
 
-      if (!pmAgent) throw new Error("No agents available");
+      if (!pmAgent) throw new Error("No agents configured. Please enable at least one agent in settings.");
 
       const prompt = `I have a product idea: "${input}". 
       

@@ -381,7 +381,6 @@ export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = fals
 
         {/* Visual Mockup Section - NEW for Visual Spec Era */}
         {(() => {
-          const mockupUrl = (initialTechStack as any)?.mockup_url;
           const validatedMockupUrl = mockupUrl ? validateImageUrl(mockupUrl) : null;
 
           return validatedMockupUrl && (

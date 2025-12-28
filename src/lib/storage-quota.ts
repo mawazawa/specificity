@@ -150,7 +150,7 @@ export function clearOldestEntries(
   }
 
   try {
-    // Find all matching keys
+    // Collect all matching keys FIRST (before any removals)
     const matchingKeys: string[] = [];
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
@@ -171,6 +171,7 @@ export function clearOldestEntries(
     interface StorageEntry {
       key: string;
       timestamp: number;
+      size: number;
     }
 
     const entries: StorageEntry[] = matchingKeys
@@ -184,18 +185,27 @@ export function clearOldestEntries(
             ? new Date(parsed.timestamp).getTime()
             : 0; // No timestamp = oldest
 
-          return { key, timestamp };
+          // Calculate entry size (key + value, UTF-16 = 2 bytes per char)
+          const size = (key.length + value.length) * 2;
+
+          return { key, timestamp, size };
         } catch {
           // If parse fails, treat as oldest
-          return { key, timestamp: 0 };
+          const value = localStorage.getItem(key);
+          const size = (key.length + (value?.length || 0)) * 2;
+          return { key, timestamp: 0, size };
         }
       })
       .filter((entry): entry is StorageEntry => entry !== null)
       .sort((a, b) => a.timestamp - b.timestamp); // Oldest first
 
+    // Calculate initial usage and target ONCE before removal loop
+    const initialUsage = getStorageUsage();
+    const targetUsage = targetPercentage * getStorageQuota();
+
     // Remove entries until we reach target percentage or max removals
     let removedCount = 0;
-    const targetUsage = targetPercentage * getStorageQuota();
+    let removedSize = 0;
 
     for (const entry of entries) {
       if (removedCount >= maxEntriesToRemove) {
@@ -207,11 +217,13 @@ export function clearOldestEntries(
         break;
       }
 
-      if (getStorageUsage() <= targetUsage) {
+      // Check if we've freed enough space (without calling getStorageUsage inside loop)
+      const currentUsage = initialUsage - removedSize;
+      if (currentUsage <= targetUsage) {
         logger.info('Reached target storage usage', {
           action: 'clearOldestEntries',
           removed: removedCount,
-          currentUsage: getStorageUsage(),
+          currentUsage,
           targetUsage
         });
         break;
@@ -219,11 +231,13 @@ export function clearOldestEntries(
 
       localStorage.removeItem(entry.key);
       removedCount++;
+      removedSize += entry.size;
 
       logger.debug('Removed old entry', {
         action: 'clearOldestEntries',
         key: entry.key,
-        timestamp: new Date(entry.timestamp).toISOString()
+        timestamp: new Date(entry.timestamp).toISOString(),
+        size: entry.size
       });
     }
 

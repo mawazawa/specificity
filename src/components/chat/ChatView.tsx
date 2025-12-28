@@ -103,9 +103,9 @@ export const ChatView = ({
                 </div>
               </motion.div>
             ) : (
-              entries.map((entry, index) => (
+              entries.map((entry) => (
                 <ChatMessage
-                  key={`${entry.agent}-${entry.timestamp}-${index}`}
+                  key={`${entry.agent}-${entry.timestamp}`}
                   agent={entry.agent}
                   message={entry.message}
                   timestamp={entry.timestamp}

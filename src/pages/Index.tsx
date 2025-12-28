@@ -138,9 +138,15 @@ const Index = () => {
     hasHydratedRef.current = true;
   }, [hydratedData, isHydrated, hydrateFromStorage]);
 
-  // Memoized current round
+  // Memoized current round with bounds check
   const currentRound = useMemo(
-    () => sessionState.rounds[sessionState.currentRound],
+    () => {
+      const index = sessionState.currentRound;
+      if (index < 0 || index >= sessionState.rounds.length) {
+        return undefined;
+      }
+      return sessionState.rounds[index];
+    },
     [sessionState.rounds, sessionState.currentRound]
   );
 

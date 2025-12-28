@@ -65,6 +65,7 @@ export const useSessionPersistence = ({
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const lastWriteRef = useRef<number>(0);
   const pendingDataRef = useRef<SessionData | null>(null);
+  const isWritingRef = useRef<boolean>(false);
 
   // Generate storage key
   const getStorageKey = useCallback(() => {
@@ -189,17 +190,21 @@ export const useSessionPersistence = ({
 
     // Force write if maxWait exceeded
     const timeSinceLastWrite = Date.now() - lastWriteRef.current;
-    if (timeSinceLastWrite >= MAX_WAIT && pendingDataRef.current) {
+    if (timeSinceLastWrite >= MAX_WAIT && pendingDataRef.current && !isWritingRef.current) {
+      isWritingRef.current = true;
       persistSession(pendingDataRef.current);
       pendingDataRef.current = null;
+      isWritingRef.current = false;
       return;
     }
 
     // Schedule debounced write
     debounceTimerRef.current = setTimeout(() => {
-      if (pendingDataRef.current) {
+      if (pendingDataRef.current && !isWritingRef.current) {
+        isWritingRef.current = true;
         persistSession(pendingDataRef.current);
         pendingDataRef.current = null;
+        isWritingRef.current = false;
       }
     }, DEBOUNCE_DELAY);
   }, [persistSession]);
@@ -240,13 +245,8 @@ export const useSessionPersistence = ({
     const sessionAge = Date.now() - new Date(parsed.timestamp).getTime();
 
     if (sessionAge < MAX_SESSION_AGE_MS) {
-      // Cast to the interface type expected by consumers
-      setHydratedData(parsed as unknown as Partial<{
-        generatedSpec: string;
-        dialogueEntries: DialogueEntry[];
-        sessionState: SessionState;
-        timestamp: string;
-      }>);
+      // Use Zod-validated data directly (type is already inferred from schema)
+      setHydratedData(parsed);
       toast({
         title: 'Session Restored',
         description: 'Your previous work has been recovered'
