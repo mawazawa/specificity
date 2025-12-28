@@ -25,6 +25,7 @@ import { TechStackCard } from "./TechStackCard";
 import { TechStackItem } from "@/types/spec";
 import { SpecMarkdown } from "./SpecOutput/MarkdownComponents";
 import { useSpecExport } from "@/hooks/use-spec-export";
+import { validateImageUrl } from "@/lib/sanitize";
 
 interface SpecOutputProps {
   spec: string;
@@ -156,319 +157,6 @@ export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = fals
   const toggleSection = (section: string) => {
     setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
-
-
-
-
-
-
-  const downloadWord = useCallback(async () => {
-    if (exportingDocx) return;
-    setExportingDocx(true);
-    try {
-      const [docxModule, fileSaverModule] = await loadDocxLibraries();
-      const { Document, Packer, Paragraph, TextRun, HeadingLevel } = docxModule;
-      const { saveAs } = fileSaverModule;
-
-      const lines = spec.split('\n');
-      const docChildren = lines.map(line => {
-        if (line.startsWith('# ')) {
-          return new Paragraph({
-            text: line.replace('# ', ''),
-            heading: HeadingLevel.HEADING_1,
-            spacing: { after: 200 }
-          });
-        }
-        if (line.startsWith('## ')) {
-          return new Paragraph({
-            text: line.replace('## ', ''),
-            heading: HeadingLevel.HEADING_2,
-            spacing: { before: 200, after: 120 }
-          });
-        }
-        if (line.startsWith('### ')) {
-          return new Paragraph({
-            text: line.replace('### ', ''),
-            heading: HeadingLevel.HEADING_3,
-            spacing: { before: 120, after: 120 }
-          });
-        }
-        return new Paragraph({
-          children: [new TextRun(line)],
-          spacing: { after: 120 }
-        });
-      });
-
-      const doc = new Document({
-        sections: [{
-          properties: {},
-          children: docChildren,
-        }],
-      });
-
-      const blob = await Packer.toBlob(doc);
-      saveAs(blob, `specification-${new Date().toISOString().split('T')[0]}.docx`);
-      toast({ title: "Word Doc Downloaded", description: "Specification saved as .docx" });
-    } catch (error) {
-      console.error("Word generation error:", error);
-      toast({
-        title: "Export Failed",
-        description: "Could not generate Word document.",
-        variant: "destructive"
-      });
-    } finally {
-      setExportingDocx(false);
-    }
-  }, [spec, exportingDocx]);
-
-  const downloadPDF = useCallback(async () => {
-    if (exportingPdf) return;
-    setExportingPdf(true);
-    try {
-      const [jspdfModule] = await loadPdfLibraries();
-      const jsPDF = jspdfModule.default;
-
-      const doc = new jsPDF();
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
-      const margin = 20;
-      const maxWidth = pageWidth - (margin * 2);
-
-      // Extract project name from spec
-      const titleMatch = spec.match(/^#\s+(.+?)(?:\n|$)/m);
-      const projectName = titleMatch ? titleMatch[1].trim() : 'Technical Specification';
-
-      // Extract sections for table of contents
-      const tocEntries: Array<{ title: string; level: number }> = [];
-      const lines = spec.split('\n');
-      lines.forEach((line) => {
-        if (line.startsWith('## ')) {
-          tocEntries.push({ title: line.replace('## ', ''), level: 2 });
-        } else if (line.startsWith('### ')) {
-          tocEntries.push({ title: line.replace('### ', ''), level: 3 });
-        }
-      });
-
-      // ═══════════════════════════════════════════════════════════════
-      // COVER PAGE
-      // ═══════════════════════════════════════════════════════════════
-
-      // Background gradient effect (dark theme)
-      doc.setFillColor(24, 24, 27); // zinc-900
-      doc.rect(0, 0, pageWidth, pageHeight, 'F');
-
-      // Accent stripe at top
-      doc.setFillColor(139, 92, 246); // violet-500
-      doc.rect(0, 0, pageWidth, 4, 'F');
-
-      // Title
-      doc.setFontSize(32);
-      doc.setFont(undefined, 'bold');
-      doc.setTextColor(255, 255, 255);
-      const titleLines = doc.splitTextToSize(projectName, maxWidth);
-      let coverY = 80;
-      titleLines.forEach((line: string) => {
-        doc.text(line, pageWidth / 2, coverY, { align: 'center' });
-        coverY += 14;
-      });
-
-      // Subtitle
-      doc.setFontSize(14);
-      doc.setFont(undefined, 'normal');
-      doc.setTextColor(161, 161, 170); // zinc-400
-      doc.text('Technical Specification', pageWidth / 2, coverY + 10, { align: 'center' });
-
-      // Generation info
-      doc.setFontSize(10);
-      doc.setTextColor(113, 113, 122); // zinc-500
-      const dateStr = new Date().toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      });
-      doc.text(`Generated: ${dateStr}`, pageWidth / 2, coverY + 25, { align: 'center' });
-
-      // Tech stack count
-      if (techStack.length > 0) {
-        doc.text(`Tech Stack: ${techStack.length} technologies selected`, pageWidth / 2, coverY + 35, { align: 'center' });
-      }
-
-      // Footer branding
-      doc.setFontSize(11);
-      doc.setTextColor(139, 92, 246); // violet-500
-      doc.text('Specificity AI', pageWidth / 2, pageHeight - 30, { align: 'center' });
-      doc.setFontSize(8);
-      doc.setTextColor(113, 113, 122);
-      doc.text('Multi-Agent Expert Specification Generator', pageWidth / 2, pageHeight - 22, { align: 'center' });
-
-      // ═══════════════════════════════════════════════════════════════
-      // TABLE OF CONTENTS (if enough sections)
-      // ═══════════════════════════════════════════════════════════════
-
-      if (tocEntries.length >= 3) {
-        doc.addPage();
-        doc.setFillColor(255, 255, 255);
-        doc.rect(0, 0, pageWidth, pageHeight, 'F');
-
-        doc.setFontSize(20);
-        doc.setFont(undefined, 'bold');
-        doc.setTextColor(24, 24, 27);
-        doc.text('Table of Contents', margin, 30);
-
-        let tocY = 50;
-        doc.setFontSize(11);
-        doc.setFont(undefined, 'normal');
-
-        tocEntries.slice(0, 20).forEach((entry, index) => {
-          const indent = entry.level === 3 ? 10 : 0;
-          doc.setTextColor(entry.level === 2 ? 24 : 82, entry.level === 2 ? 24 : 82, entry.level === 2 ? 27 : 91);
-          doc.setFont(undefined, entry.level === 2 ? 'bold' : 'normal');
-
-          const truncatedTitle = entry.title.length > 50 ? `${entry.title.substring(0, 47)  }...` : entry.title;
-          doc.text(`${index + 1}. ${truncatedTitle}`, margin + indent, tocY);
-          tocY += 8;
-
-          if (tocY > pageHeight - 30) {
-            return; // Stop if we run out of space
-          }
-        });
-      }
-
-      // ═══════════════════════════════════════════════════════════════
-      // SPEC CONTENT
-      // ═══════════════════════════════════════════════════════════════
-
-      doc.addPage();
-      let yPosition = margin;
-
-      // Reset to white background for content
-      doc.setFillColor(255, 255, 255);
-      doc.rect(0, 0, pageWidth, pageHeight, 'F');
-
-      // Reset text color
-      doc.setTextColor(24, 24, 27);
-
-      // Process spec content
-      doc.setFontSize(10);
-
-      lines.forEach((line) => {
-        // Check for page break
-        if (yPosition > pageHeight - margin - 15) {
-          doc.addPage();
-          doc.setFillColor(255, 255, 255);
-          doc.rect(0, 0, pageWidth, pageHeight, 'F');
-          yPosition = margin;
-        }
-
-        // Handle headings
-        if (line.startsWith('# ')) {
-          doc.setFontSize(18);
-          doc.setFont(undefined, 'bold');
-          doc.setTextColor(24, 24, 27);
-          const text = line.replace('# ', '');
-          doc.text(text, margin, yPosition);
-          yPosition += 10;
-          doc.setFontSize(10);
-          doc.setFont(undefined, 'normal');
-        } else if (line.startsWith('## ')) {
-          yPosition += 4; // Extra spacing before h2
-          doc.setFontSize(14);
-          doc.setFont(undefined, 'bold');
-          doc.setTextColor(24, 24, 27);
-          const text = line.replace('## ', '');
-          doc.text(text, margin, yPosition);
-          // Add subtle underline
-          doc.setDrawColor(228, 228, 231); // zinc-200
-          doc.line(margin, yPosition + 2, margin + doc.getTextWidth(text), yPosition + 2);
-          yPosition += 9;
-          doc.setFontSize(10);
-          doc.setFont(undefined, 'normal');
-        } else if (line.startsWith('### ')) {
-          doc.setFontSize(12);
-          doc.setFont(undefined, 'bold');
-          doc.setTextColor(63, 63, 70); // zinc-700
-          const text = line.replace('### ', '');
-          doc.text(text, margin, yPosition);
-          yPosition += 7;
-          doc.setFontSize(10);
-          doc.setFont(undefined, 'normal');
-        } else if (line.trim().startsWith('- ') || line.trim().startsWith('* ')) {
-          // Bullet points
-          doc.setTextColor(63, 63, 70);
-          const cleanLine = line.replace(/^\s*[-*]\s*/, '').replace(/[*_`]/g, '');
-          const bulletLines = doc.splitTextToSize(`• ${cleanLine}`, maxWidth - 10);
-          bulletLines.forEach((bulletLine: string) => {
-            if (yPosition > pageHeight - margin - 15) {
-              doc.addPage();
-              doc.setFillColor(255, 255, 255);
-              doc.rect(0, 0, pageWidth, pageHeight, 'F');
-              yPosition = margin;
-            }
-            doc.text(bulletLine, margin + 5, yPosition);
-            yPosition += 5;
-          });
-        } else if (line.trim()) {
-          // Regular text with word wrap
-          doc.setTextColor(63, 63, 70);
-          const cleanLine = line.replace(/[*_`]/g, ''); // Remove markdown formatting
-          const splitLines = doc.splitTextToSize(cleanLine, maxWidth);
-          splitLines.forEach((splitLine: string) => {
-            if (yPosition > pageHeight - margin - 15) {
-              doc.addPage();
-              doc.setFillColor(255, 255, 255);
-              doc.rect(0, 0, pageWidth, pageHeight, 'F');
-              yPosition = margin;
-            }
-            doc.text(splitLine, margin, yPosition);
-            yPosition += 5;
-          });
-        } else {
-          yPosition += 3; // Empty line spacing
-        }
-      });
-
-      // ═══════════════════════════════════════════════════════════════
-      // FOOTERS WITH PAGE NUMBERS
-      // ═══════════════════════════════════════════════════════════════
-
-      const totalPages = doc.internal.pages.length - 1;
-      for (let i = 2; i <= totalPages; i++) { // Start from page 2 (skip cover)
-        doc.setPage(i);
-        doc.setFontSize(8);
-        doc.setTextColor(161, 161, 170);
-
-        // Page number
-        doc.text(
-          `Page ${i - 1} of ${totalPages - 1}`,
-          pageWidth / 2,
-          pageHeight - 10,
-          { align: 'center' }
-        );
-
-        // Branding on left
-        doc.text('Specificity AI', margin, pageHeight - 10);
-
-        // Date on right
-        doc.text(dateStr, pageWidth - margin, pageHeight - 10, { align: 'right' });
-      }
-
-      doc.save(`${projectName.toLowerCase().replace(/\s+/g, '-')}-specification-${new Date().toISOString().split('T')[0]}.pdf`);
-      toast({
-        title: "PDF Downloaded",
-        description: "Professional specification with cover page and table of contents",
-        variant: "success",
-      });
-    } catch (error) {
-      console.error('PDF generation error:', error);
-      toast({
-        title: "Export Failed",
-        description: "Could not generate PDF. Try downloading as Markdown instead.",
-        variant: "destructive"
-      });
-    } finally {
-      setExportingPdf(false);
-    }
-  }, [spec, techStack, exportingPdf]);
 
   const handleRefine = () => {
     const allRefinements = [...selectedRefinements];
@@ -689,24 +377,29 @@ export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = fals
         </div>
 
         {/* Visual Mockup Section - NEW for Visual Spec Era */}
-        {(initialTechStack as any)?.mockup_url && (
-          <div className="space-y-4 pt-6 border-t border-border/20">
-            <div className="flex items-center gap-2 text-primary">
-              <Image className="w-4 h-4" />
-              <h3 className="text-sm font-medium">AI-Generated UI Mockup</h3>
-            </div>
-            <div className="relative aspect-video rounded-xl overflow-hidden border border-border/30 bg-black/20 group">
-              <img 
-                src={(initialTechStack as any).mockup_url} 
-                alt="Product Mockup" 
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
-                <p className="text-[10px] text-white/80 italic">Conceptual UI generated based on your specification</p>
+        {(() => {
+          const mockupUrl = (initialTechStack as any)?.mockup_url;
+          const validatedMockupUrl = mockupUrl ? validateImageUrl(mockupUrl) : null;
+
+          return validatedMockupUrl && (
+            <div className="space-y-4 pt-6 border-t border-border/20">
+              <div className="flex items-center gap-2 text-primary">
+                <Image className="w-4 h-4" />
+                <h3 className="text-sm font-medium">AI-Generated UI Mockup</h3>
+              </div>
+              <div className="relative aspect-video rounded-xl overflow-hidden border border-border/30 bg-black/20 group">
+                <img
+                  src={validatedMockupUrl}
+                  alt="Product Mockup"
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
+                  <p className="text-[10px] text-white/80 italic">Conceptual UI generated based on your specification</p>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
       </Card>
 
       {/* Interactive Tech Stack Section */}

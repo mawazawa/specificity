@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Index Page - Refactored for Performance (November 2025)
  *
@@ -29,7 +28,6 @@ import { DialoguePanel } from "@/components/DialoguePanel";
 import { LandingHero } from "@/components/LandingHero";
 import { SampleSpecGallery } from "@/components/SampleSpecGallery";
 import { StickyHeader } from "@/components/StickyHeader";
-import { AgentConfig, TechStackItem } from "@/types/spec";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, MessageSquare, LayoutGrid, LogOut, Folder } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -44,6 +42,16 @@ import { useAuth } from "@/hooks/useAuth";
 import { useSessionPersistence } from "@/hooks/useSessionPersistence";
 import { useSpecFlow } from "@/hooks/spec-generation/use-spec-flow";
 import { useAgentPrompts } from "@/hooks/use-agent-prompts";
+
+// Session types
+import type {
+  AgentConfig,
+  TechStackItem,
+  SessionState,
+  Round,
+  Task,
+  DialogueEntry
+} from "@/types/session";
 
 const Index = () => {
   // Fetch agent prompts from database
@@ -329,16 +337,16 @@ interface ActiveSessionContentProps {
   viewMode: 'chat' | 'panels';
   setViewMode: (mode: 'chat' | 'panels') => void;
   chatEntries: ChatEntry[];
-  sessionState: any;
-  currentRound: any;
+  sessionState: SessionState;
+  currentRound: Round | undefined;
   isProcessing: boolean;
   currentStage: string;
-  tasks: any[];
+  tasks: Task[];
   generatedSpec: string;
   techStack: TechStackItem[];
   mockupUrl: string;
   agentConfigs: AgentConfig[];
-  dialogueEntries: any[];
+  dialogueEntries: DialogueEntry[];
   isDialogueOpen: boolean;
   setIsDialogueOpen: (open: boolean) => void;
   onPause: () => void;
@@ -438,11 +446,11 @@ const ActiveSessionContent = ({
 };
 
 interface PanelsViewProps {
-  currentRound: any;
+  currentRound: Round | undefined;
   isProcessing: boolean;
   currentStage: string;
-  tasks: any[];
-  sessionState: any;
+  tasks: Task[];
+  sessionState: SessionState;
   generatedSpec: string;
   techStack: TechStackItem[];
   mockupUrl: string;
@@ -530,7 +538,7 @@ const PanelsView = ({
 };
 
 interface LiveAgentCardsProps {
-  currentRound: any;
+  currentRound: Round | undefined;
   agentConfigs: AgentConfig[];
 }
 

@@ -5,6 +5,7 @@ import { useSession } from './use-session';
 import { api } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { AgentConfig, ResumeContext, Round, SessionState } from '@/types/spec';
+import { scopedLogger } from '@/lib/logger';
 
 export type GenerationStage =
   | 'idle'
@@ -24,6 +25,7 @@ interface UseSpecFlowProps {
 }
 
 export function useSpecFlow({ agentConfigs }: UseSpecFlowProps) {
+  const logger = scopedLogger('useSpecFlow');
   const { tasks, addTask, updateTask, resetTasks } = useTasks();
   const { entries: dialogueEntries, addEntry: addDialogue, resetDialogue, setDialogue } = useDialogue();
   const {
@@ -452,7 +454,7 @@ const researchSummary = `📊 **Research Complete:**\n• ${round.research.lengt
       }
 
     } catch (error) {
-      console.error('Round error:', error);
+      logger.error('Round error', error instanceof Error ? error : new Error(String(error)), { action: 'runRound', roundNumber });
       const { title, message } = parseError(error);
       toast({ title, description: message, variant: 'destructive', duration: 8000 });
       setError(message);
@@ -487,7 +489,7 @@ const researchSummary = `📊 **Research Complete:**\n• ${round.research.lengt
     try {
       await runRound(input, 1);
     } catch (error) {
-      console.error('Spec generation failed:', error);
+      logger.error('Spec generation failed', error instanceof Error ? error : new Error(String(error)), { action: 'startGeneration' });
       const { title, message } = parseError(error);
       toast({
         title,
@@ -534,7 +536,7 @@ const researchSummary = `📊 **Research Complete:**\n• ${round.research.lengt
         comment ?? pendingResume.userComment
       );
     } catch (error) {
-      console.error('Resume failed:', error);
+      logger.error('Resume failed', error instanceof Error ? error : new Error(String(error)), { action: 'resume' });
       const { title, message } = parseError(error);
       toast({ title, description: message, variant: 'destructive' });
       setError(message);
@@ -633,7 +635,7 @@ const researchSummary = `📊 **Research Complete:**\n• ${round.research.lengt
       
       setIsProcessing(false);
     } catch (error) {
-      console.error('Refinement failed:', error);
+      logger.error('Refinement failed', error instanceof Error ? error : new Error(String(error)), { action: 'startRefinement' });
       const { title, message } = parseError(error);
       toast({ title, description: message, variant: 'destructive' });
       setError(message);
@@ -654,7 +656,7 @@ const researchSummary = `📊 **Research Complete:**\n• ${round.research.lengt
     try {
       await runRound(fullContext, 1);
     } catch (error) {
-      console.error('Spec generation failed:', error);
+      logger.error('Spec generation failed', error instanceof Error ? error : new Error(String(error)), { action: 'proceedToGeneration' });
       const { title, message } = parseError(error);
       toast({ title, description: message, variant: 'destructive' });
       setError(message);
@@ -685,7 +687,7 @@ const researchSummary = `📊 **Research Complete:**\n• ${round.research.lengt
       
       return true;
     } catch (error) {
-      console.error('Chat error:', error);
+      logger.error('Chat error', error instanceof Error ? error : new Error(String(error)), { action: 'chatWithAgent', agentId });
       const { title, message: errorMsg } = parseError(error);
       toast({ title, description: errorMsg, variant: 'destructive' });
       return false;
@@ -710,9 +712,9 @@ const researchSummary = `📊 **Research Complete:**\n• ${round.research.lengt
         title: "Link Copied!",
         description: "Share this URL with your team."
       });
-      
+
     } catch (error) {
-      console.error('Share failed:', error);
+      logger.error('Share failed', error instanceof Error ? error : new Error(String(error)), { action: 'shareSpec' });
       toast({ title: "Share Failed", description: "Could not save specification.", variant: "destructive" });
     }
   }, [generatedSpec, sessionState.rounds.length, agentConfigs, toast]);

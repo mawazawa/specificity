@@ -177,4 +177,4 @@ export const LiveAgentCard = memo(function LiveAgentCard({ agent, output, vote, 
       </div>
     </Card>
   );
-};
+});

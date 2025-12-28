@@ -4,6 +4,7 @@
  */
 
 import { z } from 'zod';
+import { logger } from './logger';
 
 /**
  * Schema for required environment variables
@@ -136,14 +137,14 @@ export function logEnvValidation(): void {
   const result = validateEnv();
 
   if (result.success) {
-    console.log('[ENV] Environment variables validated successfully');
+    logger.info('Environment variables validated successfully', { component: 'env-validation' });
     result.warnings.forEach((warning) => {
-      console.warn(`[ENV] Warning: ${warning}`);
+      logger.warn(warning, { component: 'env-validation' });
     });
   } else {
-    console.error('[ENV] Environment validation failed:');
-    result.errors.forEach((error) => {
-      console.error(`[ENV]   - ${error}`);
+    logger.error('Environment validation failed', new Error(result.errors.join(', ')), {
+      component: 'env-validation',
+      errors: result.errors
     });
   }
 }

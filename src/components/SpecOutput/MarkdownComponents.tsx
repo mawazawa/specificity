@@ -12,6 +12,7 @@
 import { memo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import type { Components } from 'react-markdown';
+import { validateImageUrl } from '@/lib/sanitize';
 
 /**
  * Markdown component overrides with Tailwind styling
@@ -199,13 +200,30 @@ export const markdownComponents: Components = {
     />
   ),
 
-  img: ({ node, ...props }) => (
-    <img
-      className="max-w-full h-auto rounded-lg my-4 border border-border/20"
-      loading="lazy"
-      {...props}
-    />
-  ),
+  img: ({ node, src, alt, ...props }) => {
+    // Validate image URL to prevent XSS
+    const validatedSrc = src ? validateImageUrl(src) : null;
+
+    // If URL is invalid or missing, don't render the image
+    if (!validatedSrc) {
+      console.warn('[Security] Blocked invalid image URL in markdown:', src);
+      return (
+        <div className="my-4 p-4 border border-destructive/30 bg-destructive/5 rounded-lg text-sm text-muted-foreground">
+          [Image blocked: Invalid or untrusted URL]
+        </div>
+      );
+    }
+
+    return (
+      <img
+        src={validatedSrc}
+        alt={alt || 'Image'}
+        className="max-w-full h-auto rounded-lg my-4 border border-border/20"
+        loading="lazy"
+        {...props}
+      />
+    );
+  },
 
   // Handle definition lists if present
   dl: ({ node, ...props }) => (

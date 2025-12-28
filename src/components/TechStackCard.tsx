@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Star, Check, ExternalLink } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { TechStackItem, TechAlternative } from "@/types/spec";
+import { validateImageUrl } from "@/lib/sanitize";
 
 /**
  * Generate Brandfetch CDN URL for technology logos
@@ -18,13 +19,18 @@ function getBrandfetchLogoUrl(domain: string, opts: { width?: number; height?: n
 /**
  * Get the best logo URL for a technology
  * Priority: 1. Brandfetch (if domain available) 2. Provided logo URL 3. Fallback SVG
+ * SECURITY: All URLs are validated against whitelist to prevent XSS
  */
 function getTechLogoUrl(tech: TechAlternative): string {
   if (tech.domain) {
-    return getBrandfetchLogoUrl(tech.domain);
+    const brandfetchUrl = getBrandfetchLogoUrl(tech.domain);
+    const validatedUrl = validateImageUrl(brandfetchUrl);
+    return validatedUrl || '/fallback-icons/generic-tech.svg';
   }
   if (tech.logo && tech.logo.trim() !== '') {
-    return tech.logo;
+    const validatedUrl = validateImageUrl(tech.logo);
+    // If validation fails, fall back to generic icon
+    return validatedUrl || '/fallback-icons/generic-tech.svg';
   }
   // Fallback to a generic tech icon
   return '/fallback-icons/generic-tech.svg';

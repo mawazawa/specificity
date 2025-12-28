@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { scopedLogger } from "@/lib/logger";
 
 interface SpecInputProps {
   onSubmit: (input: string) => void;
@@ -12,6 +13,7 @@ interface SpecInputProps {
 }
 
 export const SpecInput = ({ onSubmit, isLoading, defaultValue }: SpecInputProps) => {
+  const logger = scopedLogger('SpecInput');
   const [input, setInput] = useState(defaultValue || "");
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -62,7 +64,7 @@ export const SpecInput = ({ onSubmit, isLoading, defaultValue }: SpecInputProps)
       setIsRecording(true);
       toast({ title: "Recording started" });
     } catch (error) {
-      console.error('Error starting recording:', error);
+      logger.error('Error starting recording', error instanceof Error ? error : new Error(String(error)), { action: 'startRecording' });
       toast({ title: "Failed to start recording", variant: "destructive" });
     }
   };
@@ -81,20 +83,20 @@ export const SpecInput = ({ onSubmit, isLoading, defaultValue }: SpecInputProps)
       reader.readAsDataURL(audioBlob);
       reader.onloadend = async () => {
         const base64Audio = (reader.result as string).split(',')[1];
-        
-        console.log('Transcribing audio, size:', audioBlob.size);
-        
+
+        logger.debug('Transcribing audio', { action: 'transcribeAudio', audioSize: audioBlob.size });
+
         const { data, error } = await supabase.functions.invoke('voice-to-text', {
           body: { audio: base64Audio }
         });
 
         if (error) {
-          console.error('Voice-to-text error:', error);
+          logger.error('Voice-to-text error', error instanceof Error ? error : new Error(String(error)), { action: 'transcribeAudio' });
           throw error;
         }
-        
+
         if (data?.text) {
-          console.log('Transcription result:', data.text);
+          logger.info('Transcription result', { action: 'transcribeAudio', textLength: data.text.length });
           setInput(prev => prev + (prev ? ' ' : '') + data.text);
           toast({ title: "Transcription complete", description: `${data.text.substring(0, 50)  }...` });
         } else {
@@ -102,11 +104,11 @@ export const SpecInput = ({ onSubmit, isLoading, defaultValue }: SpecInputProps)
         }
       };
     } catch (error) {
-      console.error('Error transcribing audio:', error);
-      toast({ 
-        title: "Failed to transcribe audio", 
+      logger.error('Error transcribing audio', error instanceof Error ? error : new Error(String(error)), { action: 'transcribeAudio' });
+      toast({
+        title: "Failed to transcribe audio",
         description: error instanceof Error ? error.message : 'Unknown error',
-        variant: "destructive" 
+        variant: "destructive"
       });
     }
   };

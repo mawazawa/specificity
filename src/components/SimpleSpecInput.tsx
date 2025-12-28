@@ -5,6 +5,7 @@ import { toast } from "@/hooks/use-toast";
 import { Loader2, Mic, Sparkles, Square } from "lucide-react";
 import { ConfirmationDialog } from "./ConfirmationDialog";
 import { supabase } from "@/integrations/supabase/client";
+import { scopedLogger } from "@/lib/logger";
 
 interface SimpleSpecInputProps {
   onSubmit: (input: string) => void;
@@ -13,6 +14,7 @@ interface SimpleSpecInputProps {
 }
 
 export const SimpleSpecInput = ({ onSubmit, isLoading, defaultValue }: SimpleSpecInputProps) => {
+  const logger = scopedLogger('SimpleSpecInput');
   const [input, setInput] = useState(defaultValue || "");
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -74,7 +76,7 @@ export const SimpleSpecInput = ({ onSubmit, isLoading, defaultValue }: SimpleSpe
       setIsRecording(true);
       toast({ title: "Recording started" });
     } catch (error) {
-      console.error('Error starting recording:', error);
+      logger.error('Error starting recording', error instanceof Error ? error : new Error(String(error)), { action: 'startRecording' });
       toast({ title: "Failed to start recording", variant: "destructive" });
     }
   };
@@ -94,7 +96,7 @@ export const SimpleSpecInput = ({ onSubmit, isLoading, defaultValue }: SimpleSpe
       // Handle FileReader errors (e.g., security restrictions, blob corruption)
       reader.onerror = () => {
         const errorMessage = reader.error?.message || 'Failed to read audio file';
-        console.error('[SimpleSpecInput] FileReader error:', reader.error);
+        logger.error('FileReader error', reader.error instanceof Error ? reader.error : new Error(errorMessage), { action: 'transcribeAudio' });
         toast({
           title: "Audio Processing Failed",
           description: errorMessage,
@@ -136,7 +138,7 @@ export const SimpleSpecInput = ({ onSubmit, isLoading, defaultValue }: SimpleSpe
             throw new Error('No transcription returned');
           }
         } catch (error) {
-          console.error('[SimpleSpecInput] Voice-to-text error:', error);
+          logger.error('Voice-to-text error', error instanceof Error ? error : new Error(String(error)), { action: 'transcribeAudio' });
           const message = error instanceof Error ? error.message : 'Unknown error';
           toast({
             title: "Transcription Failed",
@@ -150,7 +152,7 @@ export const SimpleSpecInput = ({ onSubmit, isLoading, defaultValue }: SimpleSpe
 
       reader.readAsDataURL(audioBlob);
     } catch (error) {
-      console.error('[SimpleSpecInput] Error transcribing audio:', error);
+      logger.error('Error transcribing audio', error instanceof Error ? error : new Error(String(error)), { action: 'transcribeAudio' });
       toast({
         title: "Transcription Failed",
         description: error instanceof Error ? error.message : 'Unknown error',

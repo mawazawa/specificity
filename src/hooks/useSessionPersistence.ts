@@ -19,6 +19,7 @@ import { safeJsonParse } from '@/lib/utils';
 import { sessionDataSchema, type SessionData } from '@/types/schemas';
 import type { DialogueEntry } from '@/components/DialoguePanel';
 import type { SessionState } from '@/types/spec';
+import { scopedLogger } from '@/lib/logger';
 
 interface UseSessionPersistenceProps {
   userId: string | undefined;
@@ -50,6 +51,7 @@ export const useSessionPersistence = ({
   dialogueEntries,
   sessionState
 }: UseSessionPersistenceProps): UseSessionPersistenceReturn => {
+  const logger = scopedLogger('SessionPersistence');
   const { toast } = useToast();
   const [isHydrated, setIsHydrated] = useState(false);
   const [hydratedData, setHydratedData] = useState<Partial<SessionData> | null>(null);
@@ -74,7 +76,11 @@ export const useSessionPersistence = ({
 
       // Check quota - truncate dialogue if too large
       if (serialized.length > MAX_STORAGE_SIZE) {
-        console.warn('[SessionPersistence] Data exceeds 4MB, truncating dialogue history');
+        logger.warn('Data exceeds 4MB, truncating dialogue history', {
+          action: 'persistSession',
+          size: serialized.length,
+          maxSize: MAX_STORAGE_SIZE
+        });
         dataToStore = {
           ...data,
           dialogueEntries: data.dialogueEntries.slice(-20) // Keep last 20 entries
@@ -86,7 +92,7 @@ export const useSessionPersistence = ({
       lastWriteRef.current = Date.now();
     } catch (error) {
       if (error instanceof DOMException && error.name === 'QuotaExceededError') {
-        console.error('[SessionPersistence] Quota exceeded, clearing old sessions');
+        logger.error('Quota exceeded, clearing old sessions', error, { action: 'persistSession' });
         // Clear only specificity sessions, not all localStorage
         Object.keys(localStorage)
           .filter(k => k.startsWith('specificity-session-'))
@@ -95,11 +101,11 @@ export const useSessionPersistence = ({
         // Retry once after clearing
         try {
           localStorage.setItem(key, JSON.stringify(data));
-        } catch {
-          console.error('[SessionPersistence] Failed to persist after clearing');
+        } catch (retryError) {
+          logger.error('Failed to persist after clearing', retryError instanceof Error ? retryError : new Error(String(retryError)), { action: 'persistSession' });
         }
       } else {
-        console.error('[SessionPersistence] Persistence failed:', error);
+        logger.error('Persistence failed', error instanceof Error ? error : new Error(String(error)), { action: 'persistSession' });
       }
     }
   }, [getStorageKey]);
@@ -148,7 +154,9 @@ export const useSessionPersistence = ({
     const parseResult = safeJsonParse(savedSession, sessionDataSchema);
 
     if (!parseResult.success) {
-      console.error('[SessionPersistence] Session validation failed:', parseResult.error);
+      logger.error('Session validation failed', parseResult.error instanceof Error ? parseResult.error : new Error(String(parseResult.error)), {
+        action: 'hydrateFromStorage'
+      });
       // Clear corrupted session
       localStorage.removeItem(key);
       toast({
@@ -178,7 +186,10 @@ export const useSessionPersistence = ({
     } else {
       // Clear expired session
       localStorage.removeItem(key);
-      console.log('[SessionPersistence] Session expired, cleared');
+      logger.info('Session expired, cleared', {
+        action: 'hydrateFromStorage',
+        sessionAge
+      });
     }
 
     setIsHydrated(true);
