@@ -8,7 +8,7 @@ export const handleSynthesisStage = async (
     cleanComment: string | undefined,
     groqApiKey: string
 ) => {
-    console.log('[Enhanced] Synthesizing research findings...');
+    console.info('[Enhanced] Synthesizing research findings...');
 
     const researchResults = roundData?.researchResults || [];
     const debateResolutions = roundData?.debateResolutions || [];
@@ -86,7 +86,7 @@ export const handleSynthesisStage = async (
     }
 
     const battleTestedCount = syntheses.filter(s => s.researchQuality.battleTested).length;
-    console.log(`[Enhanced] Synthesized ${syntheses.length} expert recommendations (${battleTestedCount} battle-tested)`);
+    console.info(`[Enhanced] Synthesized ${syntheses.length} expert recommendations (${battleTestedCount} battle-tested)`);
 
     return new Response(
         JSON.stringify({

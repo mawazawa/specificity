@@ -8,7 +8,7 @@ export const handleChatStage = async (
     targetAgent: string | undefined,
     message: string
 ) => {
-    console.log('[Enhanced] Processing 1:1 chat message...');
+    console.info('[Enhanced] Processing 1:1 chat message...');
 
     if (!agentConfigs) {
         return new Response(

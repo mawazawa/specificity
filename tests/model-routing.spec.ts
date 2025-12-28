@@ -115,8 +115,8 @@ describe('Model Registry', () => {
       'groq-llama-3.1-8b',
     ];
 
-    for (const modelId of expectedModels) {
-      expect(VERIFIED_MODELS).toHaveProperty(modelId);
+    for (const _modelId of expectedModels) {
+      expect(VERIFIED_MODELS).toHaveProperty(_modelId);
     }
   });
 
@@ -129,8 +129,8 @@ describe('Model Registry', () => {
       'deepseek-v3.2-speciale',
     ];
 
-    for (const modelId of deprecatedModels) {
-      expect(VERIFIED_MODELS).not.toHaveProperty(modelId);
+    for (const _modelId of deprecatedModels) {
+      expect(VERIFIED_MODELS).not.toHaveProperty(_modelId);
     }
   });
 
@@ -146,14 +146,14 @@ describe('Model Registry', () => {
   });
 
   it('should have valid context windows', () => {
-    for (const [modelId, config] of Object.entries(VERIFIED_MODELS)) {
+    for (const [_modelId, config] of Object.entries(VERIFIED_MODELS)) {
       expect(config.contextWindow).toBeGreaterThan(0);
       expect(config.contextWindow).toBeLessThanOrEqual(1048576); // 1M max
     }
   });
 
   it('should have valid pricing', () => {
-    for (const [modelId, config] of Object.entries(VERIFIED_MODELS)) {
+    for (const [_modelId, config] of Object.entries(VERIFIED_MODELS)) {
       const priced = config.provider !== 'groq';
       if (priced) {
         expect(config.costPer1MTokensInput).toBeGreaterThan(0);
@@ -169,10 +169,10 @@ describe('Model Registry', () => {
 
 describe('Expert-to-Model Routing', () => {
   it('should map all experts to valid models', () => {
-    for (const [expertId, modelId] of Object.entries(EXPERT_MODEL_MAP)) {
-      expect(VERIFIED_MODELS).toHaveProperty(modelId.replace('-codex', '-codex'));
+    for (const [_expertId, _modelId] of Object.entries(EXPERT_MODEL_MAP)) {
+      expect(VERIFIED_MODELS).toHaveProperty(_modelId.replace('-codex', '-codex'));
       // Verify model exists (handle codex special case)
-      const normalizedModelId = modelId === 'gpt-5.2-codex' ? 'gpt-5.2-codex' : modelId;
+      const normalizedModelId = _modelId === 'gpt-5.2-codex' ? 'gpt-5.2-codex' : modelId;
       expect(VERIFIED_MODELS[normalizedModelId as keyof typeof VERIFIED_MODELS]).toBeDefined();
     }
   });
@@ -229,17 +229,17 @@ describe('Fallback Chains', () => {
     'gemini-3-flash': ['gemini-3-flash', 'deepseek-v3', 'gpt-5.2'],
   };
 
-  it('should have fallback chains for primary models', () => {
-    for (const [primary, chain] of Object.entries(FALLBACK_CHAINS)) {
+  it('should have fallback chains for _primary models', () => {
+    for (const [_primary, chain] of Object.entries(FALLBACK_CHAINS)) {
       expect(chain.length).toBeGreaterThanOrEqual(2);
-      expect(chain[0]).toBe(primary); // First fallback is the primary
+      expect(chain[0]).toBe(_primary); // First fallback is the primary
     }
   });
 
   it('should only use verified models in fallback chains', () => {
-    for (const [primary, chain] of Object.entries(FALLBACK_CHAINS)) {
-      for (const modelId of chain) {
-        const normalizedId = modelId === 'gpt-5.2-codex' ? 'gpt-5.2-codex' : modelId;
+    for (const [_primary, chain] of Object.entries(FALLBACK_CHAINS)) {
+      for (const _modelId of chain) {
+        const normalizedId = _modelId === 'gpt-5.2-codex' ? 'gpt-5.2-codex' : modelId;
         expect(VERIFIED_MODELS[normalizedId as keyof typeof VERIFIED_MODELS]).toBeDefined();
       }
     }

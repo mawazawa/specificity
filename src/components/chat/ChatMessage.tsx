@@ -125,10 +125,10 @@ export const ChatMessage = React.memo(function ChatMessage({
           <div className={`prose prose-sm max-w-none ${isUser ? 'prose-invert' : ''}`}>
             <ReactMarkdown
               components={{
-                p: ({ node, ...props }) => <p className="text-sm leading-relaxed mb-2 last:mb-0" {...props} />,
-                strong: ({ node, ...props }) => <strong className="font-semibold" {...props} />,
-                em: ({ node, ...props }) => <em className="italic" {...props} />,
-                code: ({ node, inline, ...props }: { node?: unknown; inline?: boolean; [key: string]: unknown }) => 
+                p: ({ node: _node, ...props }) => <p className="text-sm leading-relaxed mb-2 last:mb-0" {...props} />,
+                strong: ({ node: _node, ...props }) => <strong className="font-semibold" {...props} />,
+                em: ({ node: _node, ...props }) => <em className="italic" {...props} />,
+                code: ({ node: _node, inline, ...props }: { node?: unknown; inline?: boolean; [key: string]: unknown }) => 
                   inline ? (
                     <code className={`px-1.5 py-0.5 rounded text-xs font-mono ${isUser ? 'bg-primary-foreground/20' : 'bg-primary/10'}`} {...props} />
                   ) : (

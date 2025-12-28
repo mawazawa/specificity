@@ -1,10 +1,13 @@
 /**
  * Environment Variable Validation
  * Validates required environment variables at app startup
+ *
+ * Usage:
+ *   import { env } from '@/lib/env-validation';
+ *   console.log(env.VITE_SUPABASE_URL);
  */
 
 import { z } from 'zod';
-import { logger } from './logger';
 
 /**
  * Schema for required environment variables
@@ -30,6 +33,11 @@ const envSchema = z.object({
     .enum(['true', 'false', ''])
     .optional()
     .transform((val) => val === 'true'),
+
+  // Built-in Vite variables
+  DEV: z.boolean(),
+  PROD: z.boolean(),
+  MODE: z.string(),
 });
 
 /**
@@ -55,19 +63,23 @@ export function validateEnv(): EnvValidationResult {
   const warnings: string[] = [];
 
   // Get environment variables
-  const env = {
+  const rawEnv = {
     VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
     VITE_SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY,
     VITE_SENTRY_DSN: import.meta.env.VITE_SENTRY_DSN,
     VITE_DEBUG: import.meta.env.VITE_DEBUG,
+    DEV: import.meta.env.DEV,
+    PROD: import.meta.env.PROD,
+    MODE: import.meta.env.MODE,
   };
 
   // Validate with Zod
-  const result = envSchema.safeParse(env);
+  const result = envSchema.safeParse(rawEnv);
 
   if (!result.success) {
     const errors = result.error.issues.map((issue) => {
       const path = issue.path.join('.');
+      // Don't expose sensitive values in error messages
       return `${path}: ${issue.message}`;
     });
 
@@ -95,41 +107,86 @@ export function validateEnv(): EnvValidationResult {
 }
 
 /**
+ * Cached validated environment config
+ * Initialized lazily on first access
+ */
+let cachedEnv: EnvConfig | null = null;
+
+/**
+ * Get validated environment variables
+ * Throws if validation fails
+ * @returns Typed environment config
+ */
+function getValidatedEnv(): EnvConfig {
+  if (cachedEnv) {
+    return cachedEnv;
+  }
+
+  const result = validateEnv();
+
+  if (!result.success) {
+    const errorMsg = `Environment validation failed:\n${result.errors.join('\n')}`;
+    throw new Error(errorMsg);
+  }
+
+  cachedEnv = result.config!;
+  return cachedEnv;
+}
+
+/**
+ * Type-safe environment variable object
+ * Use this instead of import.meta.env for type safety
+ *
+ * @example
+ * import { env } from '@/lib/env-validation';
+ * const url = env.VITE_SUPABASE_URL; // Fully typed!
+ */
+export const env = new Proxy({} as EnvConfig, {
+  get(_target, prop: string) {
+    const validatedEnv = getValidatedEnv();
+    return validatedEnv[prop as keyof EnvConfig];
+  },
+});
+
+/**
  * Get a single environment variable with type safety
+ * @deprecated Use `env.KEY` instead for better type safety
  */
 export function getEnvVar<K extends keyof EnvConfig>(
   key: K
 ): EnvConfig[K] | undefined {
-  const result = validateEnv();
-  if (!result.success || !result.config) {
+  try {
+    const validatedEnv = getValidatedEnv();
+    return validatedEnv[key];
+  } catch {
     return undefined;
   }
-  return result.config[key];
 }
 
 /**
  * Check if running in development mode
  */
 export function isDevelopment(): boolean {
-  return import.meta.env.DEV;
+  return env.DEV;
 }
 
 /**
  * Check if running in production mode
  */
 export function isProduction(): boolean {
-  return import.meta.env.PROD;
+  return env.PROD;
 }
 
 /**
  * Check if debug mode is enabled
  */
 export function isDebugEnabled(): boolean {
-  return import.meta.env.VITE_DEBUG === 'true';
+  return env.VITE_DEBUG === true;
 }
 
 /**
  * Log validation result (only in development)
+ * Uses console directly to avoid circular dependency with logger
  */
 export function logEnvValidation(): void {
   if (isProduction()) return;
@@ -137,15 +194,15 @@ export function logEnvValidation(): void {
   const result = validateEnv();
 
   if (result.success) {
-    logger.info('Environment variables validated successfully', { component: 'env-validation' });
+
+    console.info('[ENV] Environment variables validated successfully');
     result.warnings.forEach((warning) => {
-      logger.warn(warning, { component: 'env-validation' });
+
+      console.warn(`[ENV] ${warning}`);
     });
   } else {
-    logger.error('Environment validation failed', new Error(result.errors.join(', ')), {
-      component: 'env-validation',
-      errors: result.errors
-    });
+
+    console.error('[ENV] Environment validation failed:', result.errors.join(', '));
   }
 }
 

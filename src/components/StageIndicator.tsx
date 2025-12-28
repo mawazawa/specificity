@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle2, Loader2, Users, MessageSquare, Search, Vote, FileText } from "lucide-react";
+import { Loader2, Users, MessageSquare, Search, Vote, FileText } from "lucide-react";
 
 interface StageIndicatorProps {
   stage: 'questions' | 'research' | 'answers' | 'voting' | 'spec';

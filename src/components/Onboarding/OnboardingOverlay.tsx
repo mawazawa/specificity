@@ -4,7 +4,7 @@ import {
   DialogContent,
   DialogDescription,
   DialogFooter,
-  DialogHeader,
+  _DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -59,7 +59,10 @@ export const OnboardingOverlay = ({ open, onComplete }: OnboardingOverlayProps) 
     if (open) setCurrentStep(0);
   }, [open]);
 
-  const CurrentIcon = steps[currentStep].icon;
+  const currentStepData = steps[currentStep];
+  if (!currentStepData) return null; // Safety guard
+
+  const CurrentIcon = currentStepData.icon;
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onComplete()}>
@@ -84,16 +87,16 @@ export const OnboardingOverlay = ({ open, onComplete }: OnboardingOverlayProps) 
               transition={{ duration: 0.2 }}
               className="flex flex-col items-center text-center space-y-6 py-6"
             >
-              <div className={`w-20 h-20 rounded-full flex items-center justify-center ${steps[currentStep].bg} mb-2 ring-4 ring-background shadow-lg`}>
-                <CurrentIcon className={`w-10 h-10 ${steps[currentStep].color}`} />
+              <div className={`w-20 h-20 rounded-full flex items-center justify-center ${currentStepData.bg} mb-2 ring-4 ring-background shadow-lg`}>
+                <CurrentIcon className={`w-10 h-10 ${currentStepData.color}`} />
               </div>
-              
+
               <div className="space-y-2">
                 <DialogTitle className="text-2xl font-bold tracking-tight">
-                  {steps[currentStep].title}
+                  {currentStepData.title}
                 </DialogTitle>
                 <DialogDescription className="text-base text-muted-foreground/80 leading-relaxed max-w-xs mx-auto">
-                  {steps[currentStep].description}
+                  {currentStepData.description}
                 </DialogDescription>
               </div>
             </motion.div>

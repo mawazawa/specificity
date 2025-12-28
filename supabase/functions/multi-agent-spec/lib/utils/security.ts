@@ -31,7 +31,7 @@ export const sanitizeInput = (input: string): string => {
 };
 
 // Utility: Sanitize errors for logging
-export const sanitizeError = (error: unknown) => {
+export const _sanitizeError = (error: unknown) => {
   if (error instanceof Error) {
     return { message: error.message, name: error.name };
   }

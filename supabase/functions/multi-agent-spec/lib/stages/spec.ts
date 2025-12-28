@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { corsHeaders, callGroq, GROQ_MODEL } from '../utils/api.ts';
+import { corsHeaders, callGroq, _GROQ_MODEL } from '../utils/api.ts';
 import { callOpenRouter } from '../../../lib/openrouter-client.ts';
 import { RoundData } from '../types.ts';
 import { renderPrompt, trackPromptUsage } from '../../../lib/prompt-service.ts';
@@ -232,7 +232,7 @@ async function generateSection(
   context: string,
   productIdea: string
 ): Promise<string> {
-  console.log(`[Spec] Generating section: ${section.title} (${section.tokens} tokens)...`);
+  console.info(`[Spec] Generating section: ${section.title} (${section.tokens} tokens)...`);
   
   const response = await callOpenRouter({
     model: SPEC_MODEL,
@@ -244,14 +244,14 @@ async function generateSection(
     maxTokens: section.tokens
   });
   
-  console.log(`[Spec] Section ${section.id}: ${response.usage.completionTokens} tokens, $${response.cost.toFixed(4)}`);
+  console.info(`[Spec] Section ${section.id}: ${response.usage.completionTokens} tokens, $${response.cost.toFixed(4)}`);
   
   return response.content;
 }
 
 // Legacy single-pass function for backwards compatibility
 export const handleSpecStage = async (roundData: RoundData | undefined) => {
-    console.log('[Enhanced] Generating final specification...');
+    console.info('[Enhanced] Generating final specification...');
 
     const syntheses = roundData?.syntheses || [];
     const votes = roundData?.votes || [];
@@ -431,7 +431,7 @@ export const handleSpecStageComplete = async (roundData: RoundData | undefined, 
     // Extract product idea from first synthesis or use fallback
     const productIdea = roundData?.syntheses?.[0]?.synthesis?.substring(0, 200) || 'Product specification';
     
-    console.log(`[Spec] Starting multi-pass generation with ${SPEC_SECTIONS.length} sections...`);
+    console.info(`[Spec] Starting multi-pass generation with ${SPEC_SECTIONS.length} sections...`);
     
     // Generate each section in parallel (batched to avoid rate limits)
     const sectionContents: string[] = [];
@@ -475,7 +475,7 @@ ${sectionContents.join('\n\n---\n\n')}
 - **Generation Time**: ${((Date.now() - specStart) / 1000).toFixed(1)}s
 `;
 
-    console.log(`[Spec] Multi-pass complete: ${SPEC_SECTIONS.length} sections in ${((Date.now() - specStart) / 1000).toFixed(1)}s`);
+    console.info(`[Spec] Multi-pass complete: ${SPEC_SECTIONS.length} sections in ${((Date.now() - specStart) / 1000).toFixed(1)}s`);
 
     await trackPromptUsage('specification_generation', {
         latency_ms: Date.now() - specStart,
@@ -483,7 +483,7 @@ ${sectionContents.join('\n\n---\n\n')}
     });
 
     // Extract Tech Stack with Brandfetch logos
-    console.log('[Spec] Extracting structured tech stack with logos...');
+    console.info('[Spec] Extracting structured tech stack with logos...');
     const techStackPrompt = generateTechStackPrompt(spec);
 
     let techStack: any[] = [];
@@ -501,7 +501,7 @@ ${sectionContents.join('\n\n---\n\n')}
         
         // Enrich with Brandfetch logo URLs
         techStack = enrichTechStackWithLogos(techStack);
-        console.log(`[Spec] Tech stack extracted: ${techStack.length} categories with logos`);
+        console.info(`[Spec] Tech stack extracted: ${techStack.length} categories with logos`);
     } catch (e) {
         console.error('[Spec] Failed to extract tech stack:', e);
         // Provide a default tech stack with logos

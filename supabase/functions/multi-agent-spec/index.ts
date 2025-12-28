@@ -84,16 +84,16 @@ const addRateLimitHeaders = async (response: Response, remaining: number): Promi
 };
 
 serve(async (req) => {
-  console.log('[EdgeFunction] Request received:', { method: req.method, url: req.url });
+  console.info('[EdgeFunction] Request received:', { method: req.method, url: req.url });
 
   if (req.method === 'OPTIONS') {
-    console.log('[EdgeFunction] CORS preflight request');
+    console.info('[EdgeFunction] CORS preflight request');
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     // Check environment variables
-    console.log('[EdgeFunction] Validating environment variables...');
+    console.info('[EdgeFunction] Validating environment variables...');
     if (!validateEnv()) {
       console.error('[EdgeFunction] Configuration error: Missing environment variables');
       return new Response(
@@ -105,10 +105,10 @@ serve(async (req) => {
         { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-    console.log('[EdgeFunction] Environment variables validated successfully');
+    console.info('[EdgeFunction] Environment variables validated successfully');
 
     // Verify authentication
-    console.log('[EdgeFunction] Verifying authentication...');
+    console.info('[EdgeFunction] Verifying authentication...');
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       console.error('[EdgeFunction] No authorization header provided');
@@ -131,7 +131,7 @@ serve(async (req) => {
       );
     }
 
-    console.log('[EdgeFunction] User authenticated:', user.id);
+    console.info('[EdgeFunction] User authenticated:', user.id);
 
     // Parse and validate request
     const rawBody = await req.json();
@@ -167,12 +167,12 @@ serve(async (req) => {
 
     if (stage === 'questions') {
       if (isAdmin) {
-        console.log('[RateLimit] Admin user bypassing rate limit:', user.id);
+        console.info('[RateLimit] Admin user bypassing rate limit:', user.id);
         rateLimitRemaining = 999;
       } else {
         // Check subscription and credits
         const sub = await checkSubscription(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, user.id);
-        console.log('[Subscription] User plan:', sub.plan, 'Credits:', sub.credits);
+        console.info('[Subscription] User plan:', sub.plan, 'Credits:', sub.credits);
 
         if (sub.plan === 'free' && sub.credits <= 0) {
           return new Response(
@@ -207,11 +207,11 @@ serve(async (req) => {
         } else {
           rateLimitRemaining = rateLimit.remaining;
         }
-        console.log('[RateLimit] Request allowed:', { remaining: rateLimitRemaining });
+        console.info('[RateLimit] Request allowed:', { remaining: rateLimitRemaining });
       }
     }
 
-    console.log('[EdgeFunction] Request validated:', { stage, hasUserInput: !!userInput, hasAgentConfigs: !!agentConfigs });
+    console.info('[EdgeFunction] Request validated:', { stage, hasUserInput: !!userInput, hasAgentConfigs: !!agentConfigs });
 
     // Check for prompt injection
     if (userInput && detectPromptInjection(userInput)) {
@@ -246,7 +246,7 @@ serve(async (req) => {
     const cleanInput = userInput ? sanitizeInput(userInput) : '';
     const cleanComment = userComment ? sanitizeInput(userComment) : undefined;
 
-    console.log('[Enhanced] Processing:', { stage, userId: user.id });
+    console.info('[Enhanced] Processing:', { stage, userId: user.id });
 
     // ========================================
     // STAGE 1: DYNAMIC QUESTION GENERATION

@@ -6,6 +6,7 @@
 
 import * as Sentry from '@sentry/react';
 import { logger } from '@/lib/logger';
+import { env } from '@/lib/env-validation';
 
 // ============================================
 // TYPES
@@ -37,8 +38,8 @@ interface AnalyticsConfig {
 // ============================================
 
 const DEFAULT_CONFIG: AnalyticsConfig = {
-  enabled: import.meta.env.PROD,
-  debug: import.meta.env.DEV,
+  enabled: env.PROD,
+  debug: env.DEV,
   sampleRate: 1.0, // Track 100% in production
   respectDoNotTrack: true,
 };

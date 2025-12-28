@@ -3,15 +3,15 @@
  * Tests stage transitions, error handling, and core orchestration logic
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi as _vi } from 'vitest';
 import {
   createMockAgentConfig,
   createMockRound,
-  createMockQuestionsResponse,
-  createMockResearchResponse,
-  createMockSynthesisResponse,
+  _createMockQuestionsResponse,
+  _createMockResearchResponse,
+  _createMockSynthesisResponse,
   createMockVotesResponse,
-  createMockSpecResponse,
+  _createMockSpecResponse,
   createRateLimitError,
   createTimeoutError,
   createValidationError,

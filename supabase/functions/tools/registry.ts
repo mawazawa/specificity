@@ -26,7 +26,7 @@ export class ToolRegistry {
 
   register(tool: BaseTool) {
     this.tools.set(tool.name, tool);
-    console.log(`[ToolRegistry] Registered tool: ${tool.name}`);
+    console.info(`[ToolRegistry] Registered tool: ${tool.name}`);
   }
 
   get(name: string): BaseTool | undefined {
@@ -59,9 +59,9 @@ export class ToolRegistry {
       };
     }
 
-    console.log(`[ToolRegistry] Executing tool: ${toolName} with params:`, params);
+    console.info(`[ToolRegistry] Executing tool: ${toolName} with params:`, params);
     const result = await tool.execute(params);
-    console.log(`[ToolRegistry] Tool ${toolName} completed in ${result.metadata?.duration}ms`);
+    console.info(`[ToolRegistry] Tool ${toolName} completed in ${result.metadata?.duration}ms`);
 
     return result;
   }

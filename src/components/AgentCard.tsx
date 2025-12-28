@@ -1,7 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { motion, useMotionValue, useSpring } from "framer-motion";
 import { AgentConfig } from "@/types/spec";

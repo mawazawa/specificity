@@ -88,10 +88,11 @@ export function createLogger(stage: string, requestId?: string): Logger {
 
     switch (level) {
       case 'debug':
+        // eslint-disable-next-line no-console
         console.debug(`${prefix}${contextStr} ${message}${metricsStr}`, data ? JSON.stringify(data) : '');
         break;
       case 'info':
-        console.log(`${prefix}${contextStr} ${message}${metricsStr}`, data ? JSON.stringify(data) : '');
+        console.info(`${prefix}${contextStr} ${message}${metricsStr}`, data ? JSON.stringify(data) : '');
         break;
       case 'warn':
         console.warn(`${prefix}${contextStr} ${message}${metricsStr}`, data ? JSON.stringify(data) : '');
@@ -122,7 +123,7 @@ export function createLogger(stage: string, requestId?: string): Logger {
 
     metric(name: string, value: number) {
       metrics[name] = value;
-      console.log(`[${context.stage}] metric: ${name}=${value}`);
+      console.info(`[${context.stage}] metric: ${name}=${value}`);
     },
 
     setModel(model: string) {

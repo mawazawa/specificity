@@ -1,5 +1,5 @@
 import { useReducer, useCallback } from 'react';
-import type { SessionState, Round, HistoryEntryData, HistoryEntry, TechStackItem } from '@/types/spec';
+import type { SessionState, Round, HistoryEntryData, TechStackItem } from '@/types/spec';
 
 // Initial state
 const initialSessionState: SessionState = {

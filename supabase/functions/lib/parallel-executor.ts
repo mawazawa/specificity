@@ -1,8 +1,8 @@
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
-import { ExpertAssignment, ExpertAssignmentSchema } from './expert-matcher.ts';
+import { ExpertAssignment, _ExpertAssignmentSchema } from './expert-matcher.ts';
 import { ToolRegistry } from '../tools/registry.ts';
 import { callOpenRouter, retryWithBackoff } from './openrouter-client.ts';
-import { ResearchQuestion, ResearchQuestionSchema } from './question-generator.ts';
+import { _ResearchQuestion, ResearchQuestionSchema } from './question-generator.ts';
 import { renderPrompt, trackPromptUsage } from './prompt-service.ts';
 
 export const ToolUsedSchema = z.object({
@@ -40,8 +40,8 @@ export async function executeParallelResearch(
     roundNumber: number;
   }
 ): Promise<AgentResearchResult[]> {
-  console.log(`[ParallelExecutor] Starting parallel execution with ${assignments.length} agents`);
-  console.log(`[ParallelExecutor] Round ${context.roundNumber}`);
+  console.info(`[ParallelExecutor] Starting parallel execution with ${assignments.length} agents`);
+  console.info(`[ParallelExecutor] Round ${context.roundNumber}`);
 
   const startTime = Date.now();
 
@@ -84,9 +84,9 @@ export async function executeParallelResearch(
     console.warn(`[ParallelExecutor] ${failedCount}/${assignments.length} agents failed, continuing with partial results`);
   }
 
-  console.log(`[ParallelExecutor] ✓ Completed in ${duration}ms`);
-  console.log(`[ParallelExecutor]   Total cost: $${totalCost.toFixed(4)}`);
-  console.log(`[ParallelExecutor]   Tools used: ${totalTools}`);
+  console.info(`[ParallelExecutor] ✓ Completed in ${duration}ms`);
+  console.info(`[ParallelExecutor]   Total cost: $${totalCost.toFixed(4)}`);
+  console.info(`[ParallelExecutor]   Tools used: ${totalTools}`);
 
   return results;
 }
@@ -127,7 +127,7 @@ async function executeAgentAssignment(
     while (iterations < maxIterations) {
       iterations++;
 
-      console.log(`[${assignment.expertName}] Iteration ${iterations}/${maxIterations}`);
+      console.info(`[${assignment.expertName}] Iteration ${iterations}/${maxIterations}`);
 
       // Call LLM
       const callStart = Date.now();
@@ -144,7 +144,7 @@ async function executeAgentAssignment(
         {
           maxRetries: MAX_AGENT_RETRIES,
           onRetry: (error, attempt) => {
-            console.log(`[${assignment.expertName}] Retry ${attempt}:`, error.message);
+            console.info(`[${assignment.expertName}] Retry ${attempt}:`, error.message);
           }
         }
       );
@@ -172,10 +172,10 @@ async function executeAgentAssignment(
 
           const result = JSON.parse(jsonContent);
 
-          console.log(`[${assignment.expertName}] ✓ Research complete`);
-          console.log(`[${assignment.expertName}]   Iterations: ${iterations}`);
-          console.log(`[${assignment.expertName}]   Tools used: ${toolsUsed.length}`);
-          console.log(`[${assignment.expertName}]   Cost: $${totalCost.toFixed(4)}`);
+          console.info(`[${assignment.expertName}] ✓ Research complete`);
+          console.info(`[${assignment.expertName}]   Iterations: ${iterations}`);
+          console.info(`[${assignment.expertName}]   Tools used: ${toolsUsed.length}`);
+          console.info(`[${assignment.expertName}]   Cost: $${totalCost.toFixed(4)}`);
 
           return {
             expertId: assignment.expertId,
@@ -188,7 +188,7 @@ async function executeAgentAssignment(
             cost: totalCost,
             tokensUsed: totalTokens
           };
-        } catch (parseError) {
+        } catch (_parseError) {
           console.warn(`[${assignment.expertName}] Failed to parse completion JSON, treating as findings`);
 
           return {
@@ -219,7 +219,7 @@ async function executeAgentAssignment(
 
           if (toolCall.tool && toolCall.params) {
             const toolStartTime = Date.now();
-            console.log(`[${assignment.expertName}] → Using tool: ${toolCall.tool}`);
+            console.info(`[${assignment.expertName}] → Using tool: ${toolCall.tool}`);
 
             const toolResult = await tools.execute(toolCall.tool, toolCall.params);
             const toolDuration = Date.now() - toolStartTime;
@@ -239,7 +239,7 @@ async function executeAgentAssignment(
 
             continue; // Next iteration with tool results
           }
-        } catch (parseError) {
+        } catch (_parseError) {
           console.warn(`[${assignment.expertName}] Failed to parse tool call JSON:`, parseError);
           // Continue anyway - LLM might provide findings in next iteration
         }

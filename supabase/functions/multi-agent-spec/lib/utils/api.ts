@@ -51,7 +51,7 @@ export async function callGroq(
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            model: GROQ_MODEL,
+            model: _GROQ_MODEL,
             messages: [
                 { role: 'system', content: systemPrompt },
                 { role: 'user', content: userMessage }
@@ -107,7 +107,7 @@ export async function checkRateLimit(
             allowed: data.allowed,
             remaining: data.remaining
         };
-    } catch (error) {
+    } catch (_error) {
         console.error('Rate limit exception:', { type: 'rate_limit_exception', user_id: userId });
         return { allowed: true, remaining: maxRequests };
     }
@@ -139,7 +139,7 @@ export async function checkSubscription(
             plan: data.plan as 'free' | 'pro' | 'enterprise',
             credits: data.credits || 0
         };
-    } catch (error) {
+    } catch (_error) {
         console.error('Subscription check exception:', { type: 'subscription_exception', user_id: userId });
         return { plan: 'free', credits: 0 };
     }
@@ -166,7 +166,7 @@ export async function deductCredit(
         }
 
         return true;
-    } catch (error) {
+    } catch (_error) {
         console.error('Deduct credit exception:', { type: 'deduct_credit_exception', user_id: userId });
         return false;
     }

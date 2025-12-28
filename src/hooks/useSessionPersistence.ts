@@ -177,7 +177,7 @@ export const useSessionPersistence = ({
         });
       }
     }
-  }, [getStorageKey, toast]);
+  }, [getStorageKey, toast, logger]);
 
   // Debounced persist function
   const debouncedPersist = useCallback((data: SessionData) => {

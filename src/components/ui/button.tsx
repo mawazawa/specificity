@@ -94,7 +94,7 @@ const InteractiveButton = React.forwardRef<
   } | null>(null);
 
   const buttonRef = React.useRef<HTMLButtonElement>(null);
-  const combinedRef = ref || buttonRef;
+  const _combinedRef = ref || buttonRef;
 
   const [rippleState, setRippleState] = React.useState<{x: number; y: number; size: number} | null>(null);
   const [position, setPosition] = React.useState({ x: 0, y: 0 });
@@ -196,4 +196,5 @@ const InteractiveButton = React.forwardRef<
 });
 InteractiveButton.displayName = "InteractiveButton";
 
+// eslint-disable-next-line react-refresh/only-export-components
 export { Button, buttonVariants };

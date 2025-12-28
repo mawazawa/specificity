@@ -8,7 +8,7 @@ export const handleVotingStage = async (
     roundData: RoundData | undefined,
     groqApiKey: string
 ) => {
-    console.log('[Enhanced] Collecting consensus votes...');
+    console.info('[Enhanced] Collecting consensus votes...');
 
     if (!agentConfigs) {
         return new Response(

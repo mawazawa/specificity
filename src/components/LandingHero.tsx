@@ -1,7 +1,5 @@
 import { FileText, Zap, Search, GitBranch, Shield, CheckCircle2, ExternalLink, Users, Sparkles } from "lucide-react";
 import { Card } from "./ui/card";
-import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
 import { AnimatedButton } from "./AnimatedButton";
 import { ExpertCard } from "./ExpertCard";
 import { EXPERTS } from "@/types/expert";
@@ -10,7 +8,6 @@ import { Footer } from "./Footer";
 import DottedGlowBackground from "./ui/dotted-glow-background";
 import { motion } from "framer-motion";
 import { CollaborativeFlowDiagram } from "./CollaborativeFlowDiagram";
-import { SkeletonCard, SkeletonText } from "./ui/skeleton-loader";
 import { useState } from "react";
 
 interface LandingHeroProps {
@@ -18,7 +15,7 @@ interface LandingHeroProps {
 }
 
 export const LandingHero = ({ onGetStarted }: LandingHeroProps) => {
-  const [showSkeletons, setShowSkeletons] = useState(false);
+  const [showSkeletons, _setShowSkeletons] = useState(false);
 
   return (
     <div className="space-y-32 animate-fade-in relative">

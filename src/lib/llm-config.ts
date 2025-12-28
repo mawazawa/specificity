@@ -5,11 +5,12 @@
  */
 
 import { FailoverConfig } from '@/lib/llm-client';
+import { env } from '@/lib/env-validation';
 
 /**
  * Environment-based configuration
  */
-const isDev = import.meta.env.DEV;
+const isDev = env.DEV;
 
 /**
  * Production failover configuration

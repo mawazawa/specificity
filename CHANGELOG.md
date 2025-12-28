@@ -2,11 +2,58 @@
 
 All notable changes to Specificity will be documented in this file.
 
+## [1.13.0] - 2025-12-28 15:30 UTC
+
+### Phase 7 Actions 2, 3, 6, 10 Complete
+
+#### Action 2: Enable noUncheckedIndexedAccess ✅
+
+- **tsconfig.app.json, tsconfig.json, tsconfig.node.json** - Added `noUncheckedIndexedAccess: true`
+- Fixed 19 array access errors with optional chaining and nullish coalescing
+- Added type safety for Record index access patterns
+- Build passes successfully with stricter array checking
+
+#### Action 3: Lint Warning Cleanup ✅
+
+- **Reduced warnings: 221 → 75** (66% reduction)
+- Fixed 1 error (max-depth in tests)
+- Fixed 89 unused variable warnings
+- Replaced 65 console.log with console.info in Edge Functions
+- Fixed 7 React hooks dependency warnings
+- Fixed 8 react-refresh violations in shadcn/ui components
+
+#### Action 6: Pre-Commit Hook for Type Safety ✅
+
+- **Installed:** husky v9.1.7, lint-staged v16.2.7, prettier v3.7.4
+- **Created:** `.husky/pre-commit` hook running lint-staged
+- **Configured lint-staged:**
+  - `*.{ts,tsx}`: ESLint --fix + TypeScript check
+  - `*.{json,md}`: Prettier formatting
+- Prevents committing code with lint errors or type violations
+
+#### Action 10: Type-Safe Environment Variables ✅
+
+- **Enhanced:** `src/lib/env-validation.ts` with cached Zod proxy
+- **Created:** Complete TypeScript definitions in `src/vite-env.d.ts`
+- **Updated 8 files** to use typed `env` object instead of `import.meta.env`
+- Runtime validation at app startup with clear error messages
+
+### Quality Metrics
+
+- TypeScript: 0 errors
+- ESLint: 0 errors, 75 warnings (down from 221)
+- Production build: 24.31s
+- Bundle: 430KB gzipped
+- Pre-commit hooks: Active
+
+---
+
 ## [1.12.0] - 2025-12-28 14:35 UTC
 
 ### Phase 7 Action 1 + Bug Fixes (11 bugs fixed)
 
 #### Action 1: TypeScript Strict Mode Consolidation ✅
+
 - **tsconfig.app.json & tsconfig.json** - Consolidated to `"strict": true`:
   - Removed 7 individual strict flags (noImplicitAny, strictNullChecks, etc.)
   - Single `"strict": true` now covers all flags
@@ -16,13 +63,16 @@ All notable changes to Specificity will be documented in this file.
 #### Bug Fixes (11 total, researched with Dec 2025 documentation)
 
 **CRITICAL (1 fixed):**
+
 - **use-spec-flow.ts:307** - Unsafe fallback chain: Added length check before `agentConfigs[0]` access with meaningful error message
 
 **HIGH (2 fixed):**
+
 - **storage-quota.ts:155** - localStorage iteration: Fixed unsafe `.key()` loop by pre-calculating sizes and tracking removed bytes
 - **api.ts:287** - Missing null guard: Added `if (!data)` check after saveSpec database call
 
 **MEDIUM (7 fixed):**
+
 - **SimpleSpecInput.tsx:119** - Unsafe string split: Validated `split(',')` has 2+ elements before accessing index 1
 - **use-pause-resume.ts:63** - Stale closure: Changed to ref-only approach, eliminated mixed ref/state access
 - **SpecOutput.tsx:384** - Unsafe `as any` cast: Removed cast, used existing `mockupUrl` prop
@@ -32,15 +82,18 @@ All notable changes to Specificity will be documented in this file.
 - **useSessionPersistence.ts:244** - Unsafe type cast: Removed `as unknown as`, using Zod-inferred types
 
 **LOW (1 fixed):**
+
 - **Index.tsx:151** - Missing bounds check: Added explicit validation for `currentRound` index
 
 #### Research Sources (December 2025)
+
 - React 18.3 memory leak patterns (FreeCodeCamp, Medium)
 - TypeScript 5.8 strict mode gotchas (Better Stack, GitHub #61698)
 - localStorage quota handling (MDN, TrackJS)
 - OWASP Top 10 2025 web security vulnerabilities
 
 ### Quality Metrics
+
 - TypeScript: 0 errors (consolidated strict mode)
 - Unit tests: 443 passing
 - Production build: 22.98s
@@ -53,6 +106,7 @@ All notable changes to Specificity will be documented in this file.
 ### Phase 5 Complete + Phase 6 Critical Actions
 
 #### Action 48: Storage Quota Management ✅
+
 - **src/lib/storage-quota.ts** (7.5KB) - Comprehensive quota utilities:
   - `getStorageUsage()` - Returns current usage in bytes
   - `getStorageQuota()` - Returns max available (5MB conservative)
@@ -64,21 +118,23 @@ All notable changes to Specificity will be documented in this file.
   - Warning at 80%: Non-intrusive toast notification
   - Auto-cleanup at 95%: Removes 10 oldest sessions
   - Emergency at 100%: Aggressive cleanup, retry save
-- **src/lib/__tests__/storage-quota.test.ts** - 36 comprehensive tests
+- **src/lib/**tests**/storage-quota.test.ts** - 36 comprehensive tests
 
 #### Action 49: Increase Test Coverage ✅
+
 - **src/test/setup.ts** (264 lines) - Test utilities:
   - Mock Supabase client implementation
   - Mock data generators (agents, rounds, dialogues)
   - Error helpers (rate limit, timeout, network)
-- **src/hooks/spec-generation/__tests__/use-spec-flow.test.ts** (572 lines):
+- **src/hooks/spec-generation/**tests**/use-spec-flow.test.ts** (572 lines):
   - 46 tests for stage transitions, error handling, pause/resume
-- **src/lib/__tests__/api.test.ts** (741 lines):
+- **src/lib/**tests**/api.test.ts** (741 lines):
   - 32 tests for API functions, rate limits, timeouts
 - **Total: 443 tests** (up from 365, +78 new tests)
 - **Coverage: 73.67% statements, 67.96% branches**
 
 #### Action 54: OpenRouter Automatic Failover ✅ (CRITICAL)
+
 - **src/lib/llm-client.ts** (485 lines) - Circuit breaker pattern:
   - Automatic provider health tracking
   - Exponential backoff retry (2s → 4s → 8s → 15s max)
@@ -92,6 +148,7 @@ All notable changes to Specificity will be documented in this file.
 - **src/lib/api.ts** - Integrated with failover client
 
 #### Action 56: TypeScript Strict Mode ✅ (CRITICAL)
+
 - **tsconfig.app.json & tsconfig.json** - All 7 strict flags enabled:
   - ✓ `noImplicitAny: true`
   - ✓ `strictNullChecks: true`
@@ -104,6 +161,7 @@ All notable changes to Specificity will be documented in this file.
 - **Zero @ts-ignore added** - Clean migration
 
 ### Quality Metrics
+
 - Phase 5: **10/10 complete** ✅ (41-50)
 - Phase 6: **3/10 complete** (54, 56, 57)
 - TypeScript: 0 errors (strict mode)
@@ -118,6 +176,7 @@ All notable changes to Specificity will be documented in this file.
 ### TypeScript Strict Mode Migration (Action 56) ✅
 
 #### Complete Strict Type Safety Enabled
+
 - **All 7 strict flags enabled** in `tsconfig.app.json` and `tsconfig.json`:
   - ✓ `noImplicitAny`: true - Explicit typing enforced
   - ✓ `strictNullChecks`: true - Null guards enforced
@@ -128,17 +187,20 @@ All notable changes to Specificity will be documented in this file.
   - ✓ `alwaysStrict`: true - Strict mode JavaScript enforced
 
 #### Zero Type Errors
+
 - **0 type errors** after migration - codebase already well-typed
 - **0 code changes required** - all strict flags passed immediately
 - **No `@ts-ignore` or `@ts-expect-error` added** - clean migration
 
 #### Next Steps Identified
+
 - Consolidate to `"strict": true` (Action 1 in Phase 7)
 - Enable `noUncheckedIndexedAccess` for array safety (Action 2)
 - Clean up 221 lint warnings (Action 3)
 - Extend strict mode to Edge Functions (Action 4)
 
 ### Quality Metrics
+
 - TypeScript strict mode: **100% enabled** (7/7 flags)
 - Type errors: **0**
 - Manual type fixes: **0** (codebase already compliant)
@@ -151,24 +213,29 @@ All notable changes to Specificity will be documented in this file.
 ### Phase 5 Complete + Phase 7 Research
 
 #### Action 45: Decompose Large Hook (use-spec-flow) ✅
+
 - **use-stage-transitions.ts** (90 LOC) - Stage state and transitions
 - **use-pause-resume.ts** (107 LOC) - Pause/resume logic
 - **stage-handlers.ts** (371 LOC) - Stage execution functions
 - Main hook reduced by **317 LOC (42.7% reduction)**: 743 → 426 LOC
 
 #### Action 47: Component Memoization Strategy ✅
+
 - **ChatMessage.tsx** - Wrapped with React.memo, callbacks memoized
 - **DialoguePanel.tsx** - Extracted DialogueEntryItem, memoized toggle
 - AgentCard/LiveAgentCard already optimized ✅
 
 #### Action 50: Dead Code Detection & Cleanup ✅
+
 - **scripts/find-dead-code.ts** (344 LOC) - Dead code analyzer
 - Added npm script: `npm run find-dead-code`
 - Removed **13 files** (~1,779 lines of dead code)
 - Removed **30+ unused exports**
 
 #### Phase 7 Research Complete
+
 10 high-leverage actions identified:
+
 1. Agent Communication Protocol (ACP/MCP) - 85%
 2. Real-Time Collaboration with Presence - 78%
 3. Usage-Based Pricing with Token Tracking - 90%
@@ -181,6 +248,7 @@ All notable changes to Specificity will be documented in this file.
 10. Comprehensive Error Boundaries - 82%
 
 ### Quality Metrics
+
 - Phase 5: **8/10 actions complete** (41-47, 50)
 - Phase 6: **1/10 actions complete** (57)
 - Dead code removed: ~1,779 lines
@@ -193,27 +261,32 @@ All notable changes to Specificity will be documented in this file.
 ### Phase 5+6 Technical Debt - Actions 44, 46, 57 + Console Cleanup
 
 #### Action 57: Node.js 20.19+ Verification ✅ (Phase 6)
+
 - **`.nvmrc`** - Created with Node.js version 20
 - **`package.json`** - Added engines field: `node: ">=20.19.0", npm: ">=10.0.0"`
 - All GitHub Actions workflows already use Node 20 ✅
 
 #### Action 44: Comprehensive Error Boundary Coverage ✅
+
 - **`src/pages/Index.tsx`** - SpecGenerationBoundary wrapping spec flow
 - **`src/components/chat/ChatView.tsx`** - ChatBoundary wrapping chat
 - **`src/components/SpecOutput.tsx`** - ExportBoundary wrapping exports
 - Sentry integration with session context
 
 #### Action 46: Consolidate Avatar System ✅
+
 - **5 components updated** to use centralized `getAgentAvatar()`
 - **35 import lines removed** (85.7% reduction)
 - Single source of truth in `src/lib/avatars.ts`
 
 #### Action 42 Continued: Console Cleanup ✅
+
 - **42 additional console statements replaced** across 22 files
 - **Total: 68 console statements** replaced with logger
-- Zero console.* remaining in src/ (except logger.ts)
+- Zero console.\* remaining in src/ (except logger.ts)
 
 ### Quality Metrics
+
 - Phase 5: **6/10 actions complete** (41-44, 46 + 42 full)
 - Phase 6: **1/10 actions complete** (57)
 - Console statements: 68 → 0 remaining
@@ -227,12 +300,14 @@ All notable changes to Specificity will be documented in this file.
 ### Phase 5 Technical Debt - Actions 41, 42, 43 Implemented
 
 #### Action 41: Eliminate Unsafe Type Casting ✅
+
 - **src/types/session.ts** - Created centralized session types module
 - **src/pages/Index.tsx** - REMOVED `eslint-disable @typescript-eslint/no-explicit-any`
 - Eliminated 9 `any` types across 3 interfaces
 - TypeScript compilation: 0 errors
 
 #### Action 42: Eliminate Console Statements (26 replaced) ✅
+
 - **src/hooks/spec-generation/use-spec-flow.ts** - 7 console → logger
 - **src/hooks/useSessionPersistence.ts** - 6 console → logger
 - **src/components/SpecInput.tsx** - 5 console → logger
@@ -241,11 +316,12 @@ All notable changes to Specificity will be documented in this file.
 - All replaced with scoped loggers for Sentry integration
 
 #### Action 43: Fix XSS Vulnerability Patterns ✅
+
 - **src/lib/sanitize.ts** - Created sanitization library (167 lines)
   - `sanitizeHtml()` - HTML entity encoding
   - `validateImageUrl()` - Domain whitelist validation
   - 15 trusted domains whitelisted
-- **src/lib/__tests__/sanitize.test.ts** - 20 security tests
+- **src/lib/**tests**/sanitize.test.ts** - 20 security tests
 - **index.html** - Added Content Security Policy meta tag
 - **src/components/TechStackCard.tsx** - URL validation added
 - **src/components/SpecOutput.tsx** - Mockup URL validation
@@ -254,6 +330,7 @@ All notable changes to Specificity will be documented in this file.
 ### Phase 6 Research Completed
 
 Temporal-aware web research identified 10 new high-leverage actions (51-60):
+
 - React 19 migration (25-40% fewer re-renders via compiler)
 - Vite 7 Rolldown (67% faster builds)
 - Node.js 20.19+ requirement (Vite 7 compatibility)
@@ -261,6 +338,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 - Supabase background jobs (handle 35-min specs)
 
 ### Quality Metrics
+
 - Phase 5: **3/10 actions complete** (Actions 41, 42, 43)
 - Console statements: 64 → 38 remaining
 - TypeScript: 0 errors
@@ -273,6 +351,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 ### Phase 5 Technical Debt Elimination Plan
 
 #### TECH_DEBT_PLAN.md - Comprehensive Technical Debt Plan
+
 - Created detailed plan with **10 high-leverage actions**
 - **145 atomic subtasks** total across all actions
 - Each subtask scoped to **≤4-5 files**
@@ -281,20 +360,21 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 
 #### Technical Debt Actions Identified
 
-| # | Action | Priority | Confidence |
-|---|--------|----------|------------|
-| 41 | Eliminate Unsafe Type Casting | CRITICAL | 97% |
-| 42 | Eliminate Console Statements (64 found) | HIGH | 95% |
-| 43 | Fix XSS Vulnerability Patterns | CRITICAL | 96% |
-| 44 | Comprehensive Error Boundary Coverage | HIGH | 93% |
-| 45 | Decompose Large Hook (use-spec-flow.ts) | HIGH | 91% |
-| 46 | Consolidate Avatar System | MEDIUM | 92% |
-| 47 | Component Memoization Strategy | MEDIUM | 89% |
-| 48 | Storage Quota Management | MEDIUM | 87% |
-| 49 | Increase Test Coverage | MEDIUM | 85% |
-| 50 | Dead Code Detection & Cleanup | LOW | 83% |
+| #   | Action                                  | Priority | Confidence |
+| --- | --------------------------------------- | -------- | ---------- |
+| 41  | Eliminate Unsafe Type Casting           | CRITICAL | 97%        |
+| 42  | Eliminate Console Statements (64 found) | HIGH     | 95%        |
+| 43  | Fix XSS Vulnerability Patterns          | CRITICAL | 96%        |
+| 44  | Comprehensive Error Boundary Coverage   | HIGH     | 93%        |
+| 45  | Decompose Large Hook (use-spec-flow.ts) | HIGH     | 91%        |
+| 46  | Consolidate Avatar System               | MEDIUM   | 92%        |
+| 47  | Component Memoization Strategy          | MEDIUM   | 89%        |
+| 48  | Storage Quota Management                | MEDIUM   | 87%        |
+| 49  | Increase Test Coverage                  | MEDIUM   | 85%        |
+| 50  | Dead Code Detection & Cleanup           | LOW      | 83%        |
 
 #### Key Findings
+
 - **64 console statements** across 28 files bypassing Sentry
 - **use-spec-flow.ts** is 1400+ LOC - needs decomposition
 - **Index.tsx:1** has `eslint-disable @typescript-eslint/no-explicit-any`
@@ -302,9 +382,11 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 - No XSS sanitization on user-provided URLs
 
 #### Files Created
+
 - `TECH_DEBT_PLAN.md` - Full implementation plan (145 subtasks)
 
 #### Files Updated
+
 - `TODO.md` - Added Phase 5 actions (41-50)
 
 ---
@@ -314,6 +396,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 ### Phase 4 Actions (31-40) - Initial Implementation
 
 ### Console Cleanup & Logging (Action 32 - 95% confidence)
+
 - **src/lib/logger.ts** - Structured logging utility
   - Sentry-integrated logging with breadcrumbs
   - `createLogger()` / `scopedLogger()` factory functions
@@ -324,6 +407,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
   - Exception for logger.ts
 
 ### Lighthouse CI & Performance Budgets (Action 34 - 90% confidence)
+
 - **lighthouserc.json** - Lighthouse CI configuration
   - Performance >= 85%, Accessibility >= 90%
   - LCP < 2.5s, CLS < 0.1
@@ -334,6 +418,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
   - Uploads report artifacts
 
 ### Database Monitoring (Action 36 - 84% confidence)
+
 - **src/lib/db-metrics.ts** - Database metrics collection
   - `trackQuery()` - Query performance tracking
   - `getTableMetrics()` - Per-table statistics
@@ -342,6 +427,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
   - Slow query thresholds: 100ms/500ms/1000ms/3000ms
 
 ### API Documentation & OpenAPI (Action 38 - 89% confidence)
+
 - **docs/api/openapi.json** - OpenAPI 3.1 schema
   - multi-agent-spec endpoint documentation
   - voice-to-text endpoint documentation
@@ -350,6 +436,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
   - Error response schemas
 
 ### SLI/SLO & Error Budgets (Action 40 - 85% confidence)
+
 - **src/lib/sli-tracker.ts** - Service level tracking
   - SLO definitions (99.9% availability, P95 < 2s)
   - `trackRequest()` - Request SLI tracking
@@ -359,6 +446,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
   - `startSLOMonitoring()` - Periodic monitoring
 
 ### Quality Metrics
+
 - TypeScript: 0 errors
 - Phase 4: **5/10 actions complete**
 - New files: 6 created
@@ -368,22 +456,24 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 ## [1.4.2] - 2025-12-27 12:15 UTC
 
 ### Edge Function Integration Tests (Action 29 - 86% confidence)
-- **supabase/functions/lib/__tests__/security.test.ts** - Security utility tests
+
+- **supabase/functions/lib/**tests**/security.test.ts** - Security utility tests
 - Prompt injection detection tests (29 test cases)
 - Input sanitization tests (HTML, quotes, control chars)
 - Unicode normalization and truncation tests
 - Error sanitization tests
-- **supabase/functions/lib/__tests__/structured-logger.test.ts** - Logger tests
+- **supabase/functions/lib/**tests**/structured-logger.test.ts** - Logger tests
 - Request ID generation tests (24 test cases)
 - Logger levels (debug, info, warn, error)
 - Metrics tracking
 - Timer utilities with fake timers
 - Pipeline tracing tests
-- **supabase/functions/lib/__tests__/rate-limiter.test.ts** - Rate limiter tests
+- **supabase/functions/lib/**tests**/rate-limiter.test.ts** - Rate limiter tests
 - Queue statistics verification
 - Updated **vitest.config.ts** to include edge function tests
 
 ### Large Component Refactoring (Action 30 - 85% confidence)
+
 - **src/hooks/use-spec-export.ts** - Extracted export hook (250 lines)
   - Centralized export state management
   - All download functions (PDF, Word, Image, Markdown, etc.)
@@ -403,6 +493,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
   - Better separation of concerns
 
 ### Quality Metrics
+
 - TypeScript: 0 errors
 - ESLint: 0 errors
 - Unit Tests: **334 passing tests** (55 new)
@@ -413,6 +504,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 ## [1.4.1] - 2025-12-27 11:56 UTC
 
 ### Smart Error Boundaries (Action 24 - 93% confidence)
+
 - **src/components/error-boundaries.tsx** - Specialized error boundaries
 - `SpecGenerationBoundary` - With retry and clear session options
 - `ChatBoundary` - Lightweight chat error handling
@@ -422,6 +514,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 - `withErrorHandling` async wrapper utility
 
 ### Distributed Tracing (Action 26 - 89% confidence)
+
 - **src/lib/tracing.ts** - End-to-end tracing utilities
 - `SpecGenerationTracer` class with span management
 - Trace ID generation (32 hex chars) and span IDs (16 hex chars)
@@ -430,6 +523,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 - Sentry integration for trace context correlation
 
 ### localStorage Encryption (Action 27 - 88% confidence)
+
 - **src/lib/secure-storage.ts** - Encrypted storage utilities
 - `SecureStorage` class with AES-GCM encryption
 - Web Crypto API for key derivation
@@ -439,6 +533,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 - `migrateToEncrypted()` utility
 
 ### Quality Metrics
+
 - TypeScript: 0 errors
 - ESLint: 0 errors
 - Unit Tests: **279 passing tests**
@@ -449,6 +544,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 ## [1.4.0] - 2025-12-27 11:47 UTC
 
 ### TypeScript Configuration (Action 22 - 96% confidence)
+
 - **tsconfig.app.json** - Strengthened linting rules
 - Enabled `noUnusedLocals: true` - Dead code detection
 - Enabled `noUnusedParameters: true` - Unused parameter detection
@@ -458,6 +554,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 - Documented roadmap to full `strict: true` mode
 
 ### Request Deduplication & Caching (Action 23 - 94% confidence)
+
 - **src/lib/request-cache.ts** - Request cache with deduplication
 - `RequestCache` class - TTL-based response caching
 - `RequestDeduplicator` - Parallel request deduplication
@@ -467,6 +564,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 - Sentry integration for observability
 
 ### Consolidate Avatar System (Action 25 - 92% confidence)
+
 - **src/lib/avatars.ts** - Centralized avatar registry
 - `getAgentAvatar(name, variant)` - Avatar lookup utility
 - `normalizeAgentName(name)` - Handle name variations
@@ -475,6 +573,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 - Legacy exports for backward compatibility
 
 ### Stage Performance Monitoring (Action 28 - 87% confidence)
+
 - **src/lib/stage-performance.ts** - Performance tracker
 - `StagePerformanceTracker` class with timing metrics
 - `STAGE_BENCHMARKS` - Expected durations per stage
@@ -484,6 +583,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 - `formatDuration()` / `getStageStatus()` utilities
 
 ### Quality Metrics
+
 - TypeScript: 0 errors (stricter config enabled)
 - ESLint: 0 errors
 - Unit Tests: **279 passing tests** (41 new)
@@ -494,6 +594,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 ## [1.3.1] - 2025-12-27 11:35 UTC
 
 ### Database Query Optimization & Indices (Action 13 - 92% confidence)
+
 - **supabase/migrations/20251227112832_add_performance_indices.sql** - Performance indices
 - `idx_specifications_user_created` - Composite index for user spec listing
 - `idx_specifications_public` - Partial index for public specs
@@ -507,6 +608,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 - `RECOMMENDED_INDICES` - Documented index recommendations
 
 ### Product Analytics & User Tracking (Action 14 - 90% confidence)
+
 - **src/lib/analytics.ts** - Privacy-respecting analytics module
 - `identify()` - User identification with traits
 - `track()` - Event tracking with Sentry integration
@@ -517,6 +619,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 - Session ID management with sessionStorage
 
 ### Large Component Refactoring (Action 15 - 88% confidence)
+
 - **src/lib/export-utils.ts** - Extracted export utilities from SpecOutput
 - `downloadBlob()` - Generic blob download utility
 - `generateFilename()` - Timestamped filename generator
@@ -526,6 +629,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 - `loadPdfLibraries()` / `loadDocxLibraries()` - Lazy loaders
 
 ### Quality Metrics
+
 - TypeScript: 0 errors
 - ESLint: 0 errors (warnings expected)
 - Unit Tests: **238 passing tests** (10 new)
@@ -536,6 +640,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 ## [1.3.0] - 2025-12-27 11:25 UTC
 
 ### Dependency Updates & Maintenance (Action 11 - 96% confidence)
+
 - Updated all 27 @radix-ui packages to latest versions
 - Updated @eslint/js 9.32.0 → 9.39.2
 - Updated @playwright/test 1.56.1 → 1.57.0
@@ -548,6 +653,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 - **.github/dependabot.yml** - Automated dependency update configuration
 
 ### Core Web Vitals & Performance Monitoring (Action 12 - 94% confidence)
+
 - **src/lib/web-vitals.ts** - Web Vitals monitoring with Sentry integration
 - `initWebVitals()` - Initialize LCP, FID, CLS, FCP, INP, TTFB tracking
 - `getRating()` - Classify metrics as good/needs-improvement/poor
@@ -556,6 +662,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 - **main.tsx** - Web Vitals initialization at app startup
 
 ### Content Security Policy & Security Headers (Action 16 - 91% confidence)
+
 - **vercel.json** - Added comprehensive security headers:
   - `X-Content-Type-Options: nosniff`
   - `X-Frame-Options: DENY`
@@ -565,6 +672,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
   - `Content-Security-Policy` - Allowlist for Supabase, Sentry, OpenRouter, Exa
 
 ### Environment Configuration & .env Validation (Action 18 - 89% confidence)
+
 - **.env.example** - Template with all required environment variables
 - **src/lib/env-validation.ts** - Runtime environment validation with Zod
 - `validateEnv()` - Validate required Supabase config
@@ -573,6 +681,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 - `isDevelopment()` / `isProduction()` / `isDebugEnabled()` helpers
 
 ### ESLint & Code Quality Enhancement (Action 20 - 86% confidence)
+
 - **eslint.config.js** - Enhanced with security and quality rules:
   - `no-console` - Warn for non-error console methods
   - `no-eval` / `no-implied-eval` / `no-new-func` - Security rules
@@ -582,6 +691,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
   - Test file relaxed rules
 
 ### Quality Metrics
+
 - TypeScript: 0 errors
 - ESLint: 2 errors, 351 warnings (mostly console.log statements)
 - Unit Tests: **206 passing tests**
@@ -592,6 +702,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 ## [1.2.1] - 2025-12-27 01:10 UTC
 
 ### Error Handling Improvements (Action 7 - 87% confidence)
+
 - **src/lib/errors.ts** - Error categorization utility with user-friendly messages
 - `categorizeError()` - Categorizes errors into 10 types (validation, network, timeout, rate_limit, auth, permission, not_found, server, client, unknown)
 - `toToastError()` - Converts errors to toast-friendly format
@@ -603,6 +714,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 - **useAuth.ts** - getSession error handling with proper error messaging
 
 ### API Timeout & Retry Logic (Action 10 - 82% confidence)
+
 - **src/lib/retry.ts** - Retry utility with exponential backoff
 - `withRetry()` - Execute async functions with automatic retry on transient failures
 - `calculateDelay()` - Exponential backoff with optional jitter
@@ -616,6 +728,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 - **retry.test.ts** - 23 tests for retry logic
 
 ### Testing
+
 - **23 new retry tests** for exponential backoff, jitter, abort signals, and error categorization
 - Total test count: **206 passing tests**
 
@@ -624,6 +737,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 ## [1.2.0] - 2025-12-27 00:00 UTC
 
 ### Added
+
 - **Turn-End Requirements** in CLAUDE.md for mandatory TODO.md updates at every turn
 - **Temporal Metacognition Protocol** - Claude validates documentation recency dynamically
 - **TODO.md** with 10 high-leverage actions (129 atomic subtasks)
@@ -633,6 +747,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 - Multi-viewpoint analysis (user, developer, business, security, performance)
 
 ### Accessibility (Action 3 - 92% confidence)
+
 - **src/lib/a11y.ts** - New accessibility utilities for keyboard navigation
 - `getInteractiveProps()` - Adds role, tabIndex, onKeyDown to interactive elements
 - `createKeyboardClickHandler()` - Handles Enter/Space key activation
@@ -640,6 +755,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 - SampleSpecGallery cards now keyboard accessible with visible focus rings
 
 ### Performance (Action 4 - 90% confidence)
+
 - **AgentCard** memory leak fixed - removed motion values from useEffect deps
 - Added cleanup for `mousemove` listener in AgentCard
 - **LiveAgentCard** wrapped in `React.memo` to prevent unnecessary re-renders
@@ -648,6 +764,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 - Added `loading="lazy"` to avatar images for faster FCP
 
 ### Testing (Action 5 - 88% confidence)
+
 - **94 new unit tests** for core hooks and utilities:
   - `use-session.test.ts` - 18 tests for session reducer actions
   - `use-dialogue.test.ts` - 16 tests for dialogue reducer actions
@@ -658,6 +775,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 - Total test count: **183 passing tests**
 
 ### Input Validation (Action 6 - 94% confidence)
+
 - **src/lib/validation.ts** - Validation utilities with error feedback
 - `validateUserInput()` - Spec input validation (25-5000 chars)
 - `validateChatMessage()` - Chat message validation (1-2000 chars)
@@ -668,6 +786,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 - `validation.test.ts` - 40 tests for validation utilities
 
 ### Reduced Motion Support (Action 9 - 90% confidence)
+
 - **src/hooks/use-reduced-motion.ts** - React hook for reduced motion preference
 - `useReducedMotion()` - Subscribes to system preference changes
 - `getMotionSafeProps()` - Framer Motion props that disable animation
@@ -679,6 +798,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
   - Disables pulse, ping, and hover scale animations
 
 ### Security (Action 1 - 98% confidence)
+
 - **sessionDataSchema** with Zod validation for localStorage (`src/types/schemas.ts`)
 - **safeJsonParse** utility prevents XSS/corruption (`src/lib/utils.ts`)
 - **useSessionPersistence** now validates session data before hydrating
@@ -687,6 +807,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 - Tech logo domain whitelist for URL security
 
 ### Observability (Action 2 - 95% confidence)
+
 - **Sentry.captureException** in ErrorBoundary.componentDidCatch
 - React component stack context attached to all errors
 - Error fingerprinting for intelligent deduplication
@@ -695,11 +816,13 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 - boundaryName prop for multi-boundary error identification
 
 ### Changed
+
 - Updated @supabase/supabase-js: 2.75.1 → 2.89.0
 - Updated @playwright/test: 1.56.1 → 1.57.0
 - README.md now includes dependency decision matrix
 
 ### Fixed
+
 - 10 UX bugs affecting user experience (commit 149c7d1):
   - TOAST_REMOVE_DELAY memory leak (1000000ms → 5000ms)
   - HistoryPanel rendering JSON as Markdown
@@ -713,10 +836,12 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
   - Download buttons silent failure
 
 ### Security
+
 - RLS policies enabled on prompts tables (commit 6b15115)
 - Comprehensive resilience and security improvements (commit 01d1223)
 
 ### Quality Metrics
+
 - TypeScript: 0 errors
 - ESLint: 0 errors
 - Dependencies: All at secure versions
@@ -727,6 +852,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 ## [1.1.1] - 2025-12-23
 
 ### Security
+
 - Updated Vite 5.4.21 → 7.3.0 (fixes GHSA-67mh-4wv8-2f99)
 - pnpm audit: 0 vulnerabilities
 
@@ -735,6 +861,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 ## [1.1.0] - 2025-12-23
 
 ### Added
+
 - **47 vitest unit tests** covering:
   - Model routing and registry validation (19 tests)
   - Bug fix regression tests (20 tests)
@@ -745,12 +872,14 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 - Rate limiting enabled via RLS on Supabase
 
 ### Changed
+
 - **93.5% bundle size reduction** for SpecOutput component (356KB → 23KB)
 - PDF vendor chunk now lazy-loaded on demand (585KB)
 - DOCX library now lazy-loaded on demand
 - Moved early return after hooks in SpecOutput (React rules compliance)
 
 ### Fixed
+
 - Division by zero in approval rate calculation (use-spec-flow.ts)
 - Division by zero in research depth weighting (spec.ts)
 - Division by zero in average risk score calculation (challenge.ts)
@@ -762,6 +891,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 - File naming convention (markdownComponents → MarkdownComponents)
 
 ### Quality Metrics
+
 - TypeScript: 0 errors
 - ESLint: 0 errors
 - Tests: 47 passing
@@ -772,6 +902,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 ## [1.0.0] - 2025-12-20
 
 ### Added
+
 - Initial multi-agent specification generation system
 - 8-stage AI pipeline (Question → Research → Challenge → Synthesis → Review → Vote → Spec → Share)
 - 7 AI experts (Elon, Steve, Oprah, Zaha, Jony, Bartlett, Amal)
@@ -783,6 +914,7 @@ Temporal-aware web research identified 10 new high-leverage actions (51-60):
 - Interactive tech stack recommendations
 
 ### Architecture
+
 - React 18 + TypeScript + Vite
 - Supabase (Auth, Database, Edge Functions)
 - OpenRouter for AI model routing

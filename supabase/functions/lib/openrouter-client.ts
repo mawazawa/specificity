@@ -193,7 +193,7 @@ function resolveGroqModel(params: LLMCallParams): { modelId: string; modelName: 
     throw new Error(`Groq fallback model not configured: ${DEFAULT_GROQ_MODEL}`);
   }
 
-  return { modelId: DEFAULT_GROQ_MODEL, modelName: fallback.model, config: fallback };
+  return { modelId: DEFAULT__GROQ_MODEL, modelName: fallback.model, config: fallback };
 }
 
 /**
@@ -370,7 +370,7 @@ export async function retryWithBackoff<T>(
         onRetry(lastError, attempt + 1);
       }
 
-      console.log(`[Retry] Attempt ${attempt + 1} failed, retrying in ${delay}ms...`);
+      console.info(`[Retry] Attempt ${attempt + 1} failed, retrying in ${delay}ms...`);
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }

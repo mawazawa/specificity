@@ -6,6 +6,7 @@
 
 import * as Sentry from '@sentry/react';
 import { logger } from '@/lib/logger';
+import { env } from '@/lib/env-validation';
 
 // ============================================
 // TYPES
@@ -375,7 +376,7 @@ export function formatTraceId(traceId: string): string {
  * Log trace summary to console (dev mode)
  */
 export function logTraceSummary(summary: TraceSummary): void {
-  if (import.meta.env.DEV) {
+  if (env.DEV) {
     logger.info(`🔍 Trace: ${formatTraceId(summary.traceId)}`);
     logger.info(`Total Duration: ${(summary.totalDuration / 1000).toFixed(2)}s`);
     logger.info(`Spans: ${summary.spanCount}, Errors: ${summary.errorCount}`);

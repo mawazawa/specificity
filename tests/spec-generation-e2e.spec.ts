@@ -74,7 +74,7 @@ test.describe('Spec Generation E2E Flow', () => {
           const body = await response.json();
           console.log(`   📦 Response body:`, JSON.stringify(body, null, 2));
           apiCalls.push({ status, body });
-        } catch (e) {
+        } catch (_e) {
           console.log(`   ⚠️  Could not parse response body`);
         }
       }

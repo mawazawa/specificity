@@ -206,7 +206,9 @@ export function useSpecFlow({ agentConfigs }: UseSpecFlowProps) {
     sessionState.isPaused,
     toast,
     parseError,
-    setCurrentStage
+    setCurrentStage,
+    logger,
+    setPendingResume
   ]);
 
   // Initialize pause/resume hook after runRound is defined
@@ -248,7 +250,7 @@ export function useSpecFlow({ agentConfigs }: UseSpecFlowProps) {
       setIsProcessing(false);
       setCurrentStage('error');
     }
-  }, [runRound, toast, parseError, resetSession, resetDialogue, resetTasks, startSession, setPendingResume, setCurrentStage]);
+  }, [runRound, toast, parseError, resetSession, resetDialogue, resetTasks, startSession, setPendingResume, setCurrentStage, logger]);
 
   const reset = useCallback(() => {
     resetSession();
@@ -346,7 +348,7 @@ export function useSpecFlow({ agentConfigs }: UseSpecFlowProps) {
       setError(message);
       setIsProcessing(false);
     }
-  }, [agentConfigs, resetSession, resetDialogue, resetTasks, startSession, addDialogue, parseError, toast, setPendingResume]);
+  }, [agentConfigs, resetSession, resetDialogue, resetTasks, startSession, addDialogue, parseError, toast, setPendingResume, logger, setCurrentStage]);
 
   const proceedToGeneration = useCallback(async () => {
     setIsProcessing(true);
@@ -368,7 +370,7 @@ export function useSpecFlow({ agentConfigs }: UseSpecFlowProps) {
       setIsProcessing(false);
       setCurrentStage('error');
     }
-  }, [dialogueEntries, runRound, parseError, toast, setPendingResume]);
+  }, [dialogueEntries, runRound, parseError, toast, setPendingResume, logger, setCurrentStage]);
 
   const chatWithAgent = useCallback(async (agentId: string, message: string) => {
     // Add user message to dialogue
@@ -397,13 +399,13 @@ export function useSpecFlow({ agentConfigs }: UseSpecFlowProps) {
       toast({ title, description: errorMsg, variant: 'destructive' });
       return false;
     }
-  }, [agentConfigs, addDialogue, parseError, toast]);
+  }, [agentConfigs, addDialogue, parseError, toast, logger]);
 
   const shareSpec = useCallback(async () => {
     if (!generatedSpec) return;
     
     try {
-      const title = generatedSpec.split('\n')[0].replace('# ', '').trim() || "Product Specification";
+      const title = (generatedSpec.split('\n')[0] ?? '').replace('# ', '').trim() || "Product Specification";
       
       const { id } = await api.saveSpec(title, generatedSpec, {
         rounds: sessionState.rounds.length,
@@ -422,7 +424,7 @@ export function useSpecFlow({ agentConfigs }: UseSpecFlowProps) {
       logger.error('Share failed', error instanceof Error ? error : new Error(String(error)), { action: 'shareSpec' });
       toast({ title: "Share Failed", description: "Could not save specification.", variant: "destructive" });
     }
-  }, [generatedSpec, sessionState.rounds.length, agentConfigs, toast]);
+  }, [generatedSpec, sessionState.rounds.length, agentConfigs, toast, logger]);
 
   return {
     isProcessing,

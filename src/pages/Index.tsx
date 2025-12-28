@@ -397,7 +397,7 @@ const ActiveSessionContent = ({
   onProceedToGeneration,
   onShareSpec
 }: ActiveSessionContentProps) => {
-  const { toast } = useToast();
+  const { _toast } = useToast();
 
   return (
     <>

@@ -31,6 +31,8 @@ const agentColors: Record<AgentType, string> = {
   jony: "from-slate-400/20 to-zinc-400/20",
   bartlett: "from-red-500/20 to-rose-500/20",
   amal: "from-indigo-500/20 to-violet-500/20",
+  user: "from-gray-500/20 to-gray-600/20",
+  system: "from-neutral-500/20 to-neutral-600/20",
 };
 
 const agentNames: Record<AgentType, string> = {
@@ -41,6 +43,8 @@ const agentNames: Record<AgentType, string> = {
   jony: "Jony Ive",
   bartlett: "Steven Bartlett",
   amal: "Amal Clooney",
+  user: "User",
+  system: "System",
 };
 
 const agentAvatars: Record<AgentType, string> = {
@@ -51,6 +55,8 @@ const agentAvatars: Record<AgentType, string> = {
   jony: getAgentAvatar('jony'),
   bartlett: getAgentAvatar('bartlett'),
   amal: getAgentAvatar('amal'),
+  user: "",
+  system: "",
 };
 
 // Helper function to get type icon (extracted for reusability)

@@ -5,6 +5,7 @@
  */
 
 import * as Sentry from '@sentry/react';
+import { env } from '@/lib/env-validation';
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
@@ -27,7 +28,7 @@ export interface Logger {
 /**
  * Check if we're in development mode
  */
-const isDev = import.meta.env.DEV;
+const isDev = env.DEV;
 
 /**
  * Log to console only in development
@@ -37,19 +38,19 @@ function devLog(level: LogLevel, message: string, ...args: unknown[]): void {
 
   switch (level) {
     case 'debug':
-      // eslint-disable-next-line no-console
+       
       console.debug(`[DEBUG] ${message}`, ...args);
       break;
     case 'info':
-      // eslint-disable-next-line no-console
+       
       console.log(`[INFO] ${message}`, ...args);
       break;
     case 'warn':
-      // eslint-disable-next-line no-console
+       
       console.warn(`[WARN] ${message}`, ...args);
       break;
     case 'error':
-      // eslint-disable-next-line no-console
+       
       console.error(`[ERROR] ${message}`, ...args);
       break;
   }

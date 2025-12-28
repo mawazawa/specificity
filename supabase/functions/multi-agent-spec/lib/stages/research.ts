@@ -10,7 +10,7 @@ export const handleResearchStage = async (
     cleanInput: string,
     tools: ToolRegistry
 ) => {
-    console.log('[Enhanced] Starting parallel research with tools...');
+    console.info('[Enhanced] Starting parallel research with tools...');
 
     if (!agentConfigs) {
         return new Response(
@@ -28,7 +28,7 @@ export const handleResearchStage = async (
     }
 
     // Add IDs to agent configs
-    const configsWithIds: AgentConfig[] = agentConfigs.map((config, idx) => ({
+    const configsWithIds: AgentConfig[] = agentConfigs.map((config, _idx) => ({
         id: config.id || config.agent.toLowerCase().replace(/\s+/g, '_'),
         agent: config.agent,
         systemPrompt: config.systemPrompt,
@@ -40,7 +40,7 @@ export const handleResearchStage = async (
     const assignments = assignQuestionsToExperts(questions, configsWithIds);
     const balancedAssignments = balanceWorkload(assignments);
 
-    console.log(`[Enhanced] Assigned questions to ${balancedAssignments.length} experts`);
+    console.info(`[Enhanced] Assigned questions to ${balancedAssignments.length} experts`);
 
     // Execute parallel research
     const researchResults = await executeParallelResearch(
@@ -57,7 +57,7 @@ export const handleResearchStage = async (
     const totalTokens = researchResults.reduce((sum, r) => sum + r.tokensUsed, 0);
     const totalTools = researchResults.reduce((sum, r) => sum + r.toolsUsed.length, 0);
 
-    console.log(`[Enhanced] Research complete - Cost: $${totalCost.toFixed(4)}, Tokens: ${totalTokens}, Tools: ${totalTools}`);
+    console.info(`[Enhanced] Research complete - Cost: $${totalCost.toFixed(4)}, Tokens: ${totalTokens}, Tools: ${totalTools}`);
 
     return new Response(
         JSON.stringify({

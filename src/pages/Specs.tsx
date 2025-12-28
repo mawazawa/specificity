@@ -7,6 +7,16 @@ import { Loader2, ArrowLeft, ExternalLink, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { logger } from "@/lib/logger";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface SpecRow {
   id: string;
@@ -23,6 +33,7 @@ const Specs = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null); // Track which spec is being deleted
+  const [specToDelete, setSpecToDelete] = useState<string | null>(null); // Track spec pending deletion confirmation
 
   const loadSpecs = async () => {
     try {
@@ -53,25 +64,28 @@ const Specs = () => {
     if (user) {
       loadSpecs();
     }
-  }, [user]);
+  }, [user, loadSpecs]);
 
-  const handleDelete = async (id: string) => {
-    const confirmed = window.confirm("Delete this specification? This cannot be undone.");
-    if (!confirmed) return;
+  const handleDeleteClick = (id: string) => {
+    setSpecToDelete(id);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!specToDelete) return;
 
     // Fix: Add loading state to prevent double-clicks
-    setDeletingId(id);
+    setDeletingId(specToDelete);
     try {
       const { error: deleteError } = await supabase
         .from("specifications")
         .delete()
-        .eq("id", id);
+        .eq("id", specToDelete);
 
       if (deleteError) {
         throw deleteError;
       }
 
-      setSpecs(prev => prev.filter(spec => spec.id !== id));
+      setSpecs(prev => prev.filter(spec => spec.id !== specToDelete));
       toast({ title: "Deleted", description: "Specification removed." });
     } catch (err) {
       logger.error("Failed to delete spec:", err);
@@ -82,6 +96,7 @@ const Specs = () => {
       });
     } finally {
       setDeletingId(null);
+      setSpecToDelete(null);
     }
   };
 
@@ -136,7 +151,7 @@ const Specs = () => {
                   <Button
                     variant="destructive"
                     size="sm"
-                    onClick={() => handleDelete(spec.id)}
+                    onClick={() => handleDeleteClick(spec.id)}
                     disabled={deletingId === spec.id}
                     className="gap-2"
                   >
@@ -153,6 +168,23 @@ const Specs = () => {
           </div>
         )}
       </div>
+
+      <AlertDialog open={!!specToDelete} onOpenChange={(open) => !open && setSpecToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Specification</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this specification? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete} className="bg-destructive hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

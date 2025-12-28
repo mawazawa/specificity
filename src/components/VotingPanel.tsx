@@ -28,6 +28,8 @@ const agentNames: Record<AgentType, string> = {
   jony: "Jony Ive",
   bartlett: "Steven Bartlett",
   amal: "Amal Clooney",
+  user: "User",
+  system: "System",
 };
 
 const agentRoles: Record<AgentType, string> = {
@@ -38,6 +40,8 @@ const agentRoles: Record<AgentType, string> = {
   jony: "Simplicity & Craft",
   bartlett: "Growth Strategy",
   amal: "Ethics & Law",
+  user: "User Input",
+  system: "System",
 };
 
 const agentAvatars: Record<AgentType, string> = {
@@ -48,6 +52,8 @@ const agentAvatars: Record<AgentType, string> = {
   jony: jonyAvatar,
   bartlett: bartlettAvatar,
   amal: amalAvatar,
+  user: "",
+  system: "",
 };
 
 export const VotingPanel = ({ votes, roundNumber }: VotingPanelProps) => {
@@ -94,25 +100,25 @@ export const VotingPanel = ({ votes, roundNumber }: VotingPanelProps) => {
             <div className="flex items-center gap-3">
               <div className="relative w-14 h-14 shrink-0">
                 <Avatar className="w-14 h-14 ring-2 ring-border/40 shadow-xl">
-                  <AvatarImage src={agentAvatars[vote.agent]} alt={agentNames[vote.agent]} />
-                  <AvatarFallback className="text-sm">{agentNames[vote.agent][0]}</AvatarFallback>
+                  <AvatarImage src={agentAvatars[vote.agent as AgentType]} alt={agentNames[vote.agent as AgentType]} />
+                  <AvatarFallback className="text-sm">{agentNames[vote.agent as AgentType]?.[0] ?? ''}</AvatarFallback>
                 </Avatar>
                 <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-black/10 rounded-full pointer-events-none" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-semibold text-foreground truncate">
-                    {agentNames[vote.agent]}
+                    {agentNames[vote.agent as AgentType]}
                   </span>
-                  <Badge 
-                    variant={isApproved ? "default" : "destructive"} 
+                  <Badge
+                    variant={isApproved ? "default" : "destructive"}
                     className="text-[9px] px-2 py-0"
                   >
                     {isApproved ? 'Approved' : 'Dissent'}
                   </Badge>
                 </div>
                 <p className="text-[10px] text-muted-foreground/70 uppercase tracking-wider mt-0.5">
-                  {agentRoles[vote.agent]}
+                  {agentRoles[vote.agent as AgentType]}
                 </p>
               </div>
               <span className="text-[10px] text-muted-foreground/50 shrink-0">

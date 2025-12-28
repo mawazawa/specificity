@@ -74,7 +74,7 @@ Output JSON with this exact structure:
 export const handleReviewStage = async (
   roundData: RoundData | undefined
 ): Promise<Response> => {
-  console.log('[Review] Starting heavy-model review of synthesis outputs...');
+  console.info('[Review] Starting heavy-model review of synthesis outputs...');
 
   const syntheses = roundData?.syntheses || [];
   const researchResults = roundData?.researchResults || [];
@@ -129,7 +129,7 @@ Focus especially on citation quality and unsubstantiated claims.`;
       {
         maxRetries: 2,
         onRetry: (error, attempt) => {
-          console.log(`[Review] Retry ${attempt} due to:`, error.message);
+          console.info(`[Review] Retry ${attempt} due to:`, error.message);
         }
       }
     );
@@ -186,9 +186,9 @@ Focus especially on citation quality and unsubstantiated claims.`;
     // Log review summary
     const criticalCount = reviewResult.issues.filter(i => i.severity === 'critical').length;
     const majorCount = reviewResult.issues.filter(i => i.severity === 'major').length;
-    console.log(`[Review] Complete: Score ${reviewResult.overallScore}/100, Passed: ${reviewResult.passed}`);
-    console.log(`[Review] Issues: ${criticalCount} critical, ${majorCount} major, ${reviewResult.issues.length - criticalCount - majorCount} minor`);
-    console.log(`[Review] Citations: ${reviewResult.citationAnalysis.totalCitations} total, ${reviewResult.citationAnalysis.missingCitations} missing`);
+    console.info(`[Review] Complete: Score ${reviewResult.overallScore}/100, Passed: ${reviewResult.passed}`);
+    console.info(`[Review] Issues: ${criticalCount} critical, ${majorCount} major, ${reviewResult.issues.length - criticalCount - majorCount} minor`);
+    console.info(`[Review] Citations: ${reviewResult.citationAnalysis.totalCitations} total, ${reviewResult.citationAnalysis.missingCitations} missing`);
 
     return new Response(
       JSON.stringify({
@@ -249,7 +249,7 @@ export const handleReviewEscalation = async (
   roundData: RoundData | undefined,
   previousReview: ReviewResult
 ): Promise<Response> => {
-  console.log('[Review] Escalation triggered - retrying with focused review');
+  console.info('[Review] Escalation triggered - retrying with focused review');
 
   // Focus only on critical issues from previous review
   const criticalIssues = previousReview.issues.filter(i => i.severity === 'critical');

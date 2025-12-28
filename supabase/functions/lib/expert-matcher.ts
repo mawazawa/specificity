@@ -1,15 +1,15 @@
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
-import { ResearchQuestion, ResearchQuestionSchema } from './question-generator.ts';
-import { AgentConfig, agentConfigSchema } from '../multi-agent-spec/lib/types.ts'; // Import from types.ts
+import { _ResearchQuestion, ResearchQuestionSchema } from './question-generator.ts';
+import { AgentConfig, _agentConfigSchema } from '../multi-agent-spec/lib/types.ts'; // Import from types.ts
 
-export const ExpertAssignmentSchema = z.object({
+export const _ExpertAssignmentSchema = z.object({
   expertId: z.string(),
   expertName: z.string(),
   questions: z.array(ResearchQuestionSchema),
   model: z.string(),
 });
 
-export type ExpertAssignment = z.infer<typeof ExpertAssignmentSchema>;
+export type ExpertAssignment = z.infer<typeof _ExpertAssignmentSchema>;
 
 /**
  * Model selection based on expert specialty
@@ -86,9 +86,9 @@ export function assignQuestionsToExperts(
   const result = Array.from(assignments.values())
     .filter(a => a.questions.length > 0);
 
-  console.log(`[ExpertMatcher] Assigned questions to ${result.length} experts`);
+  console.info(`[ExpertMatcher] Assigned questions to ${result.length} experts`);
   result.forEach(assignment => {
-    console.log(`  - ${assignment.expertName}: ${assignment.questions.length} questions (model: ${assignment.model})`);
+    console.info(`  - ${assignment.expertName}: ${assignment.questions.length} questions (model: ${assignment.model})`);
   });
 
   return result;
@@ -97,7 +97,7 @@ export function assignQuestionsToExperts(
 /**
  * Calculate how well an expert matches a question
  */
-function calculateExpertScore(question: ResearchQuestion, expert: AgentConfig): number {
+function calculateExpertScore(question: _ResearchQuestion, expert: AgentConfig): number {
   let score = 0;
 
   // Domain expertise match
@@ -161,7 +161,7 @@ export function balanceWorkload(assignments: ExpertAssignment[]): ExpertAssignme
       });
     });
 
-    console.log('[ExpertMatcher] Workload rebalanced');
+    console.info('[ExpertMatcher] Workload rebalanced');
   }
 
   return assignments;

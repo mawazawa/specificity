@@ -6,18 +6,18 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import {
   createMockSupabaseClient,
-  createMockAgentConfig,
+  _createMock_AgentConfig,
   createMockQuestionsResponse,
   createMockResearchResponse,
   createMockSynthesisResponse,
   createMockVotesResponse,
   createMockSpecResponse,
-  createRateLimitError,
-  createTimeoutError,
-  createValidationError,
-  createDeferred
+  _createRateLimitError,
+  _createTimeoutError,
+  _createValidationError,
+  _createDeferred
 } from '@/test/setup';
-import type { AgentConfig, TechStackItem } from '@/types/spec';
+import type { _AgentConfig, _TechStackItem } from '@/types/spec';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Mock Supabase Client Setup

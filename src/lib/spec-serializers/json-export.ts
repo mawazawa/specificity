@@ -10,7 +10,7 @@
  * @see https://github.blog/ai-and-ml/generative-ai/spec-driven-development-with-ai-get-started-with-a-new-open-source-toolkit/
  */
 
-import { TechStackItem, SpecOutput } from '@/types/spec';
+import { TechStackItem, _SpecOutput } from '@/types/spec';
 
 export interface SpecJsonExport {
   $schema: string;

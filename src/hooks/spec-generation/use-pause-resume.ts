@@ -20,8 +20,8 @@ interface UsePauseResumeProps {
 }
 
 export function usePauseResume({
-  isPaused,
-  pendingResume,
+  _isPaused,
+  _pendingResume,
   setPaused,
   setSessionState,
   addHistory,

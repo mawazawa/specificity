@@ -29,7 +29,7 @@ test.describe('Bug Fix: Duplicate Rate Limit Tables Cleanup', () => {
   });
 
   test('NEW: rate_limit (singular) table exists and works', async () => {
-    const { data, error } = await supabase
+    const { data: _data, error } = await supabase
       .from('rate_limit')
       .select('*')
       .limit(1);
@@ -39,7 +39,7 @@ test.describe('Bug Fix: Duplicate Rate Limit Tables Cleanup', () => {
   });
 
   test('FUNCTION: check_and_increment_rate_limit works', async () => {
-    const { data, error } = await supabase.rpc('check_and_increment_rate_limit', {
+    const { data: _data, error } = await supabase.rpc('check_and_increment_rate_limit', {
       p_user_id: '00000000-0000-0000-0000-000000000001',
       p_endpoint: 'test-endpoint',
       p_max_requests: 10,

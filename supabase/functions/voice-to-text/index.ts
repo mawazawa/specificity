@@ -19,7 +19,7 @@ const audioRequestSchema = z.object({
 });
 
 // Utility: Sanitize errors for logging
-const sanitizeError = (error: any) => {
+const __sanitizeError = (error: any) => {
   if (error instanceof Error) {
     return { message: error.message, name: error.name };
   }
@@ -92,7 +92,7 @@ async function checkRateLimit(userId: string, endpoint: string, maxRequests: num
       allowed: data.allowed,
       remaining: data.remaining
     };
-  } catch (error) {
+  } catch (_error) {
     console.error('Rate limit exception:', { type: 'rate_limit_exception', user_id: userId });
     return { allowed: false, remaining: 0 };
   }
@@ -151,7 +151,7 @@ serve(async (req) => {
     let validated;
     try {
       validated = audioRequestSchema.parse(rawBody);
-    } catch (error) {
+    } catch (_error) {
       if (error instanceof z.ZodError) {
         console.error('Validation failed:', { type: 'validation_error', user_id: user.id });
         return new Response(
@@ -229,7 +229,7 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
-  } catch (error) {
+  } catch (_error) {
     console.error('Service error:', { type: 'transcription_error' });
     return new Response(
       JSON.stringify({ error: getUserMessage(error) }),

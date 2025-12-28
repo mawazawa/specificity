@@ -1,7 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { HistoryEntry } from "@/types/spec";
 import { FileText, MessageSquare, Vote as VoteIcon, GitBranch } from "lucide-react";
-import ReactMarkdown from "react-markdown";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface HistoryPanelProps {

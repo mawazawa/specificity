@@ -44,7 +44,7 @@ export const RoundTracker = ({ rounds, currentRound }: RoundTrackerProps) => {
           {rounds.map((round, index) => {
             const isCurrent = index === currentRound;
             const isComplete = round.status === 'complete';
-            const isPaused = round.status === 'paused';
+            const _isPaused = round.status === 'paused';
             const StageIcon = stageIcons[round.stage];
 
             return (

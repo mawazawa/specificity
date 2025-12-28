@@ -19,85 +19,86 @@ import { logger } from '@/lib/logger';
  * Markdown component overrides with Tailwind styling
  * Defined at module level for stable references
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export const markdownComponents: Components = {
-  h1: ({ node, ...props }) => (
+  h1: ({ node: _node, ...props }) => (
     <h1
       className="text-3xl font-bold text-primary mb-8 mt-8 tracking-tight border-b border-border/20 pb-4"
       {...props}
     />
   ),
 
-  h2: ({ node, ...props }) => (
+  h2: ({ node: _node, ...props }) => (
     <h2
       className="text-2xl font-semibold text-foreground/90 mt-12 mb-6 tracking-tight"
       {...props}
     />
   ),
 
-  h3: ({ node, ...props }) => (
+  h3: ({ node: _node, ...props }) => (
     <h3
       className="text-xl font-semibold text-foreground/80 mt-10 mb-4 tracking-tight"
       {...props}
     />
   ),
 
-  h4: ({ node, ...props }) => (
+  h4: ({ node: _node, ...props }) => (
     <h4
       className="text-lg font-medium text-foreground/70 mt-8 mb-3"
       {...props}
     />
   ),
 
-  h5: ({ node, ...props }) => (
+  h5: ({ node: _node, ...props }) => (
     <h5
       className="text-base font-medium text-foreground/70 mt-6 mb-2"
       {...props}
     />
   ),
 
-  h6: ({ node, ...props }) => (
+  h6: ({ node: _node, ...props }) => (
     <h6
       className="text-sm font-medium text-foreground/60 mt-4 mb-2"
       {...props}
     />
   ),
 
-  p: ({ node, ...props }) => (
+  p: ({ node: _node, ...props }) => (
     <p
       className="text-foreground/70 leading-relaxed mb-5 text-sm"
       {...props}
     />
   ),
 
-  ul: ({ node, ...props }) => (
+  ul: ({ node: _node, ...props }) => (
     <ul
       className="space-y-2 mb-6 ml-4 list-disc list-inside"
       {...props}
     />
   ),
 
-  ol: ({ node, ...props }) => (
+  ol: ({ node: _node, ...props }) => (
     <ol
       className="space-y-2 mb-6 ml-4 list-decimal list-inside"
       {...props}
     />
   ),
 
-  li: ({ node, ...props }) => (
+  li: ({ node: _node, ...props }) => (
     <li
       className="text-foreground/70 text-sm leading-relaxed"
       {...props}
     />
   ),
 
-  strong: ({ node, ...props }) => (
+  strong: ({ node: _node, ...props }) => (
     <strong
       className="font-semibold text-foreground/90"
       {...props}
     />
   ),
 
-  em: ({ node, ...props }) => (
+  em: ({ node: _node, ...props }) => (
     <em
       className="italic text-foreground/80"
       {...props}
@@ -105,7 +106,7 @@ export const markdownComponents: Components = {
   ),
 
   // Handle both inline and block code
-  code: ({ node, inline, className, children, ...props }: { node?: unknown; inline?: boolean; className?: string; children?: React.ReactNode; [key: string]: unknown }) => {
+  code: ({ node: _node, inline, className: _className, children, ...props }: { node?: unknown; inline?: boolean; className?: string; children?: React.ReactNode; [key: string]: unknown }) => {
     if (inline) {
       return (
         <code
@@ -128,7 +129,7 @@ export const markdownComponents: Components = {
     );
   },
 
-  pre: ({ node, children, ...props }) => (
+  pre: ({ node: _node, children, ...props }) => (
     <pre
       className="my-4 overflow-x-auto"
       {...props}
@@ -137,21 +138,21 @@ export const markdownComponents: Components = {
     </pre>
   ),
 
-  blockquote: ({ node, ...props }) => (
+  blockquote: ({ node: _node, ...props }) => (
     <blockquote
       className="border-l-4 border-primary/40 pl-6 pr-4 py-3 my-6 bg-primary/5 rounded-r-lg italic text-foreground/70"
       {...props}
     />
   ),
 
-  hr: ({ node, ...props }) => (
+  hr: ({ node: _node, ...props }) => (
     <hr
       className="my-8 border-border/30"
       {...props}
     />
   ),
 
-  table: ({ node, ...props }) => (
+  table: ({ node: _node, ...props }) => (
     <div className="overflow-x-auto my-6">
       <table
         className="w-full border-collapse border border-border/30 rounded-lg"
@@ -160,39 +161,39 @@ export const markdownComponents: Components = {
     </div>
   ),
 
-  thead: ({ node, ...props }) => (
+  thead: ({ node: _node, ...props }) => (
     <thead
       className="bg-primary/5"
       {...props}
     />
   ),
 
-  tbody: ({ node, ...props }) => (
+  tbody: ({ node: _node, ...props }) => (
     <tbody {...props} />
   ),
 
-  tr: ({ node, ...props }) => (
+  tr: ({ node: _node, ...props }) => (
     <tr
       className="border-b border-border/20 hover:bg-primary/5 transition-colors"
       {...props}
     />
   ),
 
-  th: ({ node, ...props }) => (
+  th: ({ node: _node, ...props }) => (
     <th
       className="border border-border/30 px-4 py-2 bg-primary/10 text-left text-sm font-semibold text-foreground/90"
       {...props}
     />
   ),
 
-  td: ({ node, ...props }) => (
+  td: ({ node: _node, ...props }) => (
     <td
       className="border border-border/30 px-4 py-2 text-sm text-foreground/70"
       {...props}
     />
   ),
 
-  a: ({ node, ...props }) => (
+  a: ({ node: _node, ...props }) => (
     <a
       className="text-primary hover:text-primary/80 underline transition-colors"
       target="_blank"
@@ -201,7 +202,7 @@ export const markdownComponents: Components = {
     />
   ),
 
-  img: ({ node, src, alt, ...props }) => {
+  img: ({ node: _node, src, alt, ...props }) => {
     // Validate image URL to prevent XSS
     const validatedSrc = src ? validateImageUrl(src) : null;
 
@@ -227,21 +228,21 @@ export const markdownComponents: Components = {
   },
 
   // Handle definition lists if present
-  dl: ({ node, ...props }) => (
+  dl: ({ node: _node, ...props }) => (
     <dl
       className="space-y-4 my-6"
       {...props}
     />
   ),
 
-  dt: ({ node, ...props }) => (
+  dt: ({ node: _node, ...props }) => (
     <dt
       className="font-semibold text-foreground/90"
       {...props}
     />
   ),
 
-  dd: ({ node, ...props }) => (
+  dd: ({ node: _node, ...props }) => (
     <dd
       className="ml-4 text-foreground/70"
       {...props}

@@ -80,7 +80,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`[upgrade-to-pro] Processing upgrade for user ${user.id} to ${planType}`);
+    console.info(`[upgrade-to-pro] Processing upgrade for user ${user.id} to ${planType}`);
 
     // Calculate credits based on plan
     const planCredits: Record<string, number> = {
@@ -106,7 +106,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`[upgrade-to-pro] Successfully upgraded user ${user.id} to ${planType}`);
+    console.info(`[upgrade-to-pro] Successfully upgraded user ${user.id} to ${planType}`);
 
     return new Response(
       JSON.stringify({

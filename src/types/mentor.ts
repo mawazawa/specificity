@@ -165,4 +165,22 @@ export const mentorProfiles: Record<AgentType, MentorProfile> = {
       { name: 'Protection', value: 10, icon: '🛡️', description: 'Safeguarding vulnerable' },
     ]
   },
+  user: {
+    agent: 'user',
+    name: 'User',
+    title: 'Product Owner',
+    avatar: '',
+    gradient: 'from-gray-500/20 via-gray-400/10 to-gray-300/5',
+    bio: 'The user providing product requirements and feedback.',
+    parameters: []
+  },
+  system: {
+    agent: 'system',
+    name: 'System',
+    title: 'System',
+    avatar: '',
+    gradient: 'from-neutral-500/20 via-neutral-400/10 to-neutral-300/5',
+    bio: 'System-generated messages and notifications.',
+    parameters: []
+  },
 };

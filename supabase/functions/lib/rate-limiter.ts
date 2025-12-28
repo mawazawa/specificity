@@ -80,7 +80,7 @@ async function processExaQueue(): Promise<void> {
         // Rate limited - requeue with backoff
         if (request.retries < EXA_CONFIG.maxRetries) {
           const backoffDelay = getBackoffDelay(request.retries, EXA_CONFIG);
-          console.log(`[RateLimiter] 429 received, retry ${request.retries + 1}/${EXA_CONFIG.maxRetries} in ${backoffDelay}ms`);
+          console.info(`[RateLimiter] 429 received, retry ${request.retries + 1}/${EXA_CONFIG.maxRetries} in ${backoffDelay}ms`);
 
           await new Promise(resolve => setTimeout(resolve, backoffDelay));
 
@@ -99,7 +99,7 @@ async function processExaQueue(): Promise<void> {
     } catch (error) {
       if (request.retries < EXA_CONFIG.maxRetries) {
         const backoffDelay = getBackoffDelay(request.retries, EXA_CONFIG);
-        console.log(`[RateLimiter] Error, retry ${request.retries + 1}/${EXA_CONFIG.maxRetries} in ${backoffDelay}ms:`, error);
+        console.info(`[RateLimiter] Error, retry ${request.retries + 1}/${EXA_CONFIG.maxRetries} in ${backoffDelay}ms:`, error);
 
         await new Promise(resolve => setTimeout(resolve, backoffDelay));
 
@@ -136,7 +136,7 @@ export function queueExaRequest(
     };
 
     exaQueue.push(request);
-    console.log(`[RateLimiter] Queued request ${request.id}, queue size: ${exaQueue.length}`);
+    console.info(`[RateLimiter] Queued request ${request.id}, queue size: ${exaQueue.length}`);
 
     // Start processing if not already running
     processExaQueue().catch(err => {

@@ -27,7 +27,7 @@ test.describe('Database Cleanup - Duplicate Rate Limit Tables', () => {
 
   test('should NOT have duplicate rate_limits (plural) table', async () => {
     // Query pg_tables to check if rate_limits (plural) table exists
-    const { data, error } = await supabase.rpc('exec_sql', {
+    const { data: _data, error } = await supabase.rpc('exec_sql', {
       query: `
         SELECT EXISTS (
           SELECT FROM pg_tables
@@ -60,7 +60,7 @@ test.describe('Database Cleanup - Duplicate Rate Limit Tables', () => {
 
   test('should have rate_limit (singular) table with correct schema', async () => {
     // Query the rate_limit table to verify it exists and has correct columns
-    const { data, error } = await supabase
+    const { data: _data, error } = await supabase
       .from('rate_limit')
       .select('*')
       .limit(0); // Just check schema, don't fetch data
@@ -76,7 +76,7 @@ test.describe('Database Cleanup - Duplicate Rate Limit Tables', () => {
     const windowHours = 1;
 
     // Call the rate limiting function
-    const { data, error } = await supabase.rpc('check_and_increment_rate_limit', {
+    const { data: _data, error } = await supabase.rpc('check_and_increment_rate_limit', {
       p_user_id: testUserId,
       p_endpoint: testEndpoint,
       p_max_requests: maxRequests,
@@ -119,7 +119,7 @@ test.describe('Database Cleanup - Duplicate Rate Limit Tables', () => {
 
     // Make 3 requests
     for (let i = 1; i <= 3; i++) {
-      const { data, error } = await supabase.rpc('check_and_increment_rate_limit', {
+      const { data: _data, error } = await supabase.rpc('check_and_increment_rate_limit', {
         p_user_id: testUserId,
         p_endpoint: testEndpoint,
         p_max_requests: maxRequests,

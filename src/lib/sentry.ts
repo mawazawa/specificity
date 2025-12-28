@@ -1,9 +1,10 @@
 import * as Sentry from "@sentry/react";
+import { env } from '@/lib/env-validation';
 
 export const initSentry = () => {
-  if (import.meta.env.VITE_SENTRY_DSN) {
+  if (env.VITE_SENTRY_DSN) {
     Sentry.init({
-      dsn: import.meta.env.VITE_SENTRY_DSN,
+      dsn: env.VITE_SENTRY_DSN,
       integrations: [
         Sentry.browserTracingIntegration(),
         Sentry.replayIntegration(),
@@ -11,9 +12,9 @@ export const initSentry = () => {
       // Performance Monitoring
       tracesSampleRate: 1.0, // Capture 100% of the transactions
       // Session Replay
-      replaysSessionSampleRate: 0.1, 
+      replaysSessionSampleRate: 0.1,
       replaysOnErrorSampleRate: 1.0,
-      enabled: import.meta.env.PROD, // Only enable in production
+      enabled: env.PROD, // Only enable in production
     });
   }
 };

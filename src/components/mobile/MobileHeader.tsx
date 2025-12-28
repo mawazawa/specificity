@@ -1,9 +1,8 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { AgentConfig } from "@/types/spec";
+import { AgentConfig, AgentType } from "@/types/spec";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Settings, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
 import { motion } from "framer-motion";
 import { mentorProfiles } from "@/types/mentor";
 import { useState } from "react";
@@ -68,7 +67,7 @@ export const MobileHeader = ({
           <ScrollArea className="w-full">
             <div className="flex gap-3 pb-2">
               {enabledAgents.map((config, index) => {
-                const profile = mentorProfiles[config.agent];
+                const profile = mentorProfiles[config.agent as AgentType];
                 if (!profile) return null;
                 return (
                   <motion.div
@@ -83,13 +82,13 @@ export const MobileHeader = ({
                       <Avatar className="w-16 h-16 ring-2 ring-primary/20 group-hover:ring-primary/50 transition-all shadow-lg">
                         <AvatarImage src={agentAvatars[config.agent]} alt={profile.name} />
                         <AvatarFallback className={`text-sm font-bold bg-gradient-to-br ${profile.gradient}`}>
-                          {profile.name.split(' ').map(n => n[0]).join('')}
+                          {profile.name.split(' ').map(n => n[0] ?? '').join('')}
                         </AvatarFallback>
                       </Avatar>
                       <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-gradient-to-br ${profile.gradient} border-2 border-background`} />
                     </div>
                     <span className="text-[10px] font-medium text-foreground/70 max-w-[64px] text-center truncate">
-                      {profile.name.split(' ')[0]}
+                      {profile.name.split(' ')[0] ?? profile.name}
                     </span>
                   </motion.div>
                 );

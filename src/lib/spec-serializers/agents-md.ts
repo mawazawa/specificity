@@ -19,7 +19,7 @@ import { TechStackItem } from '@/types/spec';
  */
 function extractProjectName(specContent: string): string {
   const titleMatch = specContent.match(/^#\s+(.+?)(?:\n|$)/m);
-  if (titleMatch) {
+  if (titleMatch?.[1]) {
     return titleMatch[1].trim();
   }
   return 'Untitled Project';
@@ -30,13 +30,13 @@ function extractProjectName(specContent: string): string {
  */
 function extractExecutiveSummary(specContent: string): string {
   const summaryMatch = specContent.match(/(?:executive\s+summary|overview)[:\s]*\n([\s\S]*?)(?=\n##|\n#|$)/i);
-  if (summaryMatch) {
+  if (summaryMatch?.[1]) {
     return summaryMatch[1].trim().substring(0, 500);
   }
 
   // Fallback to first paragraph after title
   const afterHeader = specContent.match(/^#[^#].*?\n\n([\s\S]*?)(?:\n\n|\n#)/s);
-  if (afterHeader) {
+  if (afterHeader?.[1]) {
     return afterHeader[1].trim().substring(0, 500);
   }
 
@@ -80,12 +80,13 @@ function extractEnvVarsSection(specContent: string): string {
     let match;
     while ((match = pattern.exec(specContent)) !== null) {
       const name = match[1];
-      const description = match[2].trim().substring(0, 80);
+      const description = match[2];
 
+      if (!name || !description) continue;
       if (foundVars.has(name) || name.length < 3 || name.length > 50) continue;
       foundVars.add(name);
 
-      envVars.push(`${name}=  # ${description}`);
+      envVars.push(`${name}=  # ${description.trim().substring(0, 80)}`);
     }
   }
 

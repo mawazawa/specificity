@@ -7,7 +7,7 @@ export const handleChallengeStage = async (
     roundData: RoundData | undefined,
     cleanInput: string
 ) => {
-    console.log('[Ray Dalio] Generating contrarian challenges for productive conflict...');
+    console.info('[Ray Dalio] Generating contrarian challenges for productive conflict...');
 
     const researchResults = roundData?.researchResults || [];
 
@@ -28,7 +28,7 @@ export const handleChallengeStage = async (
         }
     );
 
-    console.log(`[Ray Dalio] Generated ${challenges.length} challenge questions`);
+    console.info(`[Ray Dalio] Generated ${challenges.length} challenge questions`);
 
     // Execute challenges in parallel - have experts argue contrarian positions
     if (!agentConfigs) {
@@ -52,7 +52,7 @@ export const handleChallengeStage = async (
         configsWithIds
     );
 
-    console.log(`[Ray Dalio] Received ${challengeResponses.length} contrarian challenges`);
+    console.info(`[Ray Dalio] Received ${challengeResponses.length} contrarian challenges`);
 
     // Resolve debates - synthesize original + challenges into stronger positions
     const debateResolutions = await resolveDebates(
@@ -61,7 +61,7 @@ export const handleChallengeStage = async (
         { model: 'claude-opus-4.5' } // Claude excels at synthesis (verified Dec 19, 2025)
     );
 
-    console.log(`[Ray Dalio] Resolved ${debateResolutions.length} debates`);
+    console.info(`[Ray Dalio] Resolved ${debateResolutions.length} debates`);
 
     // Calculate challenge costs
     const totalChallengeCost = challengeResponses.reduce((sum, c) => sum + c.cost, 0);

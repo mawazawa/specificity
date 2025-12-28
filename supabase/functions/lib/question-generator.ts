@@ -110,7 +110,7 @@ export async function generateDynamicQuestions(
       tokens_output: response.usage.completionTokens
     });
 
-    console.log(`[QuestionGen] Generated ${questions.length} questions using ${model}`);
+    console.info(`[QuestionGen] Generated ${questions.length} questions using ${model}`);
 
     return questions;
   } catch (error) {

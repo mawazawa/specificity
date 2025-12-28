@@ -21,10 +21,10 @@ test.describe('Tasks Destructuring Bug Fix', () => {
     await page.waitForLoadState('networkidle');
 
     const emailInput = page.locator('input[type="email"]');
-    await emailInput.fill(process.env.TEST_USER_EMAIL!);
+    await emailInput.fill(process.env.TEST_USER_EMAIL || '');
 
     const passwordInput = page.locator('input[type="password"]');
-    await passwordInput.fill(process.env.TEST_USER_PASSWORD!);
+    await passwordInput.fill(process.env.TEST_USER_PASSWORD || '');
 
     const submitButton = page.locator('button[type="submit"]');
     await submitButton.click();
@@ -36,6 +36,29 @@ test.describe('Tasks Destructuring Bug Fix', () => {
 
     // Dismiss any onboarding/welcome dialogs that may appear
     // The "Welcome to Specificity AI" modal has a Close button
+    const tryForceClickDialogButtons = async (welcomeDialog: ReturnType<typeof page.locator>) => {
+      console.log('Dialog still visible, trying force click on any close button...');
+      const dialogButtons = page.locator('[role="dialog"] button');
+      const buttonCount = await dialogButtons.count();
+
+      for (let i = 0; i < buttonCount; i++) {
+        const btn = dialogButtons.nth(i);
+        const btnText = await btn.textContent().catch(() => '');
+        const shouldClick = btnText?.toLowerCase().includes('close') || btnText === '';
+
+        if (!shouldClick) continue;
+
+        await btn.click({ force: true });
+        await page.waitForTimeout(300);
+        const isDialogClosed = !(await welcomeDialog.isVisible().catch(() => false));
+
+        if (isDialogClosed) {
+          console.log(`Dialog dismissed by clicking button ${i}`);
+          break;
+        }
+      }
+    };
+
     const dismissOnboardingDialog = async () => {
       // Wait a bit for dialogs to appear
       await page.waitForTimeout(1000);
@@ -44,49 +67,35 @@ test.describe('Tasks Destructuring Bug Fix', () => {
       const welcomeDialog = page.locator('[role="dialog"]');
       const dialogVisible = await welcomeDialog.isVisible().catch(() => false);
 
-      if (dialogVisible) {
-        console.log('Onboarding dialog detected, dismissing...');
-
-        // Use getByRole for more reliable button selection
-        const closeButton = page.getByRole('button', { name: 'Close' });
-        const closeVisible = await closeButton.isVisible().catch(() => false);
-
-        if (closeVisible) {
-          await closeButton.click();
-          console.log('Clicked Close button');
-          await page.waitForTimeout(500);
-        } else {
-          // Try Escape as fallback
-          console.log('Close button not found, trying Escape key...');
-          await page.keyboard.press('Escape');
-          await page.waitForTimeout(500);
-        }
-
-        // Verify dialog is closed
-        const stillVisible = await welcomeDialog.isVisible().catch(() => false);
-        if (stillVisible) {
-          console.log('Dialog still visible, trying force click on any close button...');
-          // Force click any button in the dialog that might close it
-          const dialogButtons = page.locator('[role="dialog"] button');
-          const buttonCount = await dialogButtons.count();
-          for (let i = 0; i < buttonCount; i++) {
-            const btn = dialogButtons.nth(i);
-            const btnText = await btn.textContent().catch(() => '');
-            if (btnText?.toLowerCase().includes('close') || btnText === '') {
-              await btn.click({ force: true });
-              await page.waitForTimeout(300);
-              if (!(await welcomeDialog.isVisible().catch(() => false))) {
-                console.log(`Dialog dismissed by clicking button ${  i}`);
-                break;
-              }
-            }
-          }
-        }
-
-        console.log('Onboarding dialog dismissed');
-      } else {
+      if (!dialogVisible) {
         console.log('No onboarding dialog detected');
+        return;
       }
+
+      console.log('Onboarding dialog detected, dismissing...');
+
+      // Use getByRole for more reliable button selection
+      const closeButton = page.getByRole('button', { name: 'Close' });
+      const closeVisible = await closeButton.isVisible().catch(() => false);
+
+      if (closeVisible) {
+        await closeButton.click();
+        console.log('Clicked Close button');
+        await page.waitForTimeout(500);
+      } else {
+        // Try Escape as fallback
+        console.log('Close button not found, trying Escape key...');
+        await page.keyboard.press('Escape');
+        await page.waitForTimeout(500);
+      }
+
+      // Verify dialog is closed
+      const stillVisible = await welcomeDialog.isVisible().catch(() => false);
+      if (stillVisible) {
+        await tryForceClickDialogButtons(welcomeDialog);
+      }
+
+      console.log('Onboarding dialog dismissed');
     };
 
     await dismissOnboardingDialog();

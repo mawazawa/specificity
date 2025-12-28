@@ -28,7 +28,7 @@ export const SubscriptionModal = ({ children }: { children: React.ReactNode }) =
         description: "Your account has been upgraded successfully.",
       });
       setIsOpen(false);
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Upgrade Failed",
         description: "There was an error processing your request.",

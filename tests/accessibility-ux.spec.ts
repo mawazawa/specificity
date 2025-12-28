@@ -38,7 +38,7 @@ test.describe('Accessibility - Keyboard Navigation & ARIA', () => {
     await page.keyboard.press('Tab');
     await page.waitForTimeout(100);
 
-    let focusedElement = await page.evaluate(() => {
+    let _focusedElement = await page.evaluate(() => {
       const el = document.activeElement;
       return {
         tag: el?.tagName,
@@ -48,7 +48,7 @@ test.describe('Accessibility - Keyboard Navigation & ARIA', () => {
       };
     });
 
-    console.log('First tab stop:', focusedElement);
+    console.log('First tab stop:', _focusedElement);
 
     // Continue tabbing to find all interactive elements
     const tabbableElements = [];
@@ -56,7 +56,7 @@ test.describe('Accessibility - Keyboard Navigation & ARIA', () => {
       await page.keyboard.press('Tab');
       await page.waitForTimeout(50);
 
-      focusedElement = await page.evaluate(() => {
+      _focusedElement = await page.evaluate(() => {
         const el = document.activeElement;
         return {
           tag: el?.tagName,
@@ -66,7 +66,7 @@ test.describe('Accessibility - Keyboard Navigation & ARIA', () => {
         };
       });
 
-      tabbableElements.push(focusedElement);
+      tabbableElements.push(_focusedElement);
     }
 
     console.log(`✅ Found ${tabbableElements.length} tabbable elements`);
@@ -177,12 +177,12 @@ test.describe('Accessibility - Keyboard Navigation & ARIA', () => {
 
     if (textareaVisible) {
       const ariaLabel = await textarea.getAttribute('aria-label');
-      const ariaDescribedBy = await textarea.getAttribute('aria-describedby');
+      const _ariaDescribedBy = await textarea.getAttribute('aria-describedby');
       const placeholder = await textarea.getAttribute('placeholder');
 
       console.log('Textarea accessibility:');
       console.log(`  aria-label: ${ariaLabel}`);
-      console.log(`  aria-describedby: ${ariaDescribedBy}`);
+      console.log(`  aria-describedby: ${_ariaDescribedBy}`);
       console.log(`  placeholder: ${placeholder?.substring(0, 50)}...`);
 
       // Should have some form of accessible label
@@ -200,7 +200,7 @@ test.describe('Accessibility - Keyboard Navigation & ARIA', () => {
       if (isVisible) {
         const text = await button.textContent();
         const ariaLabel = await button.getAttribute('aria-label');
-        const ariaDescribedBy = await button.getAttribute('aria-describedby');
+        const _ariaDescribedBy = await button.getAttribute('aria-describedby');
 
         console.log(`Button: text="${text?.trim().substring(0, 30)}" aria-label="${ariaLabel}"`);
 
@@ -236,7 +236,7 @@ test.describe('Accessibility - Keyboard Navigation & ARIA', () => {
       await expect(dialog).toBeVisible({ timeout: 5000 });
 
       // Try tabbing through dialog elements
-      const focusedElements = [];
+      const _focusedElements = [];
       for (let i = 0; i < 10; i++) {
         await page.keyboard.press('Tab');
         await page.waitForTimeout(50);
@@ -251,17 +251,17 @@ test.describe('Accessibility - Keyboard Navigation & ARIA', () => {
           };
         });
 
-        focusedElements.push(focusInfo);
+        _focusedElements.push(focusInfo);
       }
 
       // Check if focus stayed in dialog
-      const allInDialog = focusedElements.every(f => f.inDialog || f.tag === 'BODY');
+      const allInDialog = _focusedElements.every(f => f.inDialog || f.tag === 'BODY');
 
       if (allInDialog) {
         console.log('✅ Focus trapped in modal dialog');
       } else {
         console.log('⚠️  Focus may have escaped dialog');
-        console.log('Focus trail:', focusedElements);
+        console.log('Focus trail:', _focusedElements);
       }
     }
   });
@@ -271,13 +271,13 @@ test.describe('Accessibility - Keyboard Navigation & ARIA', () => {
     await page.keyboard.press('Tab');
     await page.waitForTimeout(100);
 
-    const focusedElement = page.locator(':focus');
+    const _focusedElement = page.locator(':focus');
     const hasFocusIndicator = await page.evaluate(() => {
       const el = document.activeElement;
       if (!el) return false;
 
       const styles = window.getComputedStyle(el);
-      const pseudoStyles = window.getComputedStyle(el, ':focus');
+      const _pseudoStyles = window.getComputedStyle(el, ':focus');
 
       // Check for focus styling
       const hasOutline = styles.outline !== 'none' && styles.outline !== '0px';

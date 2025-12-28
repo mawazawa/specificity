@@ -94,7 +94,7 @@ export default function SpecView() {
 
   useEffect(() => {
     fetchSpec();
-  }, [id]);
+  }, [id, fetchSpec]);
 
   if (loading) {
     return (

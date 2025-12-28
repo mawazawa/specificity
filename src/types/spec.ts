@@ -1,5 +1,5 @@
 import {
-  ResearchQuestion,
+  _ResearchQuestion,
   AgentResearchResult,
   ChallengeQuestion,
   ChallengeResponse,
