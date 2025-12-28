@@ -9,6 +9,7 @@ import { api } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { AgentConfig, SessionState, AgentType, Round } from '@/types/spec';
 import { scopedLogger } from '@/lib/logger';
+import { categorizeError } from '@/lib/llm-client';
 
 export type { GenerationStage };
 
@@ -44,25 +45,45 @@ export function useSpecFlow({ agentConfigs }: UseSpecFlowProps) {
   const { toast } = useToast();
 
   const parseError = useCallback((error: unknown): { title: string; message: string } => {
-    const errMessage = error instanceof Error ? error.message : '';
+    const errorCategory = categorizeError(error);
 
-    if (errMessage.includes('RATE_LIMIT') || errMessage.includes('429') || errMessage.includes('rate limit')) {
-      return {
-        title: '⚠️ Rate Limit Exceeded',
-        message: "You've reached the rate limit. Please wait a few minutes and try again."
-      };
-    }
-    if (errMessage.includes('OPENROUTER') || errMessage.includes('OpenRouter')) {
-      return {
-        title: '⚠️ OpenRouter API Issue',
-        message: `Falling back to Groq. ${  errMessage}`
-      };
-    }
+    switch (errorCategory.type) {
+      case 'rate_limit':
+        return {
+          title: '⚠️ Rate Limit Exceeded',
+          message: "You've reached the rate limit. Please wait a few minutes and try again."
+        };
 
-    return {
-      title: 'Error',
-      message: errMessage || 'An error occurred during processing'
-    };
+      case 'provider_failure':
+        return {
+          title: '⚠️ Provider Issue Detected',
+          message: 'Automatic failover in progress. Your request will be retried with a backup provider.'
+        };
+
+      case 'timeout':
+        return {
+          title: '⚠️ Request Timeout',
+          message: 'The request took too long to complete. Please try again or simplify your request.'
+        };
+
+      case 'network':
+        return {
+          title: '⚠️ Network Error',
+          message: 'Unable to connect to the service. Please check your internet connection and try again.'
+        };
+
+      case 'validation':
+        return {
+          title: '⚠️ Validation Error',
+          message: errorCategory.message.replace('VALIDATION: ', '')
+        };
+
+      default:
+        return {
+          title: 'Error',
+          message: errorCategory.message || 'An error occurred during processing'
+        };
+    }
   }, []);
 
   const runRound = useCallback(async (

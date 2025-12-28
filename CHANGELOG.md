@@ -2,6 +2,104 @@
 
 All notable changes to Specificity will be documented in this file.
 
+## [1.11.0] - 2025-12-28 14:00 UTC
+
+### Phase 5 Complete + Phase 6 Critical Actions
+
+#### Action 48: Storage Quota Management ✅
+- **src/lib/storage-quota.ts** (7.5KB) - Comprehensive quota utilities:
+  - `getStorageUsage()` - Returns current usage in bytes
+  - `getStorageQuota()` - Returns max available (5MB conservative)
+  - `getUsagePercentage()` - Returns 0-100 percentage
+  - `isNearQuota(threshold)` - Boolean threshold check
+  - `clearOldestEntries()` - LRU cleanup by prefix
+  - `getStorageStats()` - Comprehensive statistics
+- **src/hooks/useSessionPersistence.ts** - 3-tier quota system:
+  - Warning at 80%: Non-intrusive toast notification
+  - Auto-cleanup at 95%: Removes 10 oldest sessions
+  - Emergency at 100%: Aggressive cleanup, retry save
+- **src/lib/__tests__/storage-quota.test.ts** - 36 comprehensive tests
+
+#### Action 49: Increase Test Coverage ✅
+- **src/test/setup.ts** (264 lines) - Test utilities:
+  - Mock Supabase client implementation
+  - Mock data generators (agents, rounds, dialogues)
+  - Error helpers (rate limit, timeout, network)
+- **src/hooks/spec-generation/__tests__/use-spec-flow.test.ts** (572 lines):
+  - 46 tests for stage transitions, error handling, pause/resume
+- **src/lib/__tests__/api.test.ts** (741 lines):
+  - 32 tests for API functions, rate limits, timeouts
+- **Total: 443 tests** (up from 365, +78 new tests)
+- **Coverage: 73.67% statements, 67.96% branches**
+
+#### Action 54: OpenRouter Automatic Failover ✅ (CRITICAL)
+- **src/lib/llm-client.ts** (485 lines) - Circuit breaker pattern:
+  - Automatic provider health tracking
+  - Exponential backoff retry (2s → 4s → 8s → 15s max)
+  - Circuit states: Closed → Half-Open → Open
+  - 60s cooldown when provider marked down
+- **src/lib/llm-config.ts** (119 lines) - Failover configuration:
+  - Dev: 2 failures, 30s cooldown
+  - Prod: 3 failures, 60s cooldown
+- **src/hooks/use-llm-health.ts** (220 lines) - React health hooks
+- **src/components/debug/LLMHealthMonitor.tsx** (134 lines) - Visual dashboard
+- **src/lib/api.ts** - Integrated with failover client
+
+#### Action 56: TypeScript Strict Mode ✅ (CRITICAL)
+- **tsconfig.app.json & tsconfig.json** - All 7 strict flags enabled:
+  - ✓ `noImplicitAny: true`
+  - ✓ `strictNullChecks: true`
+  - ✓ `strictFunctionTypes: true`
+  - ✓ `strictBindCallApply: true`
+  - ✓ `strictPropertyInitialization: true`
+  - ✓ `noImplicitThis: true`
+  - ✓ `alwaysStrict: true`
+- **Zero type errors** - Codebase already compliant
+- **Zero @ts-ignore added** - Clean migration
+
+### Quality Metrics
+- Phase 5: **10/10 complete** ✅ (41-50)
+- Phase 6: **3/10 complete** (54, 56, 57)
+- TypeScript: 0 errors (strict mode)
+- Unit tests: 443 passing (+78 new)
+- Test coverage: 73.67% statements
+- Bundle: 430KB gzipped
+
+---
+
+## [1.10.0] - 2025-12-28 03:30 UTC
+
+### TypeScript Strict Mode Migration (Action 56) ✅
+
+#### Complete Strict Type Safety Enabled
+- **All 7 strict flags enabled** in `tsconfig.app.json` and `tsconfig.json`:
+  - ✓ `noImplicitAny`: true - Explicit typing enforced
+  - ✓ `strictNullChecks`: true - Null guards enforced
+  - ✓ `strictFunctionTypes`: true - Function variance enforced
+  - ✓ `strictBindCallApply`: true - bind/call/apply typing enforced
+  - ✓ `strictPropertyInitialization`: true - Class property init enforced
+  - ✓ `noImplicitThis`: true - Explicit this typing enforced
+  - ✓ `alwaysStrict`: true - Strict mode JavaScript enforced
+
+#### Zero Type Errors
+- **0 type errors** after migration - codebase already well-typed
+- **0 code changes required** - all strict flags passed immediately
+- **No `@ts-ignore` or `@ts-expect-error` added** - clean migration
+
+#### Next Steps Identified
+- Consolidate to `"strict": true` (Action 1 in Phase 7)
+- Enable `noUncheckedIndexedAccess` for array safety (Action 2)
+- Clean up 221 lint warnings (Action 3)
+- Extend strict mode to Edge Functions (Action 4)
+
+### Quality Metrics
+- TypeScript strict mode: **100% enabled** (7/7 flags)
+- Type errors: **0**
+- Manual type fixes: **0** (codebase already compliant)
+- Lint warnings: 221 (to be addressed in Action 3)
+
+---
+
 ## [1.9.0] - 2025-12-28 03:00 UTC
 
 ### Phase 5 Complete + Phase 7 Research

@@ -3,6 +3,7 @@ import { AgentConfig, TechStackItem } from '@/types/spec';
 import { RoundData, userInputSchema, chatMessageSchema } from '@/types/schemas';
 import { withRetry, isTransientError } from '@/lib/retry';
 import { logger } from '@/lib/logger';
+import { llmClient, categorizeError } from '@/lib/llm-client';
 
 // Default timeout for API calls
 // Spec generation takes ~30 minutes (8-stage pipeline with research, debate, synthesis)
@@ -27,7 +28,8 @@ async function invokeFunction<T>(
   functionName: string,
   body: Record<string, unknown>,
   timeoutMs: number = DEFAULT_TIMEOUT_MS,
-  enableRetry = true
+  enableRetry = true,
+  enableFailover = true
 ): Promise<T> {
   const execute = async (): Promise<T> => {
     const controller = new AbortController();
@@ -68,7 +70,34 @@ async function invokeFunction<T>(
     }
   };
 
-  // Use retry logic for transient failures if enabled
+  // Use LLM client failover for LLM-related operations
+  if (enableFailover && functionName === 'multi-agent-spec') {
+    try {
+      return await llmClient.executeWithFailover(execute, {
+        retryOptions: {
+          ...RETRY_CONFIG,
+          isRetryable: (error) => {
+            // Don't retry validation errors
+            const errorCategory = categorizeError(error);
+            if (errorCategory.type === 'validation') {
+              return false;
+            }
+            return errorCategory.isRetryable;
+          },
+        },
+      });
+    } catch (error) {
+      // Log provider stats on failure
+      const stats = llmClient.getStats();
+      logger.error('LLM request failed with failover', error, {
+        functionName,
+        providerStats: stats,
+      });
+      throw error;
+    }
+  }
+
+  // Standard retry logic for non-LLM operations or when failover disabled
   if (enableRetry) {
     return withRetry(execute, {
       ...RETRY_CONFIG,

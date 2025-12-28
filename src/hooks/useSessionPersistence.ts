@@ -20,6 +20,12 @@ import { sessionDataSchema, type SessionData } from '@/types/schemas';
 import type { DialogueEntry } from '@/components/DialoguePanel';
 import type { SessionState } from '@/types/spec';
 import { scopedLogger } from '@/lib/logger';
+import {
+  getUsagePercentage,
+  isNearQuota,
+  clearOldestEntries,
+  getStorageStats
+} from '@/lib/storage-quota';
 
 interface UseSessionPersistenceProps {
   userId: string | undefined;
@@ -65,22 +71,61 @@ export const useSessionPersistence = ({
     return userId ? `specificity-session-${userId}` : null;
   }, [userId]);
 
-  // Persist to localStorage with error handling
+  // Persist to localStorage with quota management
   const persistSession = useCallback((data: SessionData) => {
     const key = getStorageKey();
     if (!key) return;
 
     try {
+      // Check quota before attempting to save
+      const usagePercentage = getUsagePercentage();
+
+      // Warn user when near quota (>80%)
+      if (usagePercentage > 80 && usagePercentage < 95) {
+        const stats = getStorageStats();
+        logger.warn('Storage usage high', {
+          action: 'persistSession',
+          percentage: usagePercentage,
+          usedMB: stats.usedMB.toFixed(2),
+          quotaMB: stats.quotaMB
+        });
+
+        toast({
+          title: 'Storage Nearly Full',
+          description: `Using ${usagePercentage.toFixed(0)}% of available space. Old sessions may be cleared automatically.`,
+          variant: 'default'
+        });
+      }
+
+      // Auto-cleanup when at 95%+
+      if (isNearQuota(0.95)) {
+        logger.info('Storage critical, triggering cleanup', {
+          action: 'persistSession',
+          percentage: usagePercentage
+        });
+
+        const removed = clearOldestEntries('specificity-session-', 0.7, 10);
+
+        if (removed > 0) {
+          toast({
+            title: 'Storage Cleanup',
+            description: `Removed ${removed} old session${removed > 1 ? 's' : ''} to free up space.`,
+            variant: 'default'
+          });
+        }
+      }
+
       let dataToStore = data;
       let serialized = JSON.stringify(dataToStore);
 
-      // Check quota - truncate dialogue if too large
+      // Check if individual session data is too large (>4MB)
       if (serialized.length > MAX_STORAGE_SIZE) {
-        logger.warn('Data exceeds 4MB, truncating dialogue history', {
+        logger.warn('Session data exceeds 4MB, truncating dialogue history', {
           action: 'persistSession',
           size: serialized.length,
           maxSize: MAX_STORAGE_SIZE
         });
+
         dataToStore = {
           ...data,
           dialogueEntries: data.dialogueEntries.slice(-20) // Keep last 20 entries
@@ -90,25 +135,48 @@ export const useSessionPersistence = ({
 
       localStorage.setItem(key, serialized);
       lastWriteRef.current = Date.now();
+
+      logger.debug('Session persisted successfully', {
+        action: 'persistSession',
+        size: serialized.length,
+        storageUsage: `${getUsagePercentage().toFixed(1)}%`
+      });
     } catch (error) {
       if (error instanceof DOMException && error.name === 'QuotaExceededError') {
-        logger.error('Quota exceeded, clearing old sessions', error, { action: 'persistSession' });
-        // Clear only specificity sessions, not all localStorage
-        Object.keys(localStorage)
-          .filter(k => k.startsWith('specificity-session-'))
-          .forEach(k => localStorage.removeItem(k));
+        logger.error('Quota exceeded despite checks, clearing old sessions', error, {
+          action: 'persistSession'
+        });
 
-        // Retry once after clearing
+        // Emergency cleanup: clear old sessions
+        const removed = clearOldestEntries('specificity-session-', 0.5, 20);
+
+        toast({
+          title: 'Storage Full',
+          description: `Cleared ${removed} old sessions to make room. Please export important specs.`,
+          variant: 'destructive'
+        });
+
+        // Retry once after aggressive clearing
         try {
           localStorage.setItem(key, JSON.stringify(data));
         } catch (retryError) {
-          logger.error('Failed to persist after clearing', retryError instanceof Error ? retryError : new Error(String(retryError)), { action: 'persistSession' });
+          logger.error('Failed to persist after emergency cleanup', retryError instanceof Error ? retryError : new Error(String(retryError)), {
+            action: 'persistSession'
+          });
+
+          toast({
+            title: 'Storage Error',
+            description: 'Unable to save session. Please clear browser storage or export your work.',
+            variant: 'destructive'
+          });
         }
       } else {
-        logger.error('Persistence failed', error instanceof Error ? error : new Error(String(error)), { action: 'persistSession' });
+        logger.error('Persistence failed', error instanceof Error ? error : new Error(String(error)), {
+          action: 'persistSession'
+        });
       }
     }
-  }, [getStorageKey]);
+  }, [getStorageKey, toast]);
 
   // Debounced persist function
   const debouncedPersist = useCallback((data: SessionData) => {
