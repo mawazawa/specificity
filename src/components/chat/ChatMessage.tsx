@@ -1,3 +1,4 @@
+import React, { useCallback } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -29,18 +30,20 @@ const agentAvatars: Record<AgentType, string> = {
   system: ""
 };
 
-export const ChatMessage = ({ 
-  agent, 
-  message, 
-  timestamp, 
+// FIX: Wrapped with React.memo to prevent unnecessary re-renders
+export const ChatMessage = React.memo(function ChatMessage({
+  agent,
+  message,
+  timestamp,
   type,
   onAvatarClick,
   mockupUrl
-}: ChatMessageProps) => {
+}: ChatMessageProps) {
   const isUser = agent === 'user';
   const profile = !isUser ? mentorProfiles[agent as AgentType] : null;
-  
-  const getTypeIcon = () => {
+
+  // FIX: Memoized function to prevent recreation on every render
+  const getTypeIcon = useCallback(() => {
     switch (type) {
       case 'question': return <MessageSquare className="w-3 h-3" />;
       case 'research': return <Search className="w-3 h-3" />;
@@ -49,9 +52,10 @@ export const ChatMessage = ({
       case 'user': return <User className="w-3 h-3" />;
       default: return <MessageSquare className="w-3 h-3" />;
     }
-  };
+  }, [type]);
 
-  const getTypeBadge = () => {
+  // FIX: Memoized function to prevent recreation on every render
+  const getTypeBadge = useCallback(() => {
     const badges = {
       question: { label: 'Question', variant: 'default' as const },
       research: { label: 'Research', variant: 'secondary' as const },
@@ -61,7 +65,14 @@ export const ChatMessage = ({
       user: { label: 'You', variant: 'default' as const },
     };
     return badges[type] || { label: 'Message', variant: 'default' as const };
-  };
+  }, [type]);
+
+  // FIX: Memoized avatar click handler
+  const handleAvatarClick = useCallback(() => {
+    if (!isUser && onAvatarClick) {
+      onAvatarClick(agent as AgentType);
+    }
+  }, [isUser, onAvatarClick, agent]);
 
   return (
     <motion.div
@@ -71,9 +82,9 @@ export const ChatMessage = ({
       className={`flex gap-3 ${isUser ? 'flex-row-reverse' : 'flex-row'} mb-4`}
     >
       {/* Avatar */}
-      <div 
+      <div
         className={`shrink-0 ${!isUser && 'cursor-pointer'}`}
-        onClick={() => !isUser && onAvatarClick?.(agent as AgentType)}
+        onClick={handleAvatarClick}
       >
         <Avatar className={`w-14 h-14 ring-2 ${isUser ? 'ring-primary/30' : 'ring-primary/20'} shadow-lg hover:ring-primary/50 transition-all`}>
           <AvatarImage 
@@ -152,4 +163,4 @@ export const ChatMessage = ({
       </div>
     </motion.div>
   );
-};
+});

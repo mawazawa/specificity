@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, memo, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -53,24 +53,74 @@ const agentAvatars: Record<AgentType, string> = {
   amal: getAgentAvatar('amal'),
 };
 
+// Helper function to get type icon (extracted for reusability)
+const getTypeIcon = (type: string) => {
+  switch (type) {
+    case 'question': return <HelpCircle className="w-3.5 h-3.5 text-amber-400" />;
+    case 'answer': return <Lightbulb className="w-3.5 h-3.5 text-blue-400" />;
+    case 'vote': return <CheckCircle className="w-3.5 h-3.5 text-green-400" />;
+    case 'reasoning': return <Brain className="w-3.5 h-3.5 text-purple-400" />;
+    case 'discussion': return <MessageSquare className="w-3.5 h-3.5 text-cyan-400" />;
+    default: return <MessageSquare className="w-3.5 h-3.5 text-foreground/50" />;
+  }
+};
+
+// FIX: Extracted and memoized DialogueEntryItem to prevent re-renders
+const DialogueEntryItem = memo(function DialogueEntryItem({
+  entry,
+  index,
+}: {
+  entry: DialogueEntry;
+  index: number;
+}) {
+  return (
+    <motion.div
+      key={index}
+      initial={{ opacity: 0, x: -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: index * 0.05 }}
+      className="flex gap-3"
+    >
+      <div className="relative w-12 h-12 shrink-0">
+        <Avatar className="w-12 h-12 ring-2 ring-border/30 shadow-lg">
+          <AvatarImage src={agentAvatars[entry.agent]} alt={agentNames[entry.agent]} />
+          <AvatarFallback className="text-xs">{agentNames[entry.agent][0]}</AvatarFallback>
+        </Avatar>
+        <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-black/10 rounded-full pointer-events-none" />
+      </div>
+      <div className="flex-1 min-w-0 space-y-1">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs font-semibold text-foreground/90">
+            {agentNames[entry.agent]}
+          </span>
+          {getTypeIcon(entry.type)}
+          <Badge variant="outline" className="text-[9px] px-1.5 py-0">
+            {entry.type}
+          </Badge>
+          <span className="text-[10px] text-muted-foreground/50 ml-auto">
+            {new Date(entry.timestamp).toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit'
+            })}
+          </span>
+        </div>
+        <Card className={`p-3 bg-gradient-to-br ${agentColors[entry.agent]} border border-border/10 rounded-xl`}>
+          <div className="prose prose-sm prose-invert max-w-none prose-p:text-xs prose-p:text-foreground/70 prose-p:leading-relaxed prose-p:my-1">
+            <ReactMarkdown>{entry.message}</ReactMarkdown>
+          </div>
+        </Card>
+      </div>
+    </motion.div>
+  );
+});
+
 export const DialoguePanel = ({ entries, isOpen = false, onToggle }: DialoguePanelProps) => {
   const [expanded, setExpanded] = useState(isOpen);
 
-  const handleToggle = () => {
+  const handleToggle = useCallback(() => {
     setExpanded(!expanded);
     onToggle?.();
-  };
-
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'question': return <HelpCircle className="w-3.5 h-3.5 text-amber-400" />;
-      case 'answer': return <Lightbulb className="w-3.5 h-3.5 text-blue-400" />;
-      case 'vote': return <CheckCircle className="w-3.5 h-3.5 text-green-400" />;
-      case 'reasoning': return <Brain className="w-3.5 h-3.5 text-purple-400" />;
-      case 'discussion': return <MessageSquare className="w-3.5 h-3.5 text-cyan-400" />;
-      default: return <MessageSquare className="w-3.5 h-3.5 text-foreground/50" />;
-    }
-  };
+  }, [expanded, onToggle]);
 
   return (
     <div className="fixed bottom-6 right-6 z-50 w-full max-w-md">
@@ -117,43 +167,7 @@ export const DialoguePanel = ({ entries, isOpen = false, onToggle }: DialoguePan
                     </div>
                   ) : (
                     entries.map((entry, index) => (
-                      <motion.div
-                        key={index}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.05 }}
-                        className="flex gap-3"
-                      >
-                        <div className="relative w-12 h-12 shrink-0">
-                          <Avatar className="w-12 h-12 ring-2 ring-border/30 shadow-lg">
-                            <AvatarImage src={agentAvatars[entry.agent]} alt={agentNames[entry.agent]} />
-                            <AvatarFallback className="text-xs">{agentNames[entry.agent][0]}</AvatarFallback>
-                          </Avatar>
-                          <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-black/10 rounded-full pointer-events-none" />
-                        </div>
-                        <div className="flex-1 min-w-0 space-y-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-xs font-semibold text-foreground/90">
-                              {agentNames[entry.agent]}
-                            </span>
-                            {getTypeIcon(entry.type)}
-                            <Badge variant="outline" className="text-[9px] px-1.5 py-0">
-                              {entry.type}
-                            </Badge>
-                            <span className="text-[10px] text-muted-foreground/50 ml-auto">
-                              {new Date(entry.timestamp).toLocaleTimeString([], { 
-                                hour: '2-digit', 
-                                minute: '2-digit' 
-                              })}
-                            </span>
-                          </div>
-                          <Card className={`p-3 bg-gradient-to-br ${agentColors[entry.agent]} border border-border/10 rounded-xl`}>
-                            <div className="prose prose-sm prose-invert max-w-none prose-p:text-xs prose-p:text-foreground/70 prose-p:leading-relaxed prose-p:my-1">
-                              <ReactMarkdown>{entry.message}</ReactMarkdown>
-                            </div>
-                          </Card>
-                        </div>
-                      </motion.div>
+                      <DialogueEntryItem key={index} entry={entry} index={index} />
                     ))
                   )}
                 </div>

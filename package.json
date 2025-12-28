@@ -35,6 +35,7 @@
     "lint:root": "npx tsx scripts/lint/root-lint.ts",
     "lint:models": "npx tsx scripts/lint/model-lint.ts",
     "lint:plan": "npx tsx scripts/lint/plan-lint.ts",
+    "find-dead-code": "npx tsx scripts/find-dead-code.ts",
     "eval": "npx tsx evals/runner/eval-runner.ts",
     "eval:baseline": "npx tsx evals/runner/eval-runner.ts --baseline evals/baselines/latest.json"
   },
