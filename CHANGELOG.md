@@ -2,6 +2,47 @@
 
 All notable changes to Specificity will be documented in this file.
 
+## [1.6.0] - 2025-12-28 00:15 UTC
+
+### Phase 5 Technical Debt Elimination Plan
+
+#### TECH_DEBT_PLAN.md - Comprehensive Technical Debt Plan
+- Created detailed plan with **10 high-leverage actions**
+- **145 atomic subtasks** total across all actions
+- Each subtask scoped to **≤4-5 files**
+- **Strict success criteria** for every subtask
+- Based on **December 2025 verified documentation**
+
+#### Technical Debt Actions Identified
+
+| # | Action | Priority | Confidence |
+|---|--------|----------|------------|
+| 41 | Eliminate Unsafe Type Casting | CRITICAL | 97% |
+| 42 | Eliminate Console Statements (64 found) | HIGH | 95% |
+| 43 | Fix XSS Vulnerability Patterns | CRITICAL | 96% |
+| 44 | Comprehensive Error Boundary Coverage | HIGH | 93% |
+| 45 | Decompose Large Hook (use-spec-flow.ts) | HIGH | 91% |
+| 46 | Consolidate Avatar System | MEDIUM | 92% |
+| 47 | Component Memoization Strategy | MEDIUM | 89% |
+| 48 | Storage Quota Management | MEDIUM | 87% |
+| 49 | Increase Test Coverage | MEDIUM | 85% |
+| 50 | Dead Code Detection & Cleanup | LOW | 83% |
+
+#### Key Findings
+- **64 console statements** across 28 files bypassing Sentry
+- **use-spec-flow.ts** is 1400+ LOC - needs decomposition
+- **Index.tsx:1** has `eslint-disable @typescript-eslint/no-explicit-any`
+- Avatar imports duplicated across 7 components (56 import lines)
+- No XSS sanitization on user-provided URLs
+
+#### Files Created
+- `TECH_DEBT_PLAN.md` - Full implementation plan (145 subtasks)
+
+#### Files Updated
+- `TODO.md` - Added Phase 5 actions (41-50)
+
+---
+
 ## [1.5.0] - 2025-12-27 12:45 UTC
 
 ### Phase 4 Actions (31-40) - Initial Implementation

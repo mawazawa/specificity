@@ -1014,4 +1014,248 @@ No SLO/SLI tracking. Error budget undefined. No alerting thresholds.
 
 ---
 
+# Next 10 High-Leverage Actions (Phase 5 - Technical Debt)
+
+## Overview
+
+| # | Action | Confidence | Priority | Status |
+|---|--------|------------|----------|--------|
+| 41 | Eliminate Unsafe Type Casting | 97% | CRITICAL | Pending |
+| 42 | Eliminate Console Statements | 95% | HIGH | Pending |
+| 43 | Fix XSS Vulnerability Patterns | 96% | CRITICAL | Pending |
+| 44 | Comprehensive Error Boundary Coverage | 93% | HIGH | Pending |
+| 45 | Decompose Large Hook (use-spec-flow) | 91% | HIGH | Pending |
+| 46 | Consolidate Avatar System | 92% | MEDIUM | Pending |
+| 47 | Component Memoization Strategy | 89% | MEDIUM | Pending |
+| 48 | Storage Quota Management | 87% | MEDIUM | Pending |
+| 49 | Increase Test Coverage | 85% | MEDIUM | Pending |
+| 50 | Dead Code Detection & Cleanup | 83% | LOW | Pending |
+
+> **Full Details:** See [TECH_DEBT_PLAN.md](./TECH_DEBT_PLAN.md) for complete implementation plan with 145 atomic subtasks.
+
+---
+
+## Action 41: Eliminate Unsafe Type Casting
+
+**Confidence: 97%** | **Priority: CRITICAL** | **Effort: High**
+
+### Problem
+`Index.tsx:1` has `/* eslint-disable @typescript-eslint/no-explicit-any */` disabling type safety. The page uses `any` types for session state, agent configs, and API responses.
+
+### Atomic Subtasks
+
+| # | Task | Files (≤5) | Success Criteria |
+|---|------|------------|------------------|
+| 41.1 | Create comprehensive SessionState type | `src/types/session.ts` | Type exported, no `any` |
+| 41.2 | Create DialogueEntry strict types | `src/types/dialogue.ts` | Discriminated union |
+| 41.3 | Create AgentConfig strict type | `src/types/agent.ts` | All properties typed |
+| 41.4 | Create Zod schema for session state | `src/types/schemas.ts` | `z.infer` works |
+| 41.5 | Type useSpecFlow return value | `src/hooks/spec-generation/use-spec-flow.ts` | Zero `any` |
+| 41.6 | Type sessionState in Index.tsx | `src/pages/Index.tsx` | Remove eslint-disable |
+| 41.7 | Add runtime validation for API responses | `src/lib/api.ts`, `src/types/schemas.ts` | Zod parse |
+| 41.8 | Run `npm run typecheck` | Terminal | Zero type errors |
+
+---
+
+## Action 42: Eliminate Console Statements
+
+**Confidence: 95%** | **Priority: HIGH** | **Effort: Medium**
+
+### Problem
+64 `console.log/warn/error` statements across 28 files. Exposes debug data and bypasses Sentry.
+
+### Atomic Subtasks
+
+| # | Task | Files (≤5) | Success Criteria |
+|---|------|------------|------------------|
+| 42.1 | Verify logger.ts is production-ready | `src/lib/logger.ts` | Uses Sentry in prod |
+| 42.2 | Replace console in use-spec-flow.ts (7) | `src/hooks/spec-generation/use-spec-flow.ts` | Zero console |
+| 42.3 | Replace console in useSessionPersistence.ts (6) | `src/hooks/useSessionPersistence.ts` | Zero console |
+| 42.4 | Replace console in SpecInput.tsx (5) | `src/components/SpecInput.tsx` | Zero console |
+| 42.5 | Replace console in remaining 24 files | `src/**/*.ts{x}` | Zero console |
+| 42.6 | Verify ESLint enforcement | `eslint.config.js` | Rule active |
+| 42.7 | Run `npm run lint` | Terminal | Zero violations |
+
+---
+
+## Action 43: Fix XSS Vulnerability Patterns
+
+**Confidence: 96%** | **Priority: CRITICAL** | **Effort: Medium**
+
+### Problem
+Components use `dangerouslySetInnerHTML` or construct URLs from user input without sanitization.
+
+### Atomic Subtasks
+
+| # | Task | Files (≤5) | Success Criteria |
+|---|------|------------|------------------|
+| 43.1 | Install DOMPurify library | `package.json` | `dompurify@^3.x` |
+| 43.2 | Create sanitization utility | `src/lib/sanitize.ts` | Functions exported |
+| 43.3 | Create URL validation utility | `src/lib/sanitize.ts` | Domain whitelist |
+| 43.4 | Sanitize TechStackCard URLs | `src/components/TechStackCard.tsx` | Whitelisted only |
+| 43.5 | Sanitize markdown rendering | `src/components/SpecOutput.tsx` | DOMPurify on HTML |
+| 43.6 | Add CSP meta tag | `index.html` | CSP present |
+| 43.7 | Add XSS test cases | `tests/security-xss.spec.ts` | All vectors blocked |
+
+---
+
+## Action 44: Comprehensive Error Boundary Coverage
+
+**Confidence: 93%** | **Priority: HIGH** | **Effort: Medium**
+
+### Problem
+Error boundaries exist but not wrapped around critical sections (spec generation, chat, export).
+
+### Atomic Subtasks
+
+| # | Task | Files (≤5) | Success Criteria |
+|---|------|------------|------------------|
+| 44.1 | Wrap SpecOutput with ExportBoundary | `src/components/SpecOutput.tsx` | Boundary present |
+| 44.2 | Wrap ChatView with ChatBoundary | `src/components/chat/ChatView.tsx` | Boundary present |
+| 44.3 | Wrap spec generation | `src/pages/Index.tsx` | Boundary present |
+| 44.4 | Add boundary to AgentCard | `src/components/AgentCard.tsx` | Per-card isolation |
+| 44.5 | Add Sentry context | `src/components/error-boundaries.tsx` | User context |
+| 44.6 | Test error recovery | `tests/error-recovery.spec.ts` | Recovery works |
+
+---
+
+## Action 45: Decompose Large Hook (use-spec-flow)
+
+**Confidence: 91%** | **Priority: HIGH** | **Effort: High**
+
+### Problem
+`use-spec-flow.ts` is 1400+ LOC with 7 console statements. Handles too many responsibilities.
+
+### Atomic Subtasks
+
+| # | Task | Files (≤5) | Success Criteria |
+|---|------|------------|------------------|
+| 45.1 | Extract stage transition logic | `src/hooks/spec-generation/use-stage-transitions.ts` | < 200 LOC |
+| 45.2 | Extract API invocation | `src/hooks/spec-generation/use-spec-api.ts` | < 150 LOC |
+| 45.3 | Extract pause/resume | `src/hooks/spec-generation/use-pause-resume.ts` | < 100 LOC |
+| 45.4 | Extract error handling | `src/hooks/spec-generation/use-spec-errors.ts` | < 150 LOC |
+| 45.5 | Update main hook | `src/hooks/spec-generation/use-spec-flow.ts` | < 400 LOC |
+| 45.6 | Add types | `src/types/spec-flow.ts` | All types defined |
+| 45.7 | Test extracted hooks | `src/hooks/spec-generation/__tests__/*.test.ts` | Core paths tested |
+
+---
+
+## Action 46: Consolidate Avatar System
+
+**Confidence: 92%** | **Priority: MEDIUM** | **Effort: Low**
+
+### Problem
+Avatar imports duplicated across 7 components (56 import lines).
+
+### Atomic Subtasks
+
+| # | Task | Files (≤5) | Success Criteria |
+|---|------|------------|------------------|
+| 46.1 | Update AgentCard | `src/components/AgentCard.tsx` | Uses avatars.ts |
+| 46.2 | Update LiveAgentCard | `src/components/LiveAgentCard.tsx` | Uses avatars.ts |
+| 46.3 | Update ChatMessage | `src/components/chat/ChatMessage.tsx` | Uses avatars.ts |
+| 46.4 | Update DialoguePanel | `src/components/DialoguePanel.tsx` | Uses avatars.ts |
+| 46.5 | Update MobileHeader | `src/components/mobile/MobileHeader.tsx` | Uses avatars.ts |
+| 46.6 | Verify bundle reduction | Terminal | 56 → 7 imports |
+
+---
+
+## Action 47: Component Memoization Strategy
+
+**Confidence: 89%** | **Priority: MEDIUM** | **Effort: Medium**
+
+### Problem
+AgentCard event listener leak, ChatMessage re-renders excessively, LiveAgentCard parses text every render.
+
+### Atomic Subtasks
+
+| # | Task | Files (≤5) | Success Criteria |
+|---|------|------------|------------------|
+| 47.1 | Fix AgentCard event listener leak | `src/components/AgentCard.tsx` | Cleanup in useEffect |
+| 47.2 | Memoize ChatMessage | `src/components/chat/ChatMessage.tsx` | `React.memo()` |
+| 47.3 | Memoize getTagsFromText | `src/components/LiveAgentCard.tsx` | `useMemo` |
+| 47.4 | Extract DialogueEntryItem | `src/components/DialoguePanel.tsx` | Memoized |
+| 47.5 | Profile with React DevTools | DevTools | Renders reduced |
+
+---
+
+## Action 48: Storage Quota Management
+
+**Confidence: 87%** | **Priority: MEDIUM** | **Effort: Medium**
+
+### Problem
+`useSessionPersistence.ts` catches quota errors but provides no recovery.
+
+### Atomic Subtasks
+
+| # | Task | Files (≤5) | Success Criteria |
+|---|------|------------|------------------|
+| 48.1 | Create storage quota utility | `src/lib/storage-quota.ts` | Usage function |
+| 48.2 | Add quota checking | `src/hooks/useSessionPersistence.ts` | Check before write |
+| 48.3 | Create cleanup utility | `src/lib/storage-quota.ts` | Cleanup function |
+| 48.4 | Add notification on quota | `src/hooks/useSessionPersistence.ts` | Toast on 80% |
+| 48.5 | Create IndexedDB fallback | `src/lib/indexed-storage.ts` | Large storage |
+
+---
+
+## Action 49: Increase Test Coverage
+
+**Confidence: 85%** | **Priority: MEDIUM** | **Effort: High**
+
+### Problem
+Core hooks have zero unit tests. Critical paths untested.
+
+### Atomic Subtasks
+
+| # | Task | Files (≤5) | Success Criteria |
+|---|------|------------|------------------|
+| 49.1 | Set up test utilities | `src/test/utils.tsx` | Helpers ready |
+| 49.2 | Create mock utilities | `src/test/mocks/*.ts` | Mocks ready |
+| 49.3 | Test useSession reducer | `src/hooks/spec-generation/__tests__/use-session.test.ts` | 80% coverage |
+| 49.4 | Test useAuth | `src/hooks/__tests__/useAuth.test.ts` | Auth tested |
+| 49.5 | Test useSessionPersistence | `src/hooks/__tests__/useSessionPersistence.test.ts` | Persistence tested |
+| 49.6 | Add coverage reporting | `vitest.config.ts` | > 70% coverage |
+
+---
+
+## Action 50: Dead Code Detection & Cleanup
+
+**Confidence: 83%** | **Priority: LOW** | **Effort: Low**
+
+### Problem
+No automated dead code detection. Unused exports accumulate.
+
+### Atomic Subtasks
+
+| # | Task | Files (≤5) | Success Criteria |
+|---|------|------------|------------------|
+| 50.1 | Install ts-unused-exports | `package.json` | Installed |
+| 50.2 | Create analysis script | `scripts/find-dead-code.ts` | Script works |
+| 50.3 | Run initial analysis | Terminal | List generated |
+| 50.4 | Remove unused exports | `src/**/*.ts{x}` | Unused gone |
+| 50.5 | Add CI check | `.github/workflows/code-quality.yml` | CI blocks |
+
+---
+
+## Documentation Recency Validation
+
+| Document | Last Updated | Status |
+|----------|--------------|--------|
+| README.md | Dec 26, 2025 | ✅ Current |
+| CLAUDE.md | Dec 26, 2025 | ✅ Current |
+| CHANGELOG.md | Dec 27, 2025 | ✅ Current |
+| TECH_DEBT_PLAN.md | Dec 28, 2025 | ✅ NEW |
+| package.json | Dec 27, 2025 | ✅ Current |
+
+### External Documentation Validated
+- [TypeScript 5.8 Docs](https://www.typescriptlang.org/docs/) - ✅ Current (Dec 2025)
+- [React 18.3 Docs](https://react.dev/) - ✅ Current (Dec 2025)
+- [Zod v3.25](https://github.com/colinhacks/zod) - ✅ Current
+- [DOMPurify v3.x](https://www.npmjs.com/package/dompurify) - ✅ Current
+- [Sentry React v10.31](https://docs.sentry.io/platforms/javascript/guides/react/) - ✅ Current
+- [Vitest v4.x](https://vitest.dev/) - ✅ Current
+- [ESLint v9.x](https://eslint.org/) - ✅ Current
+
+---
+
 *This TODO.md is auto-regenerated at each turn per CLAUDE.md requirements.*
