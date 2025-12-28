@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Loader2, ArrowLeft, ExternalLink, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { logger } from "@/lib/logger";
 
 interface SpecRow {
   id: string;
@@ -41,7 +42,7 @@ const Specs = () => {
 
       setSpecs(data || []);
     } catch (err) {
-      console.error("Failed to load specs:", err);
+      logger.error("Failed to load specs:", err);
       setError("Failed to load specifications.");
     } finally {
       setIsLoading(false);
@@ -73,7 +74,7 @@ const Specs = () => {
       setSpecs(prev => prev.filter(spec => spec.id !== id));
       toast({ title: "Deleted", description: "Specification removed." });
     } catch (err) {
-      console.error("Failed to delete spec:", err);
+      logger.error("Failed to delete spec:", err);
       toast({
         title: "Delete failed",
         description: "Could not delete specification.",

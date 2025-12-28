@@ -2,6 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { AgentConfig, TechStackItem } from '@/types/spec';
 import { RoundData, userInputSchema, chatMessageSchema } from '@/types/schemas';
 import { withRetry, isTransientError } from '@/lib/retry';
+import { logger } from '@/lib/logger';
 
 // Default timeout for API calls
 // Spec generation takes ~30 minutes (8-stage pipeline with research, debate, synthesis)
@@ -17,7 +18,7 @@ const RETRY_CONFIG = {
   initialDelayMs: 2000, // Start with 2 second delay
   maxDelayMs: 15000, // Cap at 15 seconds
   onRetry: (attempt: number, error: unknown, delayMs: number) => {
-    console.log(`[API] Retry attempt ${attempt} after ${delayMs}ms:`, error);
+    logger.debug(`[API] Retry attempt ${attempt} after ${delayMs}ms:`, error);
   },
 };
 

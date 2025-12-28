@@ -5,6 +5,8 @@
  * Created as part of Action 43: Fix XSS Vulnerability Patterns
  */
 
+import { logger } from '@/lib/logger';
+
 /**
  * Allowed image domains whitelist
  * Only images from these domains will be loaded to prevent XSS via image URLs
@@ -105,7 +107,7 @@ export function validateImageUrl(url: string): string | null {
 
   const lowerUrl = url.toLowerCase();
   if (dangerousProtocols.some(protocol => lowerUrl.startsWith(protocol))) {
-    console.warn(`[Security] Blocked dangerous URL protocol: ${url}`);
+    logger.warn(`[Security] Blocked dangerous URL protocol: ${url}`);
     return null;
   }
 
@@ -121,20 +123,20 @@ export function validateImageUrl(url: string): string | null {
     });
 
     if (!isAllowed) {
-      console.warn(`[Security] Blocked image URL from non-whitelisted domain: ${hostname}`);
+      logger.warn(`[Security] Blocked image URL from non-whitelisted domain: ${hostname}`);
       return null;
     }
 
     // Additional check: ensure it's HTTP or HTTPS
     if (urlObj.protocol !== 'http:' && urlObj.protocol !== 'https:') {
-      console.warn(`[Security] Blocked non-HTTP(S) URL: ${url}`);
+      logger.warn(`[Security] Blocked non-HTTP(S) URL: ${url}`);
       return null;
     }
 
     return url;
   } catch (error) {
     // Invalid URL format
-    console.warn(`[Security] Invalid URL format: ${url}`, error);
+    logger.warn(`[Security] Invalid URL format: ${url}`, error);
     return null;
   }
 }

@@ -8,22 +8,16 @@ import { AgentConfig } from "@/types/spec";
 import { ChevronDown, ChevronUp, Settings, Sparkles } from "lucide-react";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { NeumorphicSlider } from "./NeumorphicSlider";
-import steveJobsAvatar from "@/assets/optimized/steve-jobs-nobg.webp";
-import oprahAvatar from "@/assets/optimized/oprah-nobg.webp";
-import stevenBartlettAvatar from "@/assets/optimized/steven-bartlett-nobg.webp";
-import jonyIveAvatar from "@/assets/optimized/jony-ive-nobg.webp";
-import amalClooneyAvatar from "@/assets/optimized/amal-clooney-nobg.webp";
-import elonMuskAvatar from "@/assets/optimized/elon-musk-nobg.webp";
-import agentPlaceholder from "@/assets/optimized/agent-placeholder.webp";
+import { getAgentAvatar } from "@/lib/avatars";
 
 const agentInfo = {
-  elon: { name: "Elon Musk", role: "First Principles", color: "from-purple-500 via-fuchsia-500 to-pink-500", avatar: elonMuskAvatar },
-  steve: { name: "Steve Jobs", role: "Product Vision", color: "from-blue-500 via-cyan-500 to-teal-500", avatar: steveJobsAvatar },
-  oprah: { name: "Oprah Winfrey", role: "Human Impact", color: "from-amber-500 via-orange-500 to-red-500", avatar: oprahAvatar },
-  zaha: { name: "Zaha Hadid", role: "Design Innovation", color: "from-emerald-500 via-teal-500 to-cyan-500", avatar: agentPlaceholder },
-  jony: { name: "Jony Ive", role: "Simplicity & Craft", color: "from-slate-400 via-zinc-400 to-neutral-500", avatar: jonyIveAvatar },
-  bartlett: { name: "Steven Bartlett", role: "Growth Strategy", color: "from-red-500 via-rose-500 to-pink-500", avatar: stevenBartlettAvatar },
-  amal: { name: "Amal Clooney", role: "Ethics & Law", color: "from-indigo-500 via-violet-500 to-purple-500", avatar: amalClooneyAvatar },
+  elon: { name: "Elon Musk", role: "First Principles", color: "from-purple-500 via-fuchsia-500 to-pink-500", avatar: getAgentAvatar('elon', 'transparent') },
+  steve: { name: "Steve Jobs", role: "Product Vision", color: "from-blue-500 via-cyan-500 to-teal-500", avatar: getAgentAvatar('steve', 'transparent') },
+  oprah: { name: "Oprah Winfrey", role: "Human Impact", color: "from-amber-500 via-orange-500 to-red-500", avatar: getAgentAvatar('oprah', 'transparent') },
+  zaha: { name: "Zaha Hadid", role: "Design Innovation", color: "from-emerald-500 via-teal-500 to-cyan-500", avatar: getAgentAvatar('zaha', 'transparent') },
+  jony: { name: "Jony Ive", role: "Simplicity & Craft", color: "from-slate-400 via-zinc-400 to-neutral-500", avatar: getAgentAvatar('jony', 'transparent') },
+  bartlett: { name: "Steven Bartlett", role: "Growth Strategy", color: "from-red-500 via-rose-500 to-pink-500", avatar: getAgentAvatar('bartlett', 'transparent') },
+  amal: { name: "Amal Clooney", role: "Ethics & Law", color: "from-indigo-500 via-violet-500 to-purple-500", avatar: getAgentAvatar('amal', 'transparent') },
 };
 
 interface AgentCardProps {
@@ -38,7 +32,7 @@ export const AgentCard = ({ config, onChange, isLandingPage = false }: AgentCard
     name: config.agent,
     role: "AI Agent",
     color: "from-gray-500 via-slate-500 to-zinc-500",
-    avatar: agentPlaceholder
+    avatar: getAgentAvatar('user', 'transparent')
   };
   const [showAdvanced, setShowAdvanced] = useState(false);
   const prefersReducedMotion = useReducedMotion();

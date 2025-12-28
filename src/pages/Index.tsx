@@ -42,6 +42,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useSessionPersistence } from "@/hooks/useSessionPersistence";
 import { useSpecFlow } from "@/hooks/spec-generation/use-spec-flow";
 import { useAgentPrompts } from "@/hooks/use-agent-prompts";
+import { SpecGenerationBoundary } from "@/components/error-boundaries";
+import { logger } from "@/lib/logger";
 
 // Session types
 import type {
@@ -219,7 +221,7 @@ const Index = () => {
         <div className="md:hidden">
           <MobileHeader
             agentConfigs={agentConfigs}
-            onAgentClick={(agent) => console.log('Agent clicked:', agent)}
+            onAgentClick={(agent) => logger.debug('Agent clicked:', agent)}
             onMenuClick={() => setViewMode('panels')}
           />
         </div>
@@ -237,28 +239,39 @@ const Index = () => {
             onAgentConfigChange={handleAgentConfigChange}
           />
         ) : (
-          <ActiveSessionContent
-            viewMode={viewMode}
-            setViewMode={setViewMode}
-            chatEntries={chatEntries}
-            sessionState={sessionState}
-            currentRound={currentRound}
-            isProcessing={isProcessing}
-            currentStage={currentStage}
-            tasks={tasks}
-            generatedSpec={generatedSpec}
-            techStack={techStack}
-            mockupUrl={mockupUrl}
-            agentConfigs={agentConfigs}
-            dialogueEntries={dialogueEntries}
-            isDialogueOpen={isDialogueOpen}
-            setIsDialogueOpen={setIsDialogueOpen}
-            onPause={pause}
-            onResume={resume}
-            onChatWithAgent={chatWithAgent}
-            onProceedToGeneration={proceedToGeneration}
-            onShareSpec={shareSpec}
-          />
+          <SpecGenerationBoundary
+            boundaryName="spec-generation"
+            sessionId={sessionState.sessionId}
+            onClearSession={() => {
+              // Clear session and reset to landing page
+              localStorage.removeItem('specificity_session');
+              localStorage.removeItem('specificity_dialogue');
+              window.location.reload();
+            }}
+          >
+            <ActiveSessionContent
+              viewMode={viewMode}
+              setViewMode={setViewMode}
+              chatEntries={chatEntries}
+              sessionState={sessionState}
+              currentRound={currentRound}
+              isProcessing={isProcessing}
+              currentStage={currentStage}
+              tasks={tasks}
+              generatedSpec={generatedSpec}
+              techStack={techStack}
+              mockupUrl={mockupUrl}
+              agentConfigs={agentConfigs}
+              dialogueEntries={dialogueEntries}
+              isDialogueOpen={isDialogueOpen}
+              setIsDialogueOpen={setIsDialogueOpen}
+              onPause={pause}
+              onResume={resume}
+              onChatWithAgent={chatWithAgent}
+              onProceedToGeneration={proceedToGeneration}
+              onShareSpec={shareSpec}
+            />
+          </SpecGenerationBoundary>
         )}
       </div>
 

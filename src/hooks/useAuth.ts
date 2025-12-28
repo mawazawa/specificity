@@ -13,6 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { User, Session } from '@supabase/supabase-js';
+import { logger } from '@/lib/logger';
 
 interface UseAuthReturn {
   user: User | null;
@@ -48,7 +49,7 @@ export const useAuth = (): UseAuthReturn => {
     supabase.auth.getSession()
       .then(({ data: { session: existingSession }, error }) => {
         if (error) {
-          console.error('[useAuth] Failed to get session:', error.message);
+          logger.error('[useAuth] Failed to get session:', error.message);
           setIsLoading(false);
           navigate('/auth');
           return;
@@ -63,7 +64,7 @@ export const useAuth = (): UseAuthReturn => {
         }
       })
       .catch((error) => {
-        console.error('[useAuth] Session check failed:', error);
+        logger.error('[useAuth] Session check failed:', error);
         setIsLoading(false);
         navigate('/auth');
       });

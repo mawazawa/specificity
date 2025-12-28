@@ -5,6 +5,7 @@
  */
 
 import * as Sentry from '@sentry/react';
+import { logger } from '@/lib/logger';
 
 // ============================================
 // TYPES
@@ -375,15 +376,14 @@ export function formatTraceId(traceId: string): string {
  */
 export function logTraceSummary(summary: TraceSummary): void {
   if (import.meta.env.DEV) {
-    console.group(`🔍 Trace: ${formatTraceId(summary.traceId)}`);
-    console.log(`Total Duration: ${(summary.totalDuration / 1000).toFixed(2)}s`);
-    console.log(`Spans: ${summary.spanCount}, Errors: ${summary.errorCount}`);
+    logger.info(`🔍 Trace: ${formatTraceId(summary.traceId)}`);
+    logger.info(`Total Duration: ${(summary.totalDuration / 1000).toFixed(2)}s`);
+    logger.info(`Spans: ${summary.spanCount}, Errors: ${summary.errorCount}`);
     if (summary.slowestStage) {
-      console.log(
+      logger.info(
         `Slowest: ${summary.slowestStage} (${(summary.slowestStageDuration || 0) / 1000}s)`
       );
     }
-    console.table(summary.spans);
-    console.groupEnd();
+    logger.info('Trace spans:', summary.spans);
   }
 }

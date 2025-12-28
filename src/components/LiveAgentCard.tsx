@@ -3,22 +3,16 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MessageSquare, ThumbsUp, ThumbsDown, Sparkles, Brain, Target } from "lucide-react";
 import { motion } from "framer-motion";
-import steveJobsAvatar from "@/assets/optimized/steve-jobs.webp";
-import oprahAvatar from "@/assets/optimized/oprah.webp";
-import stevenBartlettAvatar from "@/assets/optimized/steven-bartlett.webp";
-import jonyIveAvatar from "@/assets/optimized/jony-ive.webp";
-import amalClooneyAvatar from "@/assets/optimized/amal-clooney.webp";
-import elonMuskAvatar from "@/assets/optimized/elon-musk.webp";
-import agentPlaceholder from "@/assets/optimized/agent-placeholder.webp";
+import { getAgentAvatar } from "@/lib/avatars";
 
 const agentInfo = {
-  elon: { name: "Elon", color: "from-purple-500 via-fuchsia-500 to-pink-500", avatar: elonMuskAvatar },
-  steve: { name: "Steve", color: "from-blue-500 via-cyan-500 to-teal-500", avatar: steveJobsAvatar },
-  oprah: { name: "Oprah", color: "from-amber-500 via-orange-500 to-red-500", avatar: oprahAvatar },
-  zaha: { name: "Zaha", color: "from-emerald-500 via-teal-500 to-cyan-500", avatar: agentPlaceholder },
-  jony: { name: "Jony", color: "from-slate-400 via-zinc-400 to-neutral-500", avatar: jonyIveAvatar },
-  bartlett: { name: "Steven", color: "from-red-500 via-rose-500 to-pink-500", avatar: stevenBartlettAvatar },
-  amal: { name: "Amal", color: "from-indigo-500 via-violet-500 to-purple-500", avatar: amalClooneyAvatar },
+  elon: { name: "Elon", color: "from-purple-500 via-fuchsia-500 to-pink-500", avatar: getAgentAvatar('elon') },
+  steve: { name: "Steve", color: "from-blue-500 via-cyan-500 to-teal-500", avatar: getAgentAvatar('steve') },
+  oprah: { name: "Oprah", color: "from-amber-500 via-orange-500 to-red-500", avatar: getAgentAvatar('oprah') },
+  zaha: { name: "Zaha", color: "from-emerald-500 via-teal-500 to-cyan-500", avatar: getAgentAvatar('zaha') },
+  jony: { name: "Jony", color: "from-slate-400 via-zinc-400 to-neutral-500", avatar: getAgentAvatar('jony') },
+  bartlett: { name: "Steven", color: "from-red-500 via-rose-500 to-pink-500", avatar: getAgentAvatar('bartlett') },
+  amal: { name: "Amal", color: "from-indigo-500 via-violet-500 to-purple-500", avatar: getAgentAvatar('amal') },
 };
 
 const extractInsights = (text: string) => {

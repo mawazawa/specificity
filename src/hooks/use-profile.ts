@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { categorizeError, logError } from '@/lib/errors';
+import { logger } from '@/lib/logger';
 
 export interface Profile {
   id: string;
@@ -104,7 +105,7 @@ export function useProfile() {
     });
 
     if (error) {
-      console.error('[upgradeToPro] Edge function error:', error);
+      logger.error('[upgradeToPro] Edge function error:', error);
       throw new Error(error.message || 'Failed to upgrade account');
     }
 

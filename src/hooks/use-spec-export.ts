@@ -14,6 +14,7 @@ import {
   generateSpecKitMarkdown,
 } from '@/lib/spec-serializers';
 import { generateSpecPdf } from '@/lib/pdf-generator';
+import { logger } from '@/lib/logger';
 
 // Lazy-loaded export utilities
 const loadPdfLibraries = () =>
@@ -193,7 +194,7 @@ export function useSpecExport({
         }
       });
     } catch (error) {
-      console.error('Image generation error:', error);
+      logger.error('Image generation error:', error);
       toast({
         title: 'Export Failed',
         description: 'Could not generate image.',
@@ -254,7 +255,7 @@ export function useSpecExport({
       saveAs(blob, `specification-${new Date().toISOString().split('T')[0]}.docx`);
       toast({ title: 'Word Doc Downloaded', description: 'Specification saved as .docx' });
     } catch (error) {
-      console.error('Word generation error:', error);
+      logger.error('Word generation error:', error);
       toast({
         title: 'Export Failed',
         description: 'Could not generate Word document.',

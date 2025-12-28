@@ -3,6 +3,8 @@
  * Provides consistent error handling across the application
  */
 
+import { logger } from '@/lib/logger';
+
 /**
  * Error categories for user-friendly messaging
  */
@@ -184,7 +186,7 @@ export function logError(
 ): void {
   const categorized = categorizeError(error);
 
-  console.error(`[${context}] ${categorized.category}:`, {
+  logger.error(`[${context}] ${categorized.category}:`, {
     title: categorized.title,
     message: categorized.message,
     recoverable: categorized.recoverable,

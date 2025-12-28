@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { AgentConfig } from '@/types/spec';
+import { logger } from '@/lib/logger';
 
 /**
  * Hook to fetch agent prompts from Supabase database
@@ -61,7 +62,7 @@ export const useAgentPrompts = () => {
 
         setAgentConfigs(sortedConfigs);
       } catch (err) {
-        console.error('[useAgentPrompts] Error fetching agent prompts:', err);
+        logger.error('[useAgentPrompts] Error fetching agent prompts:', err);
         setError(err instanceof Error ? err : new Error('Unknown error fetching agent prompts'));
 
         // Fallback to default configs if database fetch fails

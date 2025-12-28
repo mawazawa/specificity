@@ -5,6 +5,7 @@
  */
 
 import { toast } from '@/hooks/use-toast';
+import { logger } from '@/lib/logger';
 
 /**
  * Create and trigger file download from content
@@ -65,7 +66,7 @@ export async function copyToClipboard(content: string): Promise<void> {
     await navigator.clipboard.writeText(content);
     toast({ title: 'Copied!', description: 'Content copied to clipboard' });
   } catch (error) {
-    console.error('Failed to copy to clipboard:', error);
+    logger.error('Failed to copy to clipboard:', error);
     toast({
       title: 'Copy Failed',
       description: 'Could not copy to clipboard',

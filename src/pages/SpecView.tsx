@@ -6,6 +6,7 @@ import { Loader2, ArrowLeft, AlertCircle, WifiOff, Lock, RefreshCw } from "lucid
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { categorizeError, type ErrorCategory } from "@/lib/errors";
+import { logger } from "@/lib/logger";
 
 interface SpecError {
   title: string;
@@ -72,7 +73,7 @@ export default function SpecView() {
             showRetry: categorized.retryable,
           });
         }
-        console.error('[SpecView] Database error:', dbError);
+        logger.error('[SpecView] Database error:', dbError);
         return;
       }
 
@@ -85,7 +86,7 @@ export default function SpecView() {
         category: categorized.category,
         showRetry: categorized.retryable,
       });
-      console.error('[SpecView] Unexpected error:', err);
+      logger.error('[SpecView] Unexpected error:', err);
     } finally {
       setLoading(false);
     }

@@ -5,6 +5,7 @@
  */
 
 import * as Sentry from '@sentry/react';
+import { logger } from '@/lib/logger';
 
 // ============================================
 // TYPES
@@ -134,7 +135,7 @@ export function identify(userId: string, traits?: Partial<UserTraits>): void {
   });
 
   if (config.debug) {
-    console.info('[Analytics] User identified:', { userId, traits });
+    logger.info('[Analytics] User identified:', { userId, traits });
   }
 }
 
@@ -150,7 +151,7 @@ export function resetIdentity(): void {
   Sentry.setUser(null);
 
   if (config.debug) {
-    console.info('[Analytics] Identity reset');
+    logger.info('[Analytics] Identity reset');
   }
 }
 
@@ -182,7 +183,7 @@ export function track(
   });
 
   if (config.debug) {
-    console.info('[Analytics] Event tracked:', event);
+    logger.info('[Analytics] Event tracked:', event);
   }
 }
 

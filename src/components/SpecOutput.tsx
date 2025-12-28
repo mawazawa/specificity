@@ -26,6 +26,7 @@ import { TechStackItem } from "@/types/spec";
 import { SpecMarkdown } from "./SpecOutput/MarkdownComponents";
 import { useSpecExport } from "@/hooks/use-spec-export";
 import { validateImageUrl } from "@/lib/sanitize";
+import { ExportBoundary } from "@/components/error-boundaries";
 
 interface SpecOutputProps {
   spec: string;
@@ -202,131 +203,133 @@ export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = fals
         </div>
 
         {/* Action Buttons - Consolidated for clarity */}
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Primary Actions */}
-          <Button onClick={copyToClipboard} variant="outline" size="sm" className="gap-2">
-            <Copy className="w-3 h-3" />
-            Copy
-          </Button>
-
-          {/* Document Export Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2">
-                <Download className="w-3 h-3" />
-                Download
-                <ChevronDown className="w-3 h-3 opacity-50" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-48">
-              <DropdownMenuLabel className="text-xs text-muted-foreground">Document Formats</DropdownMenuLabel>
-              <DropdownMenuItem onClick={downloadMarkdown} className="gap-2 cursor-pointer">
-                <FileText className="w-4 h-4" />
-                Markdown (.md)
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={downloadText} className="gap-2 cursor-pointer">
-                <FileType className="w-4 h-4" />
-                Plain Text (.txt)
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={downloadPDF}
-                className="gap-2 cursor-pointer"
-                disabled={exportingPdf}
-              >
-                {exportingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
-                PDF Document
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={downloadWord}
-                className="gap-2 cursor-pointer"
-                disabled={exportingDocx}
-              >
-                {exportingDocx ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
-                Word (.docx)
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={downloadImage}
-                className="gap-2 cursor-pointer"
-                disabled={exportingImage}
-              >
-                {exportingImage ? <Loader2 className="w-4 h-4 animate-spin" /> : <Image className="w-4 h-4" />}
-                Image (PNG)
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {/* AI/Agent Export Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2">
-                <Bot className="w-3 h-3" />
-                AI Export
-                <ChevronDown className="w-3 h-3 opacity-50" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-56">
-              <DropdownMenuLabel className="text-xs text-muted-foreground">For AI Coding Agents</DropdownMenuLabel>
-              <DropdownMenuItem onClick={downloadAgentReady} className="gap-2 cursor-pointer">
-                <Bot className="w-4 h-4" />
-                <div className="flex flex-col">
-                  <span>Agent-Ready Spec</span>
-                  <span className="text-xs text-muted-foreground">YAML frontmatter format</span>
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={downloadAgentsMd} className="gap-2 cursor-pointer">
-                <Github className="w-4 h-4" />
-                <div className="flex flex-col">
-                  <span>AGENTS.md</span>
-                  <span className="text-xs text-muted-foreground">GitHub Copilot format</span>
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuLabel className="text-xs text-muted-foreground">Machine Readable</DropdownMenuLabel>
-              <DropdownMenuItem onClick={downloadJson} className="gap-2 cursor-pointer">
-                <Code className="w-4 h-4" />
-                <div className="flex flex-col">
-                  <span>JSON</span>
-                  <span className="text-xs text-muted-foreground">Structured data format</span>
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={downloadSpecKit} className="gap-2 cursor-pointer">
-                <Layers className="w-4 h-4" />
-                <div className="flex flex-col">
-                  <span>GitHub Spec Kit</span>
-                  <span className="text-xs text-muted-foreground">Given/When/Then format</span>
-                </div>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {!readOnly && onShare && (
-            <Button onClick={onShare} variant="outline" size="sm" className="gap-2">
-              <Share2 className="w-3 h-3" />
-              Share
+        <ExportBoundary boundaryName="spec-export">
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Primary Actions */}
+            <Button onClick={copyToClipboard} variant="outline" size="sm" className="gap-2">
+              <Copy className="w-3 h-3" />
+              Copy
             </Button>
-          )}
 
-          <div className="flex-1" />
+            {/* Document Export Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Download className="w-3 h-3" />
+                  Download
+                  <ChevronDown className="w-3 h-3 opacity-50" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-48">
+                <DropdownMenuLabel className="text-xs text-muted-foreground">Document Formats</DropdownMenuLabel>
+                <DropdownMenuItem onClick={downloadMarkdown} className="gap-2 cursor-pointer">
+                  <FileText className="w-4 h-4" />
+                  Markdown (.md)
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={downloadText} className="gap-2 cursor-pointer">
+                  <FileType className="w-4 h-4" />
+                  Plain Text (.txt)
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={downloadPDF}
+                  className="gap-2 cursor-pointer"
+                  disabled={exportingPdf}
+                >
+                  {exportingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
+                  PDF Document
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={downloadWord}
+                  className="gap-2 cursor-pointer"
+                  disabled={exportingDocx}
+                >
+                  {exportingDocx ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
+                  Word (.docx)
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={downloadImage}
+                  className="gap-2 cursor-pointer"
+                  disabled={exportingImage}
+                >
+                  {exportingImage ? <Loader2 className="w-4 h-4 animate-spin" /> : <Image className="w-4 h-4" />}
+                  Image (PNG)
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
-          {/* Primary Actions - Right aligned */}
-          {!readOnly && (
-            <div className="flex items-center gap-2">
-              <Button
-                onClick={() => setShowRefinements(!showRefinements)}
-                variant="ghost"
-                size="sm"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                Refine
+            {/* AI/Agent Export Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Bot className="w-3 h-3" />
+                  AI Export
+                  <ChevronDown className="w-3 h-3 opacity-50" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56">
+                <DropdownMenuLabel className="text-xs text-muted-foreground">For AI Coding Agents</DropdownMenuLabel>
+                <DropdownMenuItem onClick={downloadAgentReady} className="gap-2 cursor-pointer">
+                  <Bot className="w-4 h-4" />
+                  <div className="flex flex-col">
+                    <span>Agent-Ready Spec</span>
+                    <span className="text-xs text-muted-foreground">YAML frontmatter format</span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={downloadAgentsMd} className="gap-2 cursor-pointer">
+                  <Github className="w-4 h-4" />
+                  <div className="flex flex-col">
+                    <span>AGENTS.md</span>
+                    <span className="text-xs text-muted-foreground">GitHub Copilot format</span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="text-xs text-muted-foreground">Machine Readable</DropdownMenuLabel>
+                <DropdownMenuItem onClick={downloadJson} className="gap-2 cursor-pointer">
+                  <Code className="w-4 h-4" />
+                  <div className="flex flex-col">
+                    <span>JSON</span>
+                    <span className="text-xs text-muted-foreground">Structured data format</span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={downloadSpecKit} className="gap-2 cursor-pointer">
+                  <Layers className="w-4 h-4" />
+                  <div className="flex flex-col">
+                    <span>GitHub Spec Kit</span>
+                    <span className="text-xs text-muted-foreground">Given/When/Then format</span>
+                  </div>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {!readOnly && onShare && (
+              <Button onClick={onShare} variant="outline" size="sm" className="gap-2">
+                <Share2 className="w-3 h-3" />
+                Share
               </Button>
-              <Button onClick={onApprove} variant="default" size="sm" className="gap-2">
-                <ThumbsUp className="w-3 h-3" />
-                Approve Spec
-              </Button>
-            </div>
-          )}
-        </div>
+            )}
+
+            <div className="flex-1" />
+
+            {/* Primary Actions - Right aligned */}
+            {!readOnly && (
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={() => setShowRefinements(!showRefinements)}
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  Refine
+                </Button>
+                <Button onClick={onApprove} variant="default" size="sm" className="gap-2">
+                  <ThumbsUp className="w-3 h-3" />
+                  Approve Spec
+                </Button>
+              </div>
+            )}
+          </div>
+        </ExportBoundary>
 
         {/* Refinement Options */}
         {showRefinements && (

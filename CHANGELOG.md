@@ -2,6 +2,40 @@
 
 All notable changes to Specificity will be documented in this file.
 
+## [1.8.0] - 2025-12-28 02:15 UTC
+
+### Phase 5+6 Technical Debt - Actions 44, 46, 57 + Console Cleanup
+
+#### Action 57: Node.js 20.19+ Verification ✅ (Phase 6)
+- **`.nvmrc`** - Created with Node.js version 20
+- **`package.json`** - Added engines field: `node: ">=20.19.0", npm: ">=10.0.0"`
+- All GitHub Actions workflows already use Node 20 ✅
+
+#### Action 44: Comprehensive Error Boundary Coverage ✅
+- **`src/pages/Index.tsx`** - SpecGenerationBoundary wrapping spec flow
+- **`src/components/chat/ChatView.tsx`** - ChatBoundary wrapping chat
+- **`src/components/SpecOutput.tsx`** - ExportBoundary wrapping exports
+- Sentry integration with session context
+
+#### Action 46: Consolidate Avatar System ✅
+- **5 components updated** to use centralized `getAgentAvatar()`
+- **35 import lines removed** (85.7% reduction)
+- Single source of truth in `src/lib/avatars.ts`
+
+#### Action 42 Continued: Console Cleanup ✅
+- **42 additional console statements replaced** across 22 files
+- **Total: 68 console statements** replaced with logger
+- Zero console.* remaining in src/ (except logger.ts)
+
+### Quality Metrics
+- Phase 5: **6/10 actions complete** (41-44, 46 + 42 full)
+- Phase 6: **1/10 actions complete** (57)
+- Console statements: 68 → 0 remaining
+- TypeScript: 0 errors
+- Error boundaries: 3 critical paths protected
+
+---
+
 ## [1.7.0] - 2025-12-28 01:30 UTC
 
 ### Phase 5 Technical Debt - Actions 41, 42, 43 Implemented

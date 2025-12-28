@@ -9,6 +9,7 @@ import { AlertTriangle, RefreshCw, Home, MessageSquare, Trash2 } from 'lucide-re
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import * as Sentry from '@sentry/react';
+import { logger } from '@/lib/logger';
 
 // ============================================
 // TYPES
@@ -45,8 +46,8 @@ export function useErrorBoundary(): ErrorBoundaryContextType {
   const context = useContext(ErrorBoundaryContext);
   if (!context) {
     return {
-      resetBoundary: () => console.warn('No error boundary context available'),
-      clearSession: () => console.warn('No error boundary context available'),
+      resetBoundary: () => logger.warn('No error boundary context available'),
+      clearSession: () => logger.warn('No error boundary context available'),
     };
   }
   return context;

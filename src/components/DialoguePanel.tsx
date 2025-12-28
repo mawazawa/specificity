@@ -8,13 +8,7 @@ import { MessageSquare, X, Sparkles, HelpCircle, Lightbulb, CheckCircle, Brain }
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { AgentType } from "@/types/spec";
-import elonAvatar from "@/assets/optimized/elon-musk.webp";
-import steveAvatar from "@/assets/optimized/steve-jobs.webp";
-import oprahAvatar from "@/assets/optimized/oprah.webp";
-import zahaAvatar from "@/assets/optimized/agent-placeholder.webp";
-import jonyAvatar from "@/assets/optimized/jony-ive.webp";
-import bartlettAvatar from "@/assets/optimized/steven-bartlett.webp";
-import amalAvatar from "@/assets/optimized/amal-clooney.webp";
+import { getAgentAvatar } from "@/lib/avatars";
 
 export interface DialogueEntry {
   agent: AgentType;
@@ -50,13 +44,13 @@ const agentNames: Record<AgentType, string> = {
 };
 
 const agentAvatars: Record<AgentType, string> = {
-  elon: elonAvatar,
-  steve: steveAvatar,
-  oprah: oprahAvatar,
-  zaha: zahaAvatar,
-  jony: jonyAvatar,
-  bartlett: bartlettAvatar,
-  amal: amalAvatar,
+  elon: getAgentAvatar('elon'),
+  steve: getAgentAvatar('steve'),
+  oprah: getAgentAvatar('oprah'),
+  zaha: getAgentAvatar('zaha'),
+  jony: getAgentAvatar('jony'),
+  bartlett: getAgentAvatar('bartlett'),
+  amal: getAgentAvatar('amal'),
 };
 
 export const DialoguePanel = ({ entries, isOpen = false, onToggle }: DialoguePanelProps) => {

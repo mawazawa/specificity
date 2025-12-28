@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { z } from "zod";
+import { logger } from '@/lib/logger';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -41,11 +42,11 @@ export function safeJsonParse<T>(
       .map(e => `${e.path.join('.')}: ${e.message}`)
       .join('; ');
 
-    console.warn('[safeJsonParse] Validation failed:', errorMessages);
+    logger.warn('[safeJsonParse] Validation failed:', errorMessages);
     return { success: false, error: `Validation failed: ${errorMessages}` };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown parse error';
-    console.error('[safeJsonParse] JSON parse failed:', message);
+    logger.error('[safeJsonParse] JSON parse failed:', message);
     return { success: false, error: `Parse failed: ${message}` };
   }
 }

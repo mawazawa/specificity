@@ -5,6 +5,7 @@
 
 import { onCLS, onFCP, onFID, onINP, onLCP, onTTFB, Metric } from 'web-vitals';
 import * as Sentry from '@sentry/react';
+import { logger } from '@/lib/logger';
 
 /**
  * Performance metric thresholds (based on Google's recommendations)
@@ -78,17 +79,8 @@ function logMetric(metric: Metric): void {
   if (import.meta.env.PROD) return;
 
   const { name, value, rating } = metric;
-  const color =
-    rating === 'good'
-      ? 'color: green'
-      : rating === 'poor'
-        ? 'color: red'
-        : 'color: orange';
 
-  console.log(
-    `%c[Web Vitals] ${name}: ${value.toFixed(2)} (${rating})`,
-    color
-  );
+  logger.info(`[Web Vitals] ${name}: ${value.toFixed(2)} (${rating})`);
 }
 
 /**
@@ -151,10 +143,10 @@ export function initWebVitals(): void {
     onTTFB(handleMetric);
 
     if (!import.meta.env.PROD) {
-      console.log('[Web Vitals] Monitoring initialized');
+      logger.info('[Web Vitals] Monitoring initialized');
     }
   } catch (error) {
-    console.error('[Web Vitals] Failed to initialize:', error);
+    logger.error('[Web Vitals] Failed to initialize:', error);
   }
 }
 

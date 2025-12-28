@@ -4,6 +4,7 @@
  */
 
 import * as Sentry from '@sentry/react';
+import { logger } from '@/lib/logger';
 
 interface QueryMetrics {
   queryName: string;
@@ -70,7 +71,7 @@ export async function withQueryMetrics<T>(
     if (duration > config.slowQueryThreshold) {
       handleSlowQuery(metrics, options?.expectedRows);
     } else if (config.enableLogging) {
-      console.info(
+      logger.info(
         `[Query] ${queryName}: ${duration.toFixed(1)}ms${rowCount !== undefined ? ` (${rowCount} rows)` : ''}`
       );
     }
@@ -81,7 +82,7 @@ export async function withQueryMetrics<T>(
 
     // Log failed queries
     if (config.enableLogging) {
-      console.error(`[Query] ${queryName} FAILED after ${duration.toFixed(1)}ms:`, error);
+      logger.error(`[Query] ${queryName} FAILED after ${duration.toFixed(1)}ms:`, error);
     }
 
     if (config.enableSentry) {
@@ -105,7 +106,7 @@ function handleSlowQuery(
   const message = `Slow query detected: ${metrics.queryName} took ${metrics.duration.toFixed(1)}ms`;
 
   if (config.enableLogging) {
-    console.warn(`[Query] ⚠️ ${message}`, {
+    logger.warn(`[Query] ⚠️ ${message}`, {
       ...metrics,
       expectedRows,
     });

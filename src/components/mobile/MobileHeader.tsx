@@ -8,6 +8,8 @@ import { motion } from "framer-motion";
 import { mentorProfiles } from "@/types/mentor";
 import { useState } from "react";
 import { MentorContactCard } from "../mentor/MentorContactCard";
+import { logger } from '@/lib/logger';
+import { getAgentAvatar } from "@/lib/avatars";
 
 interface MobileHeaderProps {
   agentConfigs: AgentConfig[];
@@ -16,13 +18,13 @@ interface MobileHeaderProps {
 }
 
 const agentAvatars: Record<string, string> = {
-  elon: '/src/assets/elon-musk.png',
-  steve: '/src/assets/steve-jobs.png',
-  oprah: '/src/assets/oprah.png',
-  zaha: '/src/assets/agent-placeholder.png',
-  jony: '/src/assets/jony-ive.png',
-  bartlett: '/src/assets/steven-bartlett.png',
-  amal: '/src/assets/amal-clooney.png',
+  elon: getAgentAvatar('elon'),
+  steve: getAgentAvatar('steve'),
+  oprah: getAgentAvatar('oprah'),
+  zaha: getAgentAvatar('zaha'),
+  jony: getAgentAvatar('jony'),
+  bartlett: getAgentAvatar('bartlett'),
+  amal: getAgentAvatar('amal'),
 };
 
 export const MobileHeader = ({ 
@@ -104,7 +106,7 @@ export const MobileHeader = ({
           isOpen={!!selectedAgent}
           onClose={() => setSelectedAgent(null)}
           onStartChat={(agent) => {
-            console.log('Start 1:1 chat with', agent);
+            logger.debug('Start 1:1 chat with', agent);
             setSelectedAgent(null);
           }}
         />

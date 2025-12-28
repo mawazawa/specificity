@@ -6,13 +6,7 @@ import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { MessageSquare, Search, Vote, FileText, User, Image as ImageIcon } from "lucide-react";
 import { mentorProfiles } from "@/types/mentor";
-import elonAvatar from "@/assets/optimized/elon-musk-nobg.webp";
-import steveAvatar from "@/assets/optimized/steve-jobs-nobg.webp";
-import oprahAvatar from "@/assets/optimized/oprah-nobg.webp";
-import zahaAvatar from "@/assets/optimized/agent-placeholder.webp";
-import jonyAvatar from "@/assets/optimized/jony-ive-nobg.webp";
-import bartlettAvatar from "@/assets/optimized/steven-bartlett-nobg.webp";
-import amalAvatar from "@/assets/optimized/amal-clooney-nobg.webp";
+import { getAgentAvatar } from "@/lib/avatars";
 
 interface ChatMessageProps {
   agent: AgentType | 'user';
@@ -24,13 +18,13 @@ interface ChatMessageProps {
 }
 
 const agentAvatars: Record<AgentType, string> = {
-  elon: elonAvatar,
-  steve: steveAvatar,
-  oprah: oprahAvatar,
-  zaha: zahaAvatar,
-  jony: jonyAvatar,
-  bartlett: bartlettAvatar,
-  amal: amalAvatar,
+  elon: getAgentAvatar('elon', 'transparent'),
+  steve: getAgentAvatar('steve', 'transparent'),
+  oprah: getAgentAvatar('oprah', 'transparent'),
+  zaha: getAgentAvatar('zaha', 'transparent'),
+  jony: getAgentAvatar('jony', 'transparent'),
+  bartlett: getAgentAvatar('bartlett', 'transparent'),
+  amal: getAgentAvatar('amal', 'transparent'),
   user: "",
   system: ""
 };

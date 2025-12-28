@@ -5,6 +5,7 @@
  */
 
 import { TechStackItem } from '@/types/spec';
+import { logger } from '@/lib/logger';
 
 // Lazy-load jsPDF to avoid bundle bloat
 const loadJsPDF = () => import('jspdf');
@@ -285,7 +286,7 @@ export async function generateSpecPdf(options: PdfGeneratorOptions): Promise<Pdf
 
     return { success: true, filename };
   } catch (error) {
-    console.error('PDF generation error:', error);
+    logger.error('PDF generation error:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',

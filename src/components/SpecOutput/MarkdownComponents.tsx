@@ -13,6 +13,7 @@ import { memo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import type { Components } from 'react-markdown';
 import { validateImageUrl } from '@/lib/sanitize';
+import { logger } from '@/lib/logger';
 
 /**
  * Markdown component overrides with Tailwind styling
@@ -206,7 +207,7 @@ export const markdownComponents: Components = {
 
     // If URL is invalid or missing, don't render the image
     if (!validatedSrc) {
-      console.warn('[Security] Blocked invalid image URL in markdown:', src);
+      logger.warn('[Security] Blocked invalid image URL in markdown:', src);
       return (
         <div className="my-4 p-4 border border-destructive/30 bg-destructive/5 rounded-lg text-sm text-muted-foreground">
           [Image blocked: Invalid or untrusted URL]
