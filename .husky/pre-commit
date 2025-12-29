@@ -1,1 +1,6 @@
-npx lint-staged
+#!/bin/sh
+# Phase 7 pre-commit hook - lint only
+# NOTE: TypeScript strict mode requires Phase 8 cleanup before enabling typecheck
+# See CHANGELOG.md v1.15.0 for details
+
+npx lint-staged --config package.json

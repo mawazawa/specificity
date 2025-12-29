@@ -14,7 +14,8 @@ import type { DialogueEntry } from '@/hooks/spec-generation/use-dialogue';
 export function createMockAgentConfig(overrides: Partial<AgentConfig> = {}): AgentConfig {
   return {
     agent: 'elon',
-    role: 'Visionary',
+    systemPrompt: 'You are Elon Musk, a visionary entrepreneur.',
+    temperature: 0.7,
     enabled: true,
     ...overrides
   };
@@ -45,9 +46,21 @@ export function createMockDialogueEntry(overrides: Partial<DialogueEntry> = {}):
 
 export function createMockTechStack(): TechStackItem[] {
   return [
-    { name: 'React', category: 'Frontend', selected: true },
-    { name: 'TypeScript', category: 'Language', selected: true },
-    { name: 'Tailwind CSS', category: 'Styling', selected: true }
+    {
+      category: 'Frontend',
+      selected: { name: 'React', logo: 'https://react.dev/logo.svg', rating: 95, pros: ['Popular', 'Fast'], cons: ['Learning curve'] },
+      alternatives: []
+    },
+    {
+      category: 'Language',
+      selected: { name: 'TypeScript', logo: 'https://typescriptlang.org/logo.svg', rating: 90, pros: ['Type safety'], cons: ['Compilation'] },
+      alternatives: []
+    },
+    {
+      category: 'Styling',
+      selected: { name: 'Tailwind CSS', logo: 'https://tailwindcss.com/logo.svg', rating: 88, pros: ['Utility-first'], cons: ['Class clutter'] },
+      alternatives: []
+    }
   ];
 }
 

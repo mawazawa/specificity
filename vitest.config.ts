@@ -17,7 +17,8 @@ export default defineConfig({
       'tests/round-tracker-coverage.spec.ts',
       'tests/yaml-frontmatter-env-bug.spec.ts',
       'src/**/*.test.ts',  // Include src unit tests
-      'supabase/functions/lib/__tests__/*.test.ts'  // Edge function tests
+      'supabase/functions/lib/__tests__/*.test.ts',  // Edge function lib tests
+      'supabase/functions/__tests__/*.test.ts'  // Edge function integration tests
     ], // Only vitest unit tests, not Playwright e2e tests
     exclude: [
       'node_modules/**',

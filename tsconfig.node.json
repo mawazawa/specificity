@@ -5,6 +5,11 @@
     "module": "ESNext",
     "skipLibCheck": true,
 
+    /* Project references */
+    "composite": true,
+    "incremental": true,
+    "tsBuildInfoFile": "./node_modules/.cache/tsconfig.node.tsbuildinfo",
+
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
