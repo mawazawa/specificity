@@ -88,12 +88,20 @@ Deno.serve(async (req) => {
       'enterprise': 999
     };
 
+    const credits = planCredits[planType];
+    if (credits === undefined) {
+      return new Response(
+        JSON.stringify({ error: `Invalid plan type: ${planType}` }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Update the user's profile with service role (bypasses RLS)
     const { error: updateError } = await supabase
       .from('profiles')
       .update({
         plan: planType,
-        credits: planCredits[planType] || 100,
+        credits,
         stripe_customer_id: `cus_${body.stripeSessionId.slice(3, 15)}` // Placeholder
       })
       .eq('id', user.id);
@@ -112,7 +120,7 @@ Deno.serve(async (req) => {
       JSON.stringify({
         success: true,
         plan: planType,
-        credits: planCredits[planType],
+        credits,
         message: `Successfully upgraded to ${planType}!`
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

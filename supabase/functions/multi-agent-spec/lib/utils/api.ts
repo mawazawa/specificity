@@ -51,7 +51,7 @@ export async function callGroq(
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            model: _GROQ_MODEL,
+            model: GROQ_MODEL,
             messages: [
                 { role: 'system', content: systemPrompt },
                 { role: 'user', content: userMessage }
@@ -73,11 +73,12 @@ export async function callGroq(
     }
 
     const data = await response.json();
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+    const firstChoice = data.choices?.[0];
+    if (!firstChoice?.message?.content) {
         console.error('Invalid response:', { type: 'invalid_api_response' });
         throw new Error('Invalid response from API');
     }
-    return data.choices[0].message.content || 'No response';
+    return firstChoice.message.content;
 }
 
 // Atomic rate limiting function

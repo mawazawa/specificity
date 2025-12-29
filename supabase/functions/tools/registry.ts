@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { BaseTool } from './base-tool.ts';
 import { WebSearchTool } from './web-search-tool.ts';
 import { CompetitorAnalysisTool } from './competitor-analysis-tool.ts';
@@ -49,7 +48,7 @@ export class ToolRegistry {
   /**
    * Execute a tool by name with parameters
    */
-  async execute(toolName: string, params: Record<string, any>) {
+  async execute(toolName: string, params: Record<string, unknown>) {
     const tool = this.get(toolName);
 
     if (!tool) {
@@ -61,7 +60,8 @@ export class ToolRegistry {
 
     console.info(`[ToolRegistry] Executing tool: ${toolName} with params:`, params);
     const result = await tool.execute(params);
-    console.info(`[ToolRegistry] Tool ${toolName} completed in ${result.metadata?.duration}ms`);
+    const duration = result.metadata?.duration ?? 0;
+    console.info(`[ToolRegistry] Tool ${toolName} completed in ${duration}ms`);
 
     return result;
   }

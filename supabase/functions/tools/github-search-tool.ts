@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { BaseTool, ToolParameter, ToolResult } from './base-tool.ts';
 
 export class GitHubSearchTool extends BaseTool {
@@ -27,7 +26,7 @@ export class GitHubSearchTool extends BaseTool {
     }
   ];
 
-  async execute(params: Record<string, any>): Promise<ToolResult> {
+  async execute(params: Record<string, unknown>): Promise<ToolResult> {
     const validation = this.validate(params);
     if (!validation.valid) {
       return {

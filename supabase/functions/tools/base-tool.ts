@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Base Tool Interface
  * All tools must extend this base class for auto-discovery and execution
@@ -9,12 +8,14 @@ export interface ToolParameter {
   type: 'string' | 'number' | 'boolean' | 'object';
   description: string;
   required: boolean;
-  default?: any;
+  // Using unknown instead of any for better type safety - tools should validate/cast as needed
+  default?: unknown;
 }
 
 export interface ToolResult {
   success: boolean;
-  data?: any;
+  // Using unknown instead of any - consumers should validate the shape they expect
+  data?: unknown;
   error?: string;
   metadata?: {
     duration: number;
@@ -30,9 +31,10 @@ export abstract class BaseTool {
   abstract description: string;
   abstract parameters: ToolParameter[];
 
-  abstract execute(params: Record<string, any>): Promise<ToolResult>;
+  // Using Record<string, unknown> for better type safety - implementations should validate params
+  abstract execute(params: Record<string, unknown>): Promise<ToolResult>;
 
-  validate(params: Record<string, any>): { valid: boolean; errors: string[] } {
+  validate(params: Record<string, unknown>): { valid: boolean; errors: string[] } {
     const errors: string[] = [];
 
     this.parameters.forEach(param => {

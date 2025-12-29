@@ -14,7 +14,7 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
-    /* Linting - Full strict mode enabled (Phase 7 Action 1: COMPLETED)
+    /* Linting - Full strict mode enabled (Phase 7 Actions 1 & 8: COMPLETED)
      * "strict": true consolidates all strict flags:
      *   - noImplicitAny (explicit typing enforced)
      *   - strictNullChecks (null guards enforced)
@@ -25,6 +25,14 @@
      *   - alwaysStrict (strict mode JavaScript enforced)
      *   - useUnknownInCatchVariables (catch vars are 'unknown' instead of 'any')
      *
+     * Additional strict flags (Phase 7 Action 8):
+     *   - noPropertyAccessFromIndexSignature (forces bracket notation for index signatures)
+     *   - exactOptionalPropertyTypes (distinguishes undefined from missing properties)
+     *   - noImplicitOverride (requires 'override' keyword for overridden methods)
+     *   - allowUnusedLabels: false (disallows unused labels)
+     *   - allowUnreachableCode: false (disallows unreachable code)
+     *   - noFallthroughCasesInSwitch (prevents fallthrough in switch cases)
+     *
      * Individual flags no longer needed - "strict": true enables all current and future strict flags
      */
     "strict": true,
@@ -34,6 +42,11 @@
     "forceConsistentCasingInFileNames": true,
     "noImplicitReturns": true,
     "noUncheckedIndexedAccess": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "allowUnusedLabels": false,
+    "allowUnreachableCode": false,
 
     "baseUrl": ".",
     "paths": {

@@ -193,7 +193,7 @@ function resolveGroqModel(params: LLMCallParams): { modelId: string; modelName: 
     throw new Error(`Groq fallback model not configured: ${DEFAULT_GROQ_MODEL}`);
   }
 
-  return { modelId: DEFAULT__GROQ_MODEL, modelName: fallback.model, config: fallback };
+  return { modelId: DEFAULT_GROQ_MODEL, modelName: fallback.model, config: fallback };
 }
 
 /**
@@ -236,8 +236,13 @@ async function callGroqModel(params: LLMCallParams): Promise<LLMResponse> {
     (outputTokens / 1_000_000) * config.costPer1MTokensOutput
   );
 
+  const firstChoice = data.choices?.[0];
+  if (!firstChoice?.message?.content) {
+    throw new Error('Invalid response from Groq API: missing content');
+  }
+
   return {
-    content: data.choices[0].message.content,
+    content: firstChoice.message.content,
     usage: {
       promptTokens: inputTokens,
       completionTokens: outputTokens,
@@ -312,8 +317,13 @@ export async function callOpenRouter(params: LLMCallParams): Promise<LLMResponse
       (outputTokens / 1_000_000) * modelConfig.costPer1MTokensOutput
     );
 
+    const firstChoice = data.choices?.[0];
+    if (!firstChoice?.message?.content) {
+      throw new Error('Invalid response from OpenRouter API: missing content');
+    }
+
     return {
-      content: data.choices[0].message.content,
+      content: firstChoice.message.content,
       usage: {
         promptTokens: inputTokens,
         completionTokens: outputTokens,

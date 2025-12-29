@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.75.1';
@@ -19,7 +18,7 @@ const audioRequestSchema = z.object({
 });
 
 // Utility: Sanitize errors for logging
-const __sanitizeError = (error: any) => {
+const __sanitizeError = (error: unknown) => {
   if (error instanceof Error) {
     return { message: error.message, name: error.name };
   }
@@ -27,7 +26,7 @@ const __sanitizeError = (error: any) => {
 };
 
 // Utility: Get user-friendly error message
-const getUserMessage = (error: any): string => {
+const getUserMessage = (error: unknown): string => {
   const message = error instanceof Error ? error.message : String(error);
 
   if (message.includes('audio') || message.includes('Audio')) {
@@ -151,15 +150,15 @@ serve(async (req) => {
     let validated;
     try {
       validated = audioRequestSchema.parse(rawBody);
-    } catch (_error) {
-      if (error instanceof z.ZodError) {
+    } catch (validationError) {
+      if (validationError instanceof z.ZodError) {
         console.error('Validation failed:', { type: 'validation_error', user_id: user.id });
         return new Response(
           JSON.stringify({ error: 'Invalid audio format' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      throw error;
+      throw validationError;
     }
 
     const { audio } = validated;
@@ -193,8 +192,16 @@ serve(async (req) => {
 
     // Create form data with correct MIME type
     const formData = new FormData();
-    const blob = new Blob([binaryAudio], { type: mimeTypes[validation.format!] });
-    const extension = validation.format === 'mp3' ? 'mp3' : validation.format === 'wav' ? 'wav' : validation.format === 'ogg' ? 'ogg' : 'webm';
+    const detectedFormat = validation.format;
+    if (!detectedFormat) {
+      throw new Error('Audio format detection failed');
+    }
+    const mimeType = mimeTypes[detectedFormat];
+    if (!mimeType) {
+      throw new Error(`Unsupported audio format: ${detectedFormat}`);
+    }
+    const blob = new Blob([binaryAudio], { type: mimeType });
+    const extension = detectedFormat === 'mp3' ? 'mp3' : detectedFormat === 'wav' ? 'wav' : detectedFormat === 'ogg' ? 'ogg' : 'webm';
     formData.append('file', blob, `audio.${extension}`);
     formData.append('model', 'whisper-large-v3-turbo');
     formData.append('language', 'en');
@@ -229,10 +236,10 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
-  } catch (_error) {
+  } catch (serviceError) {
     console.error('Service error:', { type: 'transcription_error' });
     return new Response(
-      JSON.stringify({ error: getUserMessage(error) }),
+      JSON.stringify({ error: getUserMessage(serviceError) }),
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

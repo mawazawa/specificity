@@ -1,8 +1,24 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { corsHeaders, callGroq, _GROQ_MODEL } from '../utils/api.ts';
+import { corsHeaders, callGroq, GROQ_MODEL } from '../utils/api.ts';
 import { callOpenRouter } from '../../../lib/openrouter-client.ts';
-import { RoundData } from '../types.ts';
+import type { RoundData } from '../types.ts';
 import { renderPrompt, trackPromptUsage } from '../../../lib/prompt-service.ts';
+
+// Type definitions for tech stack
+interface TechOption {
+  name: string;
+  domain?: string;
+  version?: string;
+  rating?: number;
+  pros?: string[];
+  cons?: string[];
+  logo?: string;
+}
+
+interface TechStackItem {
+  category: string;
+  selected: TechOption;
+  alternatives?: TechOption[];
+}
 
 // ═══════════════════════════════════════════════════════════════
 // MULTI-PASS SPEC GENERATION
@@ -212,17 +228,17 @@ This section will be combined with others to form a complete specification that 
 function buildSectionContext(roundData: RoundData | undefined): string {
   const syntheses = roundData?.syntheses || [];
   const votes = roundData?.votes || [];
-  
-  const expertContext = syntheses.map((s: any) => 
+
+  const expertContext = syntheses.map(s =>
     `${s.expertName}: ${s.synthesis?.substring(0, 500)}...`
   ).join('\n\n');
-  
-  const keyRequirements = votes.flatMap((v: any) => v.keyRequirements || []).join('\n- ');
-  
-  const debateContext = roundData?.debateResolutions?.map((d: any) =>
+
+  const keyRequirements = votes.flatMap(v => v.keyRequirements || []).join('\n- ');
+
+  const debateContext = roundData?.debateResolutions?.map(d =>
     `Decision: ${d.resolution}`
   ).join('\n') || '';
-  
+
   return `EXPERT INSIGHTS:\n${expertContext}\n\nKEY REQUIREMENTS:\n- ${keyRequirements}\n\nDECISIONS:\n${debateContext}`;
 }
 
@@ -257,20 +273,20 @@ export const handleSpecStage = async (roundData: RoundData | undefined) => {
     const votes = roundData?.votes || [];
     const researchResults = roundData?.researchResults || [];
 
-    const avgToolsUsed = researchResults.reduce((sum: number, r: any) =>
+    const avgToolsUsed = researchResults.reduce((sum: number, r) =>
         sum + (r.toolsUsed?.length || 0), 0) / Math.max(researchResults.length, 1);
 
-    const weightedContext = syntheses.map((s: any) => {
+    const weightedContext = syntheses.map(s => {
         const quality = s.researchQuality || {};
         const researchDepth = avgToolsUsed > 0 ? (quality.toolsUsed || 0) / avgToolsUsed : 1;
         const weight = Math.min(researchDepth * 100, 100);
         return `${s.expertName} (research depth: ${weight.toFixed(0)}%):\n${s.synthesis}`;
     }).join('\n\n');
 
-    const keyRequirements = votes.flatMap((v: any) => v.keyRequirements || []).join('\n');
+    const keyRequirements = votes.flatMap(v => v.keyRequirements || []).join('\n');
 
     const debateContext = roundData?.debateResolutions ?
-        `\n\nDEBATE RESOLUTIONS:\n${roundData.debateResolutions.map((d: any) =>
+        `\n\nDEBATE RESOLUTIONS:\n${roundData.debateResolutions.map(d =>
             `Resolution: ${d.resolution}\nAdopted: ${d.adoptedAlternatives.join(', ')}`
         ).join('\n\n')}` : '';
 
@@ -402,7 +418,7 @@ function resolveTechDomain(techName: string, providedDomain?: string): string {
 }
 
 // Add Brandfetch logo URLs to tech stack items
-function enrichTechStackWithLogos(techStack: any[]): any[] {
+function enrichTechStackWithLogos(techStack: TechStackItem[]): TechStackItem[] {
   return techStack.map(item => ({
     ...item,
     selected: {
@@ -410,7 +426,7 @@ function enrichTechStackWithLogos(techStack: any[]): any[] {
       domain: resolveTechDomain(item.selected?.name, item.selected?.domain),
       logo: getBrandfetchLogoUrl(resolveTechDomain(item.selected?.name, item.selected?.domain))
     },
-    alternatives: (item.alternatives || []).map((alt: any) => ({
+    alternatives: (item.alternatives || []).map(alt => ({
       ...alt,
       domain: resolveTechDomain(alt.name, alt.domain),
       logo: getBrandfetchLogoUrl(resolveTechDomain(alt.name, alt.domain))
@@ -486,7 +502,7 @@ ${sectionContents.join('\n\n---\n\n')}
     console.info('[Spec] Extracting structured tech stack with logos...');
     const techStackPrompt = generateTechStackPrompt(spec);
 
-    let techStack: any[] = [];
+    let techStack: TechStackItem[] = [];
     try {
         const techStackJson = await callGroq(
             groqApiKey,

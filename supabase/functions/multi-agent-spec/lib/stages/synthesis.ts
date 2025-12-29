@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { callGroq, corsHeaders, GROQ_MODEL } from '../utils/api.ts';
 import { RoundData } from '../types.ts';
 import { renderPrompt, trackPromptUsage } from '../../../lib/prompt-service.ts';
@@ -21,9 +20,9 @@ export const handleSynthesisStage = async (
     }
 
     // Each expert synthesizes their findings (now incorporating debate outcomes)
-    const synthesisPromises = researchResults.map(async (result: any, idx: number) => {
+    const synthesisPromises = researchResults.map(async (result, idx: number) => {
         const toolsContext = result.toolsUsed.length > 0
-            ? `\n\nTools used: ${result.toolsUsed.map((t: any) => t.tool).join(', ')}`
+            ? `\n\nTools used: ${result.toolsUsed.map(t => t.tool).join(', ')}`
             : '';
 
         const userGuidance = cleanComment ? `\nUser guidance: ${cleanComment}` : '';

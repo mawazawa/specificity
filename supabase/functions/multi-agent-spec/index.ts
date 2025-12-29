@@ -41,6 +41,9 @@ import { handleVotingStage } from './lib/stages/voting.ts';
 import { handleSpecStageComplete } from './lib/stages/spec.ts';
 import { handleChatStage } from './lib/stages/chat.ts';
 
+// Import types
+import type { RequestBody, AgentConfig } from './lib/types.ts';
+
 const GROQ_API_KEY = Deno.env.get('GROQ_API_KEY');
 const EXA_API_KEY = Deno.env.get('EXA_API_KEY');
 const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
@@ -150,14 +153,7 @@ serve(async (req) => {
       throw error;
     }
 
-    const { userInput, stage, agentConfigs, roundData, userComment, targetAgent }: {
-      userInput?: string;
-      stage: RequestBody['stage'];
-      agentConfigs?: AgentConfig[];
-      roundData?: RequestBody['roundData'];
-      userComment?: string;
-      targetAgent?: string;
-    } = validated;
+    const { userInput, stage, agentConfigs, roundData, userComment, targetAgent } = validated;
 
     // Check rate limit (count 1 spec generation as the initial "questions" stage)
     // Rate limit: 100 requests/hour/user (Phase A.1)
@@ -260,6 +256,12 @@ serve(async (req) => {
     // STAGE 2: PARALLEL RESEARCH WITH TOOLS
     // ========================================
     if (stage === 'research') {
+      if (!agentConfigs || !roundData) {
+        return new Response(
+          JSON.stringify({ error: 'Missing required data for research stage' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
       const response = await handleResearchStage(agentConfigs, roundData, cleanInput, tools);
       return await addRateLimitHeaders(response, rateLimitRemaining);
     }
@@ -268,6 +270,12 @@ serve(async (req) => {
     // STAGE 2.5: CHALLENGE/DEBATE (RAY DALIO STYLE)
     // ========================================
     if (stage === 'challenge') {
+      if (!agentConfigs || !roundData) {
+        return new Response(
+          JSON.stringify({ error: 'Missing required data for challenge stage' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
       const response = await handleChallengeStage(agentConfigs, roundData, cleanInput);
       return await addRateLimitHeaders(response, rateLimitRemaining);
     }
@@ -276,7 +284,19 @@ serve(async (req) => {
     // STAGE 3: SYNTHESIS (ENHANCED)
     // ========================================
     if (stage === 'synthesis') {
-      const response = await handleSynthesisStage(roundData, cleanComment, GROQ_API_KEY!);
+      if (!roundData) {
+        return new Response(
+          JSON.stringify({ error: 'Missing required data for synthesis stage' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      if (!GROQ_API_KEY) {
+        return new Response(
+          JSON.stringify({ error: 'GROQ_API_KEY not configured' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      const response = await handleSynthesisStage(roundData, cleanComment, GROQ_API_KEY);
       return await addRateLimitHeaders(response, rateLimitRemaining);
     }
 
@@ -285,6 +305,12 @@ serve(async (req) => {
     // Phase 4 implementation - GPT-5.2 Codex validates outputs
     // ========================================
     if (stage === 'review') {
+      if (!roundData) {
+        return new Response(
+          JSON.stringify({ error: 'Missing required data for review stage' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
       const response = await handleReviewStage(roundData);
       return await addRateLimitHeaders(response, rateLimitRemaining);
     }
@@ -293,7 +319,19 @@ serve(async (req) => {
     // STAGE 4: VOTING (UNCHANGED)
     // ========================================
     if (stage === 'voting') {
-      const response = await handleVotingStage(agentConfigs, roundData, GROQ_API_KEY!);
+      if (!agentConfigs || !roundData) {
+        return new Response(
+          JSON.stringify({ error: 'Missing required data for voting stage' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      if (!GROQ_API_KEY) {
+        return new Response(
+          JSON.stringify({ error: 'GROQ_API_KEY not configured' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      const response = await handleVotingStage(agentConfigs, roundData, GROQ_API_KEY);
       return await addRateLimitHeaders(response, rateLimitRemaining);
     }
 
@@ -301,7 +339,19 @@ serve(async (req) => {
     // STAGE 5: SPEC GENERATION (ENHANCED)
     // ========================================
     if (stage === 'spec') {
-      const response = await handleSpecStageComplete(roundData, GROQ_API_KEY!);
+      if (!roundData) {
+        return new Response(
+          JSON.stringify({ error: 'Missing required data for spec stage' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      if (!GROQ_API_KEY) {
+        return new Response(
+          JSON.stringify({ error: 'GROQ_API_KEY not configured' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      const response = await handleSpecStageComplete(roundData, GROQ_API_KEY);
       return await addRateLimitHeaders(response, rateLimitRemaining);
     }
 
@@ -309,6 +359,12 @@ serve(async (req) => {
     // STAGE 6: 1:1 CHAT
     // ========================================
     if (stage === 'chat') {
+      if (!agentConfigs) {
+        return new Response(
+          JSON.stringify({ error: 'Missing required data for chat stage' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
       const response = await handleChatStage(agentConfigs, targetAgent, cleanInput);
       return await addRateLimitHeaders(response, rateLimitRemaining);
     }

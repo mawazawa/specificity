@@ -4,6 +4,7 @@
 > Get professional product specifications from 8 world-class AI advisors who debate, research, and deliver battle-tested specs with anti-drift controls.
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-100%25-blue.svg)](https://www.typescriptlang.org/)
+[![Type Coverage](https://img.shields.io/badge/type--coverage-98.90%25-brightgreen.svg)](./docs/TYPE_COVERAGE.md)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/mawazawa/specificity)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -12,6 +13,7 @@
 Specificity AI solves the **$50K problem**: Bad specs cost companies thousands in wasted dev time, months of delays, and feature drift that kills products before launch.
 
 ### The Problem
+
 - Solo founders suffer from "spec paralysis" - no co-founder to debate decisions
 - Non-technical founders struggle to translate vision into technical requirements
 - Freelance technical writers cost $300-1,500 and take days/weeks
@@ -19,7 +21,9 @@ Specificity AI solves the **$50K problem**: Bad specs cost companies thousands i
 - 35% of startups fail from "no market need" (poor planning)
 
 ### The Solution
+
 **8 AI advisors** (Steve Jobs, Elon Musk, Oprah, Amal Clooney, Sam Altman, Gary Tan, Jony Ive, Paul Graham) debate your product idea through multiple rounds of:
+
 1. **Research** - Latest tech, market analysis, competitive landscape
 2. **Debate** - Multiple perspectives challenging assumptions
 3. **Synthesis** - Consensus-based recommendations
@@ -32,29 +36,32 @@ Specificity AI solves the **$50K problem**: Bad specs cost companies thousands i
 ## Tech Stack (December 2025)
 
 ### Frontend
-| Technology | Version | Status |
-|------------|---------|--------|
-| **Vite** | 7.3.0 | ✅ Latest |
-| **React** | 18.3.1 | ⚠️ Stable (React 19.2.3 available) |
-| **TypeScript** | 5.8.3 | ✅ Current |
-| **Tailwind CSS** | 3.4.17 | ⚠️ Stable (v4.0 available) |
-| **shadcn/ui** | Latest | ✅ Current |
-| **Framer Motion** | 12.23.24 | ✅ Latest |
-| **TanStack Query** | 5.83.0 | ✅ Latest |
+
+| Technology         | Version  | Status                             |
+| ------------------ | -------- | ---------------------------------- |
+| **Vite**           | 7.3.0    | ✅ Latest                          |
+| **React**          | 18.3.1   | ⚠️ Stable (React 19.2.3 available) |
+| **TypeScript**     | 5.8.3    | ✅ Current                         |
+| **Tailwind CSS**   | 3.4.17   | ⚠️ Stable (v4.0 available)         |
+| **shadcn/ui**      | Latest   | ✅ Current                         |
+| **Framer Motion**  | 12.23.24 | ✅ Latest                          |
+| **TanStack Query** | 5.83.0   | ✅ Latest                          |
 
 ### Backend
-| Technology | Version | Status |
-|------------|---------|--------|
-| **Supabase JS** | 2.89.0 | ✅ Updated |
-| **PostgreSQL** | 17.6.1 | ✅ Latest |
-| **Deno** | Latest | ✅ Edge Functions |
+
+| Technology      | Version | Status            |
+| --------------- | ------- | ----------------- |
+| **Supabase JS** | 2.89.0  | ✅ Updated        |
+| **PostgreSQL**  | 17.6.1  | ✅ Latest         |
+| **Deno**        | Latest  | ✅ Edge Functions |
 
 ### Development
-| Technology | Version | Status |
-|------------|---------|--------|
-| **ESLint** | 9.32.0 | ✅ Latest |
-| **Playwright** | 1.57.0 | ✅ Updated |
-| **Vitest** | 4.0.16 | ✅ Latest |
+
+| Technology     | Version | Status     |
+| -------------- | ------- | ---------- |
+| **ESLint**     | 9.32.0  | ✅ Latest  |
+| **Playwright** | 1.57.0  | ✅ Updated |
+| **Vitest**     | 4.0.16  | ✅ Latest  |
 
 ---
 
@@ -62,18 +69,18 @@ Specificity AI solves the **$50K problem**: Bad specs cost companies thousands i
 
 ### Decision Matrix
 
-| Dependency | Current | Latest | Decision | Confidence |
-|------------|---------|--------|----------|------------|
-| **Vite** | 7.3.0 | 7.3.0 | ✅ Keep | 100% |
-| **React** | 18.3.1 | 19.2.3 | ⚠️ Keep 18.x | 85% |
-| **TypeScript** | 5.8.3 | 5.9.0 | ✅ Keep | 95% |
-| **Tailwind CSS** | 3.4.17 | 4.0.x | ⚠️ Keep 3.x | 80% |
-| **Supabase JS** | 2.89.0 | 2.89.0 | ✅ Updated | 100% |
-| **Playwright** | 1.57.0 | 1.57.0 | ✅ Updated | 100% |
-| **TanStack Query** | 5.83.0 | 5.83.0 | ✅ Latest | 100% |
-| **Framer Motion** | 12.23.24 | 12.23.24 | ✅ Latest | 100% |
-| **ESLint** | 9.32.0 | 9.32.0 | ✅ Latest | 100% |
-| **Vitest** | 4.0.16 | 4.0.16 | ✅ Latest | 100% |
+| Dependency         | Current  | Latest   | Decision     | Confidence |
+| ------------------ | -------- | -------- | ------------ | ---------- |
+| **Vite**           | 7.3.0    | 7.3.0    | ✅ Keep      | 100%       |
+| **React**          | 18.3.1   | 19.2.3   | ⚠️ Keep 18.x | 85%        |
+| **TypeScript**     | 5.8.3    | 5.9.0    | ✅ Keep      | 95%        |
+| **Tailwind CSS**   | 3.4.17   | 4.0.x    | ⚠️ Keep 3.x  | 80%        |
+| **Supabase JS**    | 2.89.0   | 2.89.0   | ✅ Updated   | 100%       |
+| **Playwright**     | 1.57.0   | 1.57.0   | ✅ Updated   | 100%       |
+| **TanStack Query** | 5.83.0   | 5.83.0   | ✅ Latest    | 100%       |
+| **Framer Motion**  | 12.23.24 | 12.23.24 | ✅ Latest    | 100%       |
+| **ESLint**         | 9.32.0   | 9.32.0   | ✅ Latest    | 100%       |
+| **Vitest**         | 4.0.16   | 4.0.16   | ✅ Latest    | 100%       |
 
 ### Detailed Analysis
 
@@ -82,6 +89,7 @@ Specificity AI solves the **$50K problem**: Bad specs cost companies thousands i
 **Decision:** Stay on React 18.3.1 for now.
 
 **Rationale:**
+
 - React 19 introduced major breaking changes (async transitions, Suspense behavior)
 - Server Components focus doesn't align with our Vite/Supabase Edge Function architecture
 - All Radix UI components (50+) require compatibility testing
@@ -90,6 +98,7 @@ Specificity AI solves the **$50K problem**: Bad specs cost companies thousands i
 **User Perspective:** A user would expect their app to work reliably. Upgrading React major versions mid-project risks regressions in core UI functionality without clear benefits.
 
 **Alternative (15% consideration):** Upgrade to React 19 in Q1 2026 when:
+
 - shadcn/ui officially supports React 19
 - Radix UI completes compatibility updates
 - A dedicated sprint can be allocated for migration
@@ -99,6 +108,7 @@ Specificity AI solves the **$50K problem**: Bad specs cost companies thousands i
 **Decision:** Stay on Tailwind 3.4.17.
 
 **Rationale:**
+
 - Tailwind v4 requires complete configuration rewrite (JavaScript → CSS-based config)
 - PostCSS/Autoprefixer integration changes significantly
 - All 100+ component files using Tailwind need review
@@ -107,6 +117,7 @@ Specificity AI solves the **$50K problem**: Bad specs cost companies thousands i
 **User Perspective:** Tailwind v4 offers no visible UX improvements. The migration cost (2-3 days) has zero user-facing value.
 
 **Alternative (20% consideration):** Migrate to Tailwind v4 when:
+
 - Vite plugin for Tailwind v4 is more mature
 - A design system refresh is planned anyway
 - shadcn/ui provides v4-compatible components
@@ -116,6 +127,7 @@ Specificity AI solves the **$50K problem**: Bad specs cost companies thousands i
 **Decision:** Stay on TypeScript 5.8.3.
 
 **Rationale:**
+
 - 5.8.3 is very recent (stable since Q4 2024)
 - 5.9.0 is a minor release with incremental improvements
 - No blocking issues in current codebase
@@ -125,21 +137,23 @@ Specificity AI solves the **$50K problem**: Bad specs cost companies thousands i
 
 ### Multi-Viewpoint Analysis
 
-| Stakeholder | Priority | Recommendation |
-|-------------|----------|----------------|
-| **End User** | Stability & Speed | Keep current stack - it works reliably |
-| **Developer** | DX & Maintainability | Minor updates only - major versions need planning |
-| **Business** | Time to Market | Don't break what works - focus on features |
-| **Security** | Patch Vulnerabilities | ✅ All packages at secure versions |
-| **Performance** | Bundle Size | ✅ Current stack is optimized (430KB gzipped) |
+| Stakeholder     | Priority              | Recommendation                                    |
+| --------------- | --------------------- | ------------------------------------------------- |
+| **End User**    | Stability & Speed     | Keep current stack - it works reliably            |
+| **Developer**   | DX & Maintainability  | Minor updates only - major versions need planning |
+| **Business**    | Time to Market        | Don't break what works - focus on features        |
+| **Security**    | Patch Vulnerabilities | ✅ All packages at secure versions                |
+| **Performance** | Bundle Size           | ✅ Current stack is optimized (430KB gzipped)     |
 
 ### Action Items
 
 **Completed (December 26, 2025):**
+
 - ✅ Updated @supabase/supabase-js: 2.75.1 → 2.89.0
 - ✅ Updated @playwright/test: 1.56.1 → 1.57.0
 
 **Future Roadmap:**
+
 - Q1 2026: Evaluate React 19 migration when ecosystem stabilizes
 - Q2 2026: Consider Tailwind v4 during design refresh
 - Ongoing: Run `npm outdated` monthly for patch updates
@@ -149,6 +163,7 @@ Specificity AI solves the **$50K problem**: Bad specs cost companies thousands i
 ## Features
 
 ### Production-Ready Features
+
 - ✅ **96.7% Image Optimization** - 19MB → 653KB (WebP format)
 - ✅ **100% TypeScript Type Safety** - Zero `any` types
 - ✅ **Auto-Save** - 24-hour session persistence (never lose work)
@@ -159,6 +174,7 @@ Specificity AI solves the **$50K problem**: Bad specs cost companies thousands i
 - ✅ **Accessibility** - WCAG AA+ compliant
 
 ### User Experience
+
 - Sample Gallery - Quick-start examples for onboarding
 - Keyboard Shortcuts - CMD+K command palette
 - PDF Export - Professional downloadable specs
@@ -430,23 +446,24 @@ specificity/
 
 ### Directory Summary
 
-| Directory | Purpose | Files |
-|-----------|---------|-------|
-| `src/` | Frontend React application | 150+ |
-| `src/components/` | React UI components | 100+ |
-| `src/components/ui/` | shadcn/ui primitives | 50+ |
-| `src/hooks/` | Custom React hooks | 12 |
-| `src/pages/` | Route components | 5 |
-| `supabase/functions/` | Edge Functions (Deno) | 20+ |
-| `supabase/migrations/` | Database migrations | 15 |
-| `tests/` | Playwright E2E tests | 25 |
-| `docs/` | Documentation | 20+ |
+| Directory              | Purpose                    | Files |
+| ---------------------- | -------------------------- | ----- |
+| `src/`                 | Frontend React application | 150+  |
+| `src/components/`      | React UI components        | 100+  |
+| `src/components/ui/`   | shadcn/ui primitives       | 50+   |
+| `src/hooks/`           | Custom React hooks         | 12    |
+| `src/pages/`           | Route components           | 5     |
+| `supabase/functions/`  | Edge Functions (Deno)      | 20+   |
+| `supabase/migrations/` | Database migrations        | 15    |
+| `tests/`               | Playwright E2E tests       | 25    |
+| `docs/`                | Documentation              | 20+   |
 
 ---
 
 ## Installation
 
 ### Prerequisites
+
 - Node.js 20+ (required for Vite 7)
 - npm 10+ or pnpm 9+
 
@@ -496,13 +513,13 @@ npm run build:analyze    # Analyze bundle size
 
 ## Build Performance
 
-| Metric | Value | Status |
-|--------|-------|--------|
-| **Total Bundle Size** | 430KB (gzipped) | ✅ Excellent |
-| **Images** | 653KB (17 WebP images) | ✅ 96.7% reduction |
-| **Build Time** | ~10s | ✅ Fast |
-| **TypeScript Errors** | 0 | ✅ Perfect |
-| **First Load JS** | 188KB | ✅ Under 250KB |
+| Metric                | Value                  | Status             |
+| --------------------- | ---------------------- | ------------------ |
+| **Total Bundle Size** | 430KB (gzipped)        | ✅ Excellent       |
+| **Images**            | 653KB (17 WebP images) | ✅ 96.7% reduction |
+| **Build Time**        | ~10s                   | ✅ Fast            |
+| **TypeScript Errors** | 0                      | ✅ Perfect         |
+| **First Load JS**     | 188KB                  | ✅ Under 250KB     |
 
 ---
 
@@ -517,6 +534,7 @@ npm run build:analyze    # Analyze bundle size
    - `EXA_API_KEY` (from https://exa.ai)
 
 2. **Deploy Edge Functions**:
+
    ```bash
    supabase functions deploy multi-agent-spec --project-ref tkkthpoottlqmdopmtuh
    supabase functions deploy voice-to-text --project-ref tkkthpoottlqmdopmtuh
@@ -529,6 +547,7 @@ npm run build:analyze    # Analyze bundle size
    ```
 
 ### Production URLs
+
 - **API Base:** https://tkkthpoottlqmdopmtuh.supabase.co
 - **Edge Functions:** https://tkkthpoottlqmdopmtuh.supabase.co/functions/v1/
 
@@ -549,12 +568,12 @@ VITE_SENTRY_DSN=your_sentry_dsn
 
 ## Documentation
 
-| Document | Description |
-|----------|-------------|
-| [CLAUDE.md](./CLAUDE.md) | Claude Code configuration and conventions |
-| [PERSONAS.md](./PERSONAS.md) | User research (1,991 lines) |
-| [PRODUCTION_DEPLOYMENT_CHECKLIST.md](./PRODUCTION_DEPLOYMENT_CHECKLIST.md) | Deployment checklist |
-| [SECURITY_ADVISORY.md](./SECURITY_ADVISORY.md) | Security considerations |
+| Document                                                                   | Description                               |
+| -------------------------------------------------------------------------- | ----------------------------------------- |
+| [CLAUDE.md](./CLAUDE.md)                                                   | Claude Code configuration and conventions |
+| [PERSONAS.md](./PERSONAS.md)                                               | User research (1,991 lines)               |
+| [PRODUCTION_DEPLOYMENT_CHECKLIST.md](./PRODUCTION_DEPLOYMENT_CHECKLIST.md) | Deployment checklist                      |
+| [SECURITY_ADVISORY.md](./SECURITY_ADVISORY.md)                             | Security considerations                   |
 
 ---
 
@@ -566,4 +585,4 @@ MIT License - see LICENSE file for details
 
 **Built with care by [@mawazawa](https://github.com/mawazawa)**
 
-*Last Updated: December 26, 2025*
+_Last Updated: December 26, 2025_

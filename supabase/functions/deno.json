@@ -2,6 +2,9 @@
   "$schema": "https://deno.land/x/deno/cli/schemas/config-file.v1.json",
   "compilerOptions": {
     "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "noUncheckedIndexedAccess": true,
     "lib": ["deno.window", "esnext"]
   },
   "lint": {

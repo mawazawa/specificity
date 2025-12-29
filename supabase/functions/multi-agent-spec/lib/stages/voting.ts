@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { callGroq, corsHeaders, GROQ_MODEL } from '../utils/api.ts';
 import { AgentConfig, RoundData } from '../types.ts';
 import { renderPrompt, trackPromptUsage } from '../../../lib/prompt-service.ts';
@@ -17,11 +16,11 @@ export const handleVotingStage = async (
         );
     }
 
-    const activeAgents = agentConfigs.filter((c: any) => c.enabled);
+    const activeAgents = agentConfigs.filter(c => c.enabled);
     const syntheses = roundData.syntheses || [];
 
-    const votePromises = activeAgents.map(async (config: any) => {
-        const synthesesSummary = syntheses.map((s: any) =>
+    const votePromises = activeAgents.map(async config => {
+        const synthesesSummary = syntheses.map(s =>
             `${s.expertName}: ${s.synthesis.slice(0, 300)}...`
         ).join('\n\n');
 
