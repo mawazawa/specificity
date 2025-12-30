@@ -117,7 +117,7 @@ export const api = {
     researchResults: RoundData['researchResults'],
     debateResolutions: RoundData['debateResolutions']
   ) => {
-    return invokeFunction<{ spec: string; techStack: TechStackItem[] }>('multi-agent-spec', {
+    return invokeFunction<{ spec: string; techStack: TechStackItem[]; mockupUrl?: string }>('multi-agent-spec', {
       stage: 'spec',
       roundData: {
         syntheses,

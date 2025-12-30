@@ -18,7 +18,7 @@ test.describe('RoundTracker Stage Rendering', () => {
     const result = await page.evaluate(() => {
       // Mock lookup objects from RoundTracker.tsx (since they are not exported)
       // This mimics what happens inside the component
-      const stageIcons: Record<string, any> = {
+      const stageIcons: Record<string, string> = {
         questions: 'icon',
         research: 'icon',
         answers: 'icon',

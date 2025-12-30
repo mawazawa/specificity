@@ -819,7 +819,7 @@ export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = fals
         </div>
 
         {/* Visual Mockup Section - NEW for Visual Spec Era */}
-        {(initialTechStack as any)?.mockup_url && (
+        {mockupUrl && (
           <div className="space-y-4 pt-6 border-t border-border/20">
             <div className="flex items-center gap-2 text-primary">
               <Image className="w-4 h-4" />
@@ -827,7 +827,7 @@ export const SpecOutput = ({ spec, onApprove, onRefine, onShare, readOnly = fals
             </div>
             <div className="relative aspect-video rounded-xl overflow-hidden border border-border/30 bg-black/20 group">
               <img 
-                src={(initialTechStack as any).mockup_url} 
+                src={mockupUrl} 
                 alt="Product Mockup" 
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />

@@ -141,9 +141,18 @@ export const MODELS: Record<string, ModelConfig> = {
 // Fallback model if preferred model fails
 export const FALLBACK_MODEL = 'groq-llama-3.1-8b';
 
+export interface ContentPart {
+  type: 'text' | 'image_url';
+  text?: string;
+  image_url?: {
+    url: string;
+    detail?: 'auto' | 'low' | 'high';
+  };
+}
+
 export interface LLMCallParams {
   model: string;
-  messages: Array<{ role: string; content: string }>;
+  messages: Array<{ role: string; content: string | ContentPart[] }>;
   temperature?: number;
   maxTokens?: number;
   responseFormat?: 'text' | 'json';

@@ -8,7 +8,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-accent text-white shadow-[0_8px_32px_hsl(0_0%_0%/0.5),0_2px_8px_hsl(210_100%_50%/0.2)] hover:shadow-[0_12px_48px_hsl(0_0%_0%/0.6),0_4px_16px_hsl(210_100%_50%/0.3)] hover:translate-y-[-2px] active:translate-y-0 backdrop-blur-sm",
+        default: "bg-accent text-white shadow-[0_4px_16px_hsl(var(--accent)/0.3)] hover:shadow-[0_8px_24px_hsl(var(--accent)/0.4)] hover:translate-y-[-2px] active:translate-y-0 backdrop-blur-sm",
         destructive: "bg-destructive text-white shadow-[0_8px_32px_hsl(0_0%_0%/0.5),0_2px_8px_hsl(0_84%_60%/0.2)] hover:shadow-[0_12px_48px_hsl(0_0%_0%/0.6),0_4px_16px_hsl(0_84%_60%/0.3)] hover:translate-y-[-2px] active:translate-y-0",
         outline: "border border-border/30 bg-background/50 backdrop-blur-sm hover:bg-accent/10 hover:border-accent/50 hover:shadow-[0_4px_16px_hsl(210_100%_50%/0.1)]",
         secondary: "bg-secondary/80 text-secondary-foreground backdrop-blur-sm shadow-[0_4px_16px_hsl(0_0%_0%/0.3)] hover:shadow-[0_8px_24px_hsl(0_0%_0%/0.4)] hover:translate-y-[-1px] active:translate-y-0",

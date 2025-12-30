@@ -66,11 +66,11 @@ export const ExpertCard = ({ expert, index }: ExpertCardProps) => {
               </div>
             </div>
 
-            {/* Living/Historical indicator */}
+            {/* Living/Historical indicator - ping fades after 3 pulses for visual calm */}
             {expert.alive && (
               <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-background shadow-lg"
                    title="Currently active">
-                <div className="w-full h-full rounded-full bg-green-400 animate-ping opacity-75" />
+                <div className="w-full h-full rounded-full bg-green-400 opacity-75 animate-[ping_1s_ease-in-out_3]" />
               </div>
             )}
           </div>

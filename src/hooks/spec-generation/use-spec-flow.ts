@@ -421,8 +421,8 @@ const researchSummary = `📊 **Research Complete:**\n• ${round.research.lengt
 
         setGeneratedSpec(specData.spec);
         setTechStack(specData.techStack || []);
-        if ((specData as any).mockupUrl) {
-          setMockupUrl((specData as any).mockupUrl);
+        if (specData.mockupUrl) {
+          setMockupUrl(specData.mockupUrl);
         }
         addHistory('spec', { spec: specData.spec });
 
@@ -466,6 +466,7 @@ const researchSummary = `📊 **Research Complete:**\n• ${round.research.lengt
     addDialogue,
     addHistory,
     setGeneratedSpec,
+    setTechStack,
     setMockupUrl,
     setPendingResume,
     addRound,
