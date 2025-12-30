@@ -1,7 +1,7 @@
 -- Seed the missing review_stage prompt for Phase 4 (Heavy-Model Review)
 -- This prompt uses GPT-5.2 Codex to validate synthesis quality
 
-INSERT INTO prompts (name, content, category, recommended_model, supports_variables, variables, active, version, metadata)
+INSERT INTO prompts (name, content, category, version, is_active, metadata)
 VALUES (
   'review_stage',
   'You are a senior technical reviewer using GPT-5.2 Codex capabilities.
@@ -29,13 +29,10 @@ OUTPUT FORMAT (JSON):
   "citationAnalysis": {"totalCitations": number, "verifiedCitations": number, "missingCitations": []},
   "remediationNotes": string
 }',
-  'quality',
-  'gpt-5.2-codex',
-  true,
-  '["synthesis", "research"]',
-  true,
+  'synthesis',
   1,
-  '{"temperature": 0.1}'
+  true,
+  '{"temperature": 0.1, "recommended_model": "gpt-5.2-codex", "variables": ["synthesis", "research"]}'
 ) ON CONFLICT (name) DO NOTHING;
 
 -- Create version history entry
