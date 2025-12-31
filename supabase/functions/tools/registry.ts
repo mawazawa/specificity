@@ -5,6 +5,7 @@ import { CompetitorAnalysisTool } from './competitor-analysis-tool.ts';
 import { GitHubSearchTool } from './github-search-tool.ts';
 import { NPMSearchTool } from './npm-search-tool.ts';
 import { MarketDataTool } from './market-data-tool.ts';
+import { VisualizeTool } from './visualize.ts';
 
 /**
  * Tool Registry - Auto-discovery and management of available tools
@@ -22,6 +23,7 @@ export class ToolRegistry {
     this.register(new GitHubSearchTool());
     this.register(new NPMSearchTool());
     this.register(new MarketDataTool());
+    this.register(new VisualizeTool());
   }
 
   register(tool: BaseTool) {

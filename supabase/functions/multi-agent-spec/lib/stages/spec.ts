@@ -3,6 +3,7 @@ import { corsHeaders, callGroq, GROQ_MODEL } from '../utils/api.ts';
 import { callOpenRouter } from '../../../lib/openrouter-client.ts';
 import { RoundData } from '../types.ts';
 import { renderPrompt, trackPromptUsage } from '../../../lib/prompt-service.ts';
+import { ToolRegistry } from '../../../tools/registry.ts';
 
 // ═══════════════════════════════════════════════════════════════
 // MULTI-PASS SPEC GENERATION
@@ -476,6 +477,28 @@ ${sectionContents.join('\n\n---\n\n')}
     console.log('[Spec] Extracting structured tech stack with logos...');
     const techStackPrompt = generateTechStackPrompt(spec);
 
+    // Initialize tool registry for visualization
+    const tools = new ToolRegistry();
+    let mockupUrl = undefined;
+
+    // Generate UI Mockup (Visual Spec)
+    try {
+      console.log('[Spec] Generating visual spec mockup...');
+      // Extract a short visual description from the spec (Executive Summary + Core Requirements)
+      // We can use a quick LLM call to summarize visual requirements, or just use the product idea
+      const visualPrompt = `A professional SaaS dashboard for: ${productIdea}. High fidelity, modern UI.`;
+      
+      const vizResult = await tools.execute('visualize', { prompt: visualPrompt });
+      if (vizResult.success && vizResult.data?.url) {
+        mockupUrl = vizResult.data.url;
+        console.log('[Spec] Mockup generated successfully:', mockupUrl);
+      } else {
+        console.warn('[Spec] Mockup generation failed:', vizResult.error);
+      }
+    } catch (e) {
+      console.error('[Spec] Visual spec error:', e);
+    }
+
     let techStack: any[] = [];
     try {
         const techStackJson = await callGroq(
@@ -510,7 +533,7 @@ ${sectionContents.join('\n\n---\n\n')}
     }
 
     return new Response(
-        JSON.stringify({ spec, techStack }),
+        JSON.stringify({ spec, techStack, mockupUrl }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 }
