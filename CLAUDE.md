@@ -35,6 +35,7 @@ VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 | Function | Purpose |
 |----------|---------|
 | `multi-agent-spec` | Multi-agent AI pipeline for spec generation |
+| `visualize` | AI UI mockup generation (via OpenRouter) |
 | `voice-to-text` | Voice transcription service |
 
 ### How to Identify This Project

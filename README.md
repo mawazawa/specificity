@@ -43,6 +43,7 @@ Specificity AI solves the **$50K problem**: Bad specs cost companies thousands i
 - 🎯 **Sample Gallery** - Quick-start examples for onboarding
 - ⌨️ **Keyboard Shortcuts** - CMD+K command palette
 - 📄 **PDF Export** - Professional downloadable specs
+- 🎨 **Visual Specs** - AI-generated UI mockups alongside text specs
 - 💬 **Live Dialogue** - Watch advisors debate in real-time
 - 🔄 **Multi-Round Process** - Research → Debate → Synthesis → Spec
 - 💾 **Session Recovery** - Auto-restore work from last 24 hours
@@ -86,6 +87,7 @@ Specificity AI solves the **$50K problem**: Bad specs cost companies thousands i
    - Add:
      - `GROQ_API_KEY` (from https://console.groq.com)
      - `EXA_API_KEY` (from https://exa.ai)
+     - `OPENROUTER_API_KEY` (from https://openrouter.ai - for Research & Visuals)
 
 2. **Deploy Edge Functions**:
    ```bash
