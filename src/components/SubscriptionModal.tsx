@@ -11,30 +11,31 @@ import {
 import { Check, Sparkles, Zap, Shield, Rocket, Loader2 } from "lucide-react";
 import { useProfile } from "@/hooks/use-profile";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export const SubscriptionModal = ({ children }: { children: React.ReactNode }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isUpgrading, setIsUpgrading] = useState(false);
-  const { profile, upgradeToPro } = useProfile();
+  const { profile } = useProfile();
 
   const handleUpgrade = async () => {
     setIsUpgrading(true);
     try {
-      // Simulate Stripe redirect
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      await upgradeToPro();
-      toast({
-        title: "Welcome to Pro!",
-        description: "Your account has been upgraded successfully.",
-      });
-      setIsOpen(false);
+      const { data, error } = await supabase.functions.invoke('create-checkout-session');
+      
+      if (error) throw error;
+      if (!data?.url) throw new Error('No checkout URL returned');
+
+      // Redirect to Stripe
+      window.location.href = data.url;
+      
     } catch (error) {
+      console.error('Upgrade error:', error);
       toast({
         title: "Upgrade Failed",
-        description: "There was an error processing your request.",
+        description: "Could not initiate checkout. Please try again.",
         variant: "destructive",
       });
-    } finally {
       setIsUpgrading(false);
     }
   };
