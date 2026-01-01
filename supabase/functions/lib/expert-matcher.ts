@@ -126,6 +126,8 @@ function selectModelForExpert(expertId: string): string {
  * Balance workload across experts to prevent overload
  */
 export function balanceWorkload(assignments: ExpertAssignment[]): ExpertAssignment[] {
+  if (assignments.length === 0) return assignments;
+
   // Find max questions assigned to any expert
   const maxQuestions = Math.max(...assignments.map(a => a.questions.length));
 
