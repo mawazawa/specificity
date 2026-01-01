@@ -10,8 +10,9 @@ function safeJsonParse<T>(content: string, fallback: T): T {
   try {
     return JSON.parse(content);
   } catch {
-    // Try to extract JSON from markdown code blocks
-    const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/);
+    // Try to extract JSON from markdown code blocks (flexible regex)
+    // Matches ```json (optional), optional whitespace, content, optional whitespace, ```
+    const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
     if (jsonMatch) {
       try {
         return JSON.parse(jsonMatch[1]);
@@ -20,6 +21,7 @@ function safeJsonParse<T>(content: string, fallback: T): T {
       }
     }
     // Try to find raw JSON object/array
+    // Note: This regex is greedy and might capture trailing text with braces
     const rawMatch = content.match(/[[{][\s\S]*[}\]]/);
     if (rawMatch) {
       try {
