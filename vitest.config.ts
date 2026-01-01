@@ -12,7 +12,8 @@ export default defineConfig({
       'tests/yaml-frontmatter-env-bug.spec.ts',
       'tests/json-export-bug.spec.ts',
       'tests/expert-matcher-bug-repro.spec.ts',
-      'tests/safe-json-parse-bug.spec.ts'
+      'tests/safe-json-parse-bug.spec.ts',
+      'tests/speckit-transformer-bug.spec.ts'
     ], // Only vitest unit tests, not Playwright e2e tests
     exclude: [
       'node_modules/**',

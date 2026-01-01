@@ -113,9 +113,9 @@ function extractFunctionalRequirements(specContent: string): string[] {
 
   // Look for "must", "shall", "should" statements
   const patterns = [
-    /(?:system|application|api|service)\s+(?:must|shall|should)\s+(.+?)(?:\.|$)/gi,
-    /(?:users?|clients?)\s+(?:must|shall|should)\s+be\s+able\s+to\s+(.+?)(?:\.|$)/gi,
-    /(?:FR-\d+)[:\s]+(.+?)(?:\.|$)/gi,
+    /(?:system|application|api|service)\s+(?:must|shall|should)\s+(.+?)(?:\.|[\r\n]|$)/gi,
+    /(?:users?|clients?)\s+(?:must|shall|should)\s+be\s+able\s+to\s+(.+?)(?:\.|[\r\n]|$)/gi,
+    /(?:FR-\d+)[:\s]+(.+?)(?:\.|[\r\n]|$)/gi,
   ];
 
   const seenRequirements = new Set<string>();
