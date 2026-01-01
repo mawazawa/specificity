@@ -34,7 +34,7 @@ export function useTasks() {
   const [tasks, dispatch] = useReducer(taskReducer, []);
 
   const addTask = useCallback((task: Omit<Task, 'id'>): string => {
-    const id = `${task.type}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const id = crypto.randomUUID();
     dispatch({ type: 'ADD_TASK', payload: { ...task, id } });
     return id;
   }, []);
