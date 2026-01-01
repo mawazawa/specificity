@@ -122,10 +122,10 @@ function extractFunctionalRequirements(specContent: string): string[] {
 
   // Look for must/shall/should statements
   const mustPatterns = [
-    /system\s+(?:must|shall|should)\s+(.+?)(?:\.|$)/gi,
-    /users?\s+(?:must|shall|should)\s+be\s+able\s+to\s+(.+?)(?:\.|$)/gi,
-    /application\s+(?:must|shall|should)\s+(.+?)(?:\.|$)/gi,
-    /(?:FR-\d+)[:\s]+(.+?)(?:\.|$)/gi,
+    /system\s+(?:must|shall|should)\s+(.+?)(?:\.|[\r\n]|$)/gi,
+    /users?\s+(?:must|shall|should)\s+be\s+able\s+to\s+(.+?)(?:\.|[\r\n]|$)/gi,
+    /application\s+(?:must|shall|should)\s+(.+?)(?:\.|[\r\n]|$)/gi,
+    /(?:FR-\d+)[:\s]+(.+?)(?:\.|[\r\n]|$)/gi,
   ];
 
   for (const pattern of mustPatterns) {
@@ -149,10 +149,10 @@ function extractNonFunctionalRequirements(specContent: string): string[] {
 
   // Look for performance/scalability/security mentions
   const nfrPatterns = [
-    /(?:performance|latency|response\s+time)[:\s]+(.+?)(?:\.|$)/gi,
-    /(?:scalability|scale\s+to)[:\s]+(.+?)(?:\.|$)/gi,
-    /(?:availability|uptime)[:\s]+(.+?)(?:\.|$)/gi,
-    /(?:security|authentication|authorization)[:\s]+(.+?)(?:\.|$)/gi,
+    /(?:performance|latency|response\s+time)[:\s]+(.+?)(?:\.|[\r\n]|$)/gi,
+    /(?:scalability|scale\s+to)[:\s]+(.+?)(?:\.|[\r\n]|$)/gi,
+    /(?:availability|uptime)[:\s]+(.+?)(?:\.|[\r\n]|$)/gi,
+    /(?:security|authentication|authorization)[:\s]+(.+?)(?:\.|[\r\n]|$)/gi,
   ];
 
   for (const pattern of nfrPatterns) {

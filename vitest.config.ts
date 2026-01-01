@@ -9,7 +9,8 @@ export default defineConfig({
       'tests/bug-fixes.spec.ts',
       'tests/lazy-loading.spec.ts',
       'tests/round-tracker-coverage.spec.ts',
-      'tests/yaml-frontmatter-env-bug.spec.ts'
+      'tests/yaml-frontmatter-env-bug.spec.ts',
+      'tests/json-export-bug.spec.ts'
     ], // Only vitest unit tests, not Playwright e2e tests
     exclude: [
       'node_modules/**',
