@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { AgentConfig, TechStackItem } from '@/types/spec';
+import { AgentConfig, TechStackItem, ImplementationTicket } from '@/types/spec';
 import { RoundData } from '@/types/schemas';
 
 // Helper to handle Supabase function errors
@@ -117,7 +117,7 @@ export const api = {
     researchResults: RoundData['researchResults'],
     debateResolutions: RoundData['debateResolutions']
   ) => {
-    return invokeFunction<{ spec: string; techStack: TechStackItem[]; mockupUrl?: string }>('multi-agent-spec', {
+    return invokeFunction<{ spec: string; techStack: TechStackItem[] }>('multi-agent-spec', {
       stage: 'spec',
       roundData: {
         syntheses,
@@ -125,6 +125,13 @@ export const api = {
         researchResults,
         debateResolutions
       }
+    });
+  },
+
+  decomposeSpec: async (specContent: string) => {
+    return invokeFunction<{ tickets: ImplementationTicket[] }>('multi-agent-spec', {
+      stage: 'decomposition',
+      specContent
     });
   },
 
@@ -138,6 +145,39 @@ export const api = {
       agentConfigs,
       targetAgent,
       userInput: message
+    });
+  },
+
+  /**
+   * Refine specification using visual context from an image (wireframe, mockup, design)
+   */
+  refineSpecWithImage: async (
+    image: string,
+    specContent: string,
+    options?: {
+      focusArea?: 'ui_ux' | 'architecture' | 'features' | 'comprehensive';
+      imageDescription?: string;
+      additionalContext?: string;
+    }
+  ) => {
+    return invokeFunction<{
+      analysis: {
+        imageInsights: string;
+        alignmentScore: number;
+        gaps: string[];
+        suggestions: string[];
+      };
+      refinedSpec: string;
+      metadata: {
+        model: string;
+        latencyMs: number;
+        visionTokensUsed: number;
+      };
+      remaining: number;
+    }>('multimodal-refinement', {
+      image,
+      specContent,
+      ...options
     });
   },
 
