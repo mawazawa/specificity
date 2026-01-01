@@ -53,4 +53,20 @@ NEXT_PUBLIC_API_URL: https://...
     // True positives should still be there
     expect(hasDatabaseUrl).toBe(true);
   });
+
+  it('should not identify random uppercase words with underscores as env vars', () => {
+    const specContent = `
+IMPORTANT_NOTE: This is not an env var.
+USER_SECTION: Not an env var.
+SYSTEM_STATUS: Not an env var.
+
+DATABASE_URL: postgres://...
+`;
+    const yaml = generateYamlFrontmatter(specContent, mockTechStack);
+
+    expect(yaml.includes('- name: IMPORTANT_NOTE')).toBe(false);
+    expect(yaml.includes('- name: USER_SECTION')).toBe(false);
+    expect(yaml.includes('- name: SYSTEM_STATUS')).toBe(false);
+    expect(yaml.includes('- name: DATABASE_URL')).toBe(true);
+  });
 });

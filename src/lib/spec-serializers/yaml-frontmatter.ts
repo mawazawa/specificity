@@ -144,6 +144,13 @@ function extractEnvVars(specContent: string): SpecMetadata['env_vars'] {
     'TCP', 'UDP', 'IP', 'DNS', 'SSL', 'TLS'
   ]);
 
+  // Common documentation suffixes that indicate a header, not an env var
+  const IGNORED_SUFFIXES = [
+    '_NOTE', '_SECTION', '_HEADER', '_TITLE', '_SUBTITLE', 
+    '_SUMMARY', '_DESCRIPTION', '_INFO', '_TIP', '_WARNING', 
+    '_ERROR', '_TODO', '_FIXME', '_STATUS', '_MSG', '_MESSAGE', '_TEXT'
+  ];
+
   for (const pattern of patterns) {
     let match;
     while ((match = pattern.exec(specContent)) !== null) {
@@ -156,6 +163,8 @@ function extractEnvVars(specContent: string): SpecMetadata['env_vars'] {
         name.length < 3 || 
         name.length > 50 ||
         IGNORED_WORDS.has(name) ||
+        // Filter out common documentation headers with underscores
+        IGNORED_SUFFIXES.some(suffix => name.endsWith(suffix)) ||
         // Heuristic: If it has no underscores, it's likely a word, unless it ends with ID/KEY/URL/SECRET
         (!name.includes('_') && !['PORT', 'HOST', 'ENV', 'DEBUG'].includes(name) && !name.endsWith('KEY') && !name.endsWith('ID') && !name.endsWith('URL') && !name.endsWith('SECRET'))
       ) {
