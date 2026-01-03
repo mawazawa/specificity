@@ -16,7 +16,8 @@ export default defineConfig({
       'tests/speckit-transformer-bug.spec.ts',
       'tests/use-tasks-bug.spec.ts',
       'tests/question-generator-bug.spec.ts',
-      'tests/json-code-block-regex.spec.ts'
+      'tests/json-code-block-regex.spec.ts',
+      'tests/package-manager-detection-bug.spec.ts'
     ], // Only vitest unit tests, not Playwright e2e tests
     exclude: [
       'node_modules/**',

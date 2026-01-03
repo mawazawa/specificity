@@ -12,7 +12,7 @@
  * @see https://ainativedev.io/news/the-rise-of-agents-md-an-open-standard-and-single-source-of-truth-for-ai-coding-agents
  */
 
-import { TechStackItem } from '@/types/spec';
+import { TechStackItem, ImplementationTicket } from '@/types/spec';
 
 /**
  * Extract project name from spec content
@@ -100,6 +100,7 @@ OPENAI_API_KEY=`;
 
 /**
  * Detect package manager from tech stack
+ * Uses exact matching to avoid false positives (e.g., "Bunyan" should not match "bun")
  */
 function detectPackageManager(techStack: TechStackItem[]): 'pnpm' | 'npm' | 'yarn' | 'bun' {
   const stackNames = techStack.flatMap(item => [
@@ -107,8 +108,9 @@ function detectPackageManager(techStack: TechStackItem[]): 'pnpm' | 'npm' | 'yar
     ...item.alternatives.map(alt => alt.name.toLowerCase())
   ]);
 
-  if (stackNames.some(name => name.includes('bun'))) return 'bun';
-  if (stackNames.some(name => name.includes('yarn'))) return 'yarn';
+  // Use exact matching to avoid substring false positives (e.g., "bunyan" matching "bun")
+  if (stackNames.some(name => name === 'bun')) return 'bun';
+  if (stackNames.some(name => name === 'yarn')) return 'yarn';
 
   return 'pnpm'; // Default to pnpm for modern projects
 }
@@ -185,11 +187,67 @@ tests/           # Test files`;
 }
 
 /**
+ * Format implementation plan for AGENTS.md
+ */
+function formatImplementationPlan(tickets?: ImplementationTicket[]): string {
+  if (!tickets || tickets.length === 0) {
+    return 'See specification for implementation details.';
+  }
+
+  const lines: string[] = [];
+  
+  lines.push(`Total Tickets: ${tickets.length}`);
+  lines.push('');
+
+  for (const ticket of tickets) {
+    const complexityEmoji = {
+      'S': '🟢',
+      'M': '🔵',
+      'L': '🟡',
+      'XL': '🔴'
+    }[ticket.complexity] || '⚪';
+
+    lines.push(`### [${ticket.id}] ${ticket.title}`);
+    lines.push(`**Type**: ${ticket.type} | **Complexity**: ${complexityEmoji} ${ticket.complexity}`);
+    lines.push('');
+    lines.push(ticket.description);
+    lines.push('');
+    
+    if (ticket.dependencies && ticket.dependencies.length > 0) {
+      lines.push(`**Dependencies**: ${ticket.dependencies.join(', ')}`);
+    }
+    
+    if (ticket.files_to_create && ticket.files_to_create.length > 0) {
+      lines.push('**Files to Create**:');
+      ticket.files_to_create.forEach(f => lines.push(`- \`${f}\``));
+    }
+    
+    if (ticket.files_to_modify && ticket.files_to_modify.length > 0) {
+      lines.push('**Files to Modify**:');
+      ticket.files_to_modify.forEach(f => lines.push(`- \`${f}\``));
+    }
+
+    if (ticket.acceptance_criteria && ticket.acceptance_criteria.length > 0) {
+      lines.push('');
+      lines.push('**Acceptance Criteria**:');
+      ticket.acceptance_criteria.forEach(c => lines.push(`- [ ] ${c}`));
+    }
+
+    lines.push('');
+    lines.push('---');
+    lines.push('');
+  }
+
+  return lines.join('\n');
+}
+
+/**
  * Generate AGENTS.md content
  */
 export function generateAgentsMd(
   specContent: string,
-  techStack: TechStackItem[]
+  techStack: TechStackItem[],
+  implementationTickets?: ImplementationTicket[]
 ): string {
   const projectName = extractProjectName(specContent);
   const summary = extractExecutiveSummary(specContent);
@@ -209,6 +267,10 @@ export function generateAgentsMd(
 ## Project Overview
 
 ${summary}
+
+## Implementation Plan (Atomic Tickets)
+
+${formatImplementationPlan(implementationTickets)}
 
 ## Quick Start
 
