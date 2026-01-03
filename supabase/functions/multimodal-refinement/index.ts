@@ -364,8 +364,8 @@ Provide your analysis in the specified JSON format.`;
     try {
       analysis = JSON.parse(visionResponse.content);
     } catch {
-      // Fallback parsing - try extracting JSON from markdown
-      const jsonMatch = visionResponse.content.match(/```json\n?([\s\S]*?)\n?```/);
+      // Fallback parsing - try extracting JSON from markdown (flexible regex handles uppercase JSON, missing newlines, extra whitespace)
+      const jsonMatch = visionResponse.content.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
       if (jsonMatch) {
         try {
           analysis = JSON.parse(jsonMatch[1]);
